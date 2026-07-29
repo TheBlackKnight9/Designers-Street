@@ -1,0 +1,1019 @@
+/* ──────────────────────────────────────
+   Designer's Street — Mock Data
+   Premium Designer Houses & Couture Collections
+   ────────────────────────────────────── */
+
+import type {
+  DesignerHouse,
+  Product,
+  Category,
+  StoryItem,
+  FeedPostData,
+} from "./types";
+
+// ── Designer Houses ──────────────────────
+
+export const DESIGNERS: DesignerHouse[] = [
+  {
+    id: "dh-1",
+    name: "MAISON RIVIÈRE",
+    handle: "maison-riviere",
+    location: "Mumbai, India",
+    bio: "Architectural couture rooted in Parisian precision and Indian opulence.",
+    foundingStory:
+      "Founded in 2008 by Ananya Rivière after a decade at a Parisian atelier, Maison Rivière merges French construction with Indian embellishment. Every garment is cut in Mumbai, embroidered in Lucknow, and finished in a climate-controlled atelier that seats twelve. The house is known for its structured lehengas that weigh less than they appear — an engineering feat as much as a design one.",
+    logo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1600&q=80",
+    founded: "2008",
+    signatureTechniques: ["Zardozi Embroidery", "French Seaming", "Structured Draping"],
+    verified: true,
+    exclusive: true,
+    offersBespoke: true,
+  },
+  {
+    id: "dh-2",
+    name: "ATELIER KISHANGARH",
+    handle: "atelier-kishangarh",
+    location: "Jaipur, Rajasthan",
+    bio: "Heritage textiles reimagined for the modern ceremony.",
+    foundingStory:
+      "Three generations of Jaipur's finest textile families merged in 2012 to form Atelier Kishangarh. Named after the Rajput school of miniature painting, the house treats fabric as canvas — every sari and lehenga begins as a hand-drawn artwork before a single thread is dyed. Their signature: natural indigo and lac dyes applied through a 22-step process unchanged since the Mughal courts.",
+    logo: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1558171813-4c088754af7f?w=1600&q=80",
+    founded: "2012",
+    signatureTechniques: ["Hand-Block Printing", "Natural Dyeing", "Miniature-Inspired Motifs"],
+    verified: true,
+    exclusive: false,
+    offersBespoke: true,
+  },
+  {
+    id: "dh-3",
+    name: "KASHMIR HAUTE",
+    handle: "kashmir-haute",
+    location: "Srinagar, Kashmir",
+    bio: "The world's finest pashmina, shaped into modern silhouettes.",
+    foundingStory:
+      "Fourth-generation shawl weaver Farid Ahmad launched Kashmir Haute in 2015 with a provocation: what if the 200-hour pashmina shawl became a coat? A blazer? A gown? Every piece ships with a provenance card tracing the exact herd, spinner, and loom. The brand produces fewer than 400 garments a year — deliberately.",
+    logo: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=1600&q=80",
+    founded: "2015",
+    signatureTechniques: ["Pashmina Weaving", "Sozni Hand-Embroidery", "Kani Weave"],
+    verified: true,
+    exclusive: true,
+    offersBespoke: true,
+  },
+  {
+    id: "dh-4",
+    name: "NOIR STRUCTURE",
+    handle: "noir-structure",
+    location: "Delhi, India",
+    bio: "Menswear for ceremonies — without the costume.",
+    foundingStory:
+      "Industrial designer turned couturier Vikram Sehgal started Noir Structure in 2018 because he couldn't find a sherwani that didn't make him feel like a prop. Every piece is drafted from 3D body scans, constructed in heavyweight Italian suiting wool, and detailed with hand-applied closures. The result is ceremony wear that feels like armour, not fancy dress.",
+    logo: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80",
+    founded: "2018",
+    signatureTechniques: ["3D Pattern Drafting", "Hand-Finished Closures", "Bespoke Tailoring"],
+    verified: true,
+    exclusive: false,
+    offersBespoke: true,
+  },
+  {
+    id: "dh-5",
+    name: "VEERA SILK HOUSE",
+    handle: "veera-silk-house",
+    location: "Kanchipuram, Tamil Nadu",
+    bio: "Temple silks woven for a generation that wears them differently.",
+    foundingStory:
+      "Veera Silk House has operated the same 40 handlooms in Kanchipuram since 1967. The current creative lead, Priya Veera, joined the family operation in 2020 and began draping the same 9-yard temple silks into cocktail gowns, cropped blouses, and structured capes. Purists were horrified. Brides were thrilled.",
+    logo: "https://images.unsplash.com/photo-1618354691373-d851c5c3d990?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=1600&q=80",
+    founded: "1967",
+    signatureTechniques: ["Kanchipuram Silk Weaving", "Temple Border Motifs", "Zari Work"],
+    verified: true,
+    exclusive: true,
+    offersBespoke: false,
+  },
+  {
+    id: "dh-6",
+    name: "STUDIO CIPHER",
+    handle: "studio-cipher",
+    location: "Bangalore, India",
+    bio: "Genderless occasion wear. Zero decoration, total impact.",
+    foundingStory:
+      "Studio Cipher was born from a single question: can you command a room without embroidery, without embellishment, without colour? Founder Meera Rao works exclusively in black, ivory, and smoke grey, letting cut and proportion do the work. Each collection has exactly 12 pieces. When they sell out, they're gone.",
+    logo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=1600&q=80",
+    founded: "2020",
+    signatureTechniques: ["Architectural Draping", "Zero-Waste Cutting", "Mono-Palette Design"],
+    verified: true,
+    exclusive: true,
+    offersBespoke: true,
+  },
+  {
+    id: "dh-7",
+    name: "antigravity",
+    handle: "antigravity",
+    location: "Tokyo, Japan",
+    bio: "Defining technical apparel. Genderless high-performance wear. Designed in Tokyo.",
+    foundingStory:
+      "Founded in 2023, antigravity is defined by avant-garde technical wear that defying categorization. We create for the future of urban movement. Made in Tokyo.",
+    founded: "2023",
+    website: "www.antigravity.design",
+    followersCount: "42.8K",
+    followingCount: "18",
+    postsCount: 24,
+    logo: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200&q=80",
+    banner: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1600&q=80",
+    signatureTechniques: ["3L Membrane Waterproofing", "Laser-Cut Seam Bonding", "Modular Articulation"],
+    verified: true,
+    exclusive: true,
+    offersBespoke: true,
+  },
+];
+
+// ── Products ─────────────────────────────
+
+export const PRODUCTS: Product[] = [
+  // Lehengas
+  {
+    id: "prod-1",
+    name: "Rivière Bridal Lehenga — Midnight Garden",
+    designerName: "MAISON RIVIÈRE",
+    designerId: "dh-1",
+    price: 285000,
+    category: "lehengas",
+    subcategory: "bridal",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80",
+      "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80",
+    ],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    description:
+      "Hand-embroidered zardozi lehenga in midnight navy raw silk. 14,000 hours of hand-work across the skirt panel alone. Structured waistband eliminates the need for drawstrings.",
+    story:
+      "Inspired by the Mughal garden frescoes at Amber Fort, each floral motif is a scaled botanical study — not a decorative abstraction. The embroidery team of eight worked in relay for eleven months.",
+    craftOrigin: "Lucknow",
+    material: "Raw Silk, Zardozi Thread, Sequin Work",
+    technique: "Zardozi Hand-Embroidery",
+    fit: "Structured A-Line",
+    occasion: "Bridal",
+    tags: ["bridal", "lehenga", "zardozi", "couture", "traditional"],
+    verified: true,
+    piecesRemaining: 3,
+    limitedEdition: true,
+    customizable: true,
+    rating: 4.9,
+    mrp: 310000,
+    bestPrice: 275000,
+    colors: ["#101010", "#A38F7A", "#E3DBCC"],
+    deliveryText: "Delivery within 48 hours",
+  },
+  {
+    id: "prod-2",
+    name: "Kishangarh Celebration Lehenga — Rose Dust",
+    designerName: "ATELIER KISHANGARH",
+    designerId: "dh-2",
+    price: 165000,
+    category: "lehengas",
+    subcategory: "cocktail",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d44?w=800&q=80",
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80",
+    ],
+    sizes: ["S", "M", "L", "XL"],
+    description:
+      "Natural lac-dyed lehenga in muted rose with hand-block printed borders. Lighter construction for reception and cocktail wear.",
+    craftOrigin: "Jaipur",
+    material: "Handloom Silk, Natural Lac Dye",
+    technique: "Hand-Block Printing",
+    fit: "Flared",
+    occasion: "Cocktail",
+    tags: ["lehenga", "block-print", "celebration", "traditional"],
+    verified: true,
+    piecesRemaining: 8,
+    limitedEdition: true,
+    customizable: true,
+    rating: 4.8,
+    mrp: 180000,
+    bestPrice: 159000,
+    colors: ["#E3DBCC", "#F3F0E9"],
+    deliveryText: "Delivery within 3 days",
+  },
+
+  // Sarees
+  {
+    id: "prod-3",
+    name: "Temple Border Kanjivaram — Ivory & Gold",
+    designerName: "VEERA SILK HOUSE",
+    designerId: "dh-5",
+    price: 120000,
+    category: "sarees",
+    subcategory: "bridal",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+      "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80",
+    ],
+    sizes: ["Free Size"],
+    description:
+      "Nine-yard Kanjivaram silk with 24-karat gold zari temple borders. Woven on a single handloom over 45 days. The pallu features a 600-thread peacock motif.",
+    story:
+      "This weave pattern has been in the Veera family for three generations. The gold zari is sourced from a single supplier in Surat who still draws wire by hand.",
+    craftOrigin: "Kanchipuram",
+    material: "Pure Silk, 24K Gold Zari",
+    technique: "Kanchipuram Handloom Weaving",
+    occasion: "Bridal",
+    tags: ["saree", "kanjivaram", "bridal", "silk", "traditional"],
+    verified: true,
+    piecesRemaining: 5,
+    limitedEdition: true,
+    customizable: false,
+    rating: 5.0,
+    mrp: 135000,
+    bestPrice: 115000,
+    colors: ["#FFFFFF", "#E3DBCC"],
+    deliveryText: "Delivery within 48 hours",
+  },
+  {
+    id: "prod-4",
+    name: "Cocktail Drape Saree — Smoke",
+    designerName: "STUDIO CIPHER",
+    designerId: "dh-6",
+    price: 68000,
+    category: "sarees",
+    subcategory: "cocktail",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1558171813-4c088754af7f?w=800&q=80",
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
+    ],
+    sizes: ["Free Size"],
+    description:
+      "Pre-draped saree in heavyweight smoke-grey crepe. No pinning required — the construction holds the drape. Pairs with the matching Cipher blouse or worn as a standalone statement.",
+    material: "Heavyweight Italian Crepe",
+    technique: "Architectural Draping",
+    fit: "Pre-Draped",
+    occasion: "Cocktail",
+    tags: ["saree", "contemporary", "minimal"],
+    verified: true,
+    customizable: true,
+    rating: 4.7,
+    mrp: 75000,
+    bestPrice: 65000,
+    colors: ["#565656", "#101010"],
+    deliveryText: "Delivery within 2 days",
+  },
+
+  // Designer Kurtas & Sets
+  {
+    id: "prod-5",
+    name: "Indigo Miniature Kurta Set",
+    designerName: "ATELIER KISHANGARH",
+    designerId: "dh-2",
+    price: 42000,
+    category: "kurtas",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b56?w=800&q=80",
+      "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=800&q=80",
+    ],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    description:
+      "Hand-block-printed indigo kurta with matching palazzo pants. Each miniature motif is applied with carved teak blocks — no two sets are identical.",
+    story:
+      "Printed by master artisan Ramesh Ji using blocks his grandfather carved in 1962. The indigo is fermented on-site in copper vats for 21 days.",
+    craftOrigin: "Jaipur",
+    material: "Handloom Cotton, Natural Indigo",
+    technique: "Hand-Block Printing",
+    fit: "Relaxed",
+    occasion: "Festive",
+    tags: ["kurta", "block-print", "heritage", "traditional"],
+    verified: true,
+    customizable: true,
+    rating: 4.8,
+    mrp: 48000,
+    bestPrice: 39999,
+    colors: ["#2B2B2B", "#848484"],
+    deliveryText: "Delivery within 48 hours",
+  },
+  {
+    id: "prod-6",
+    name: "Pashmina Embroidered Phiran",
+    designerName: "KASHMIR HAUTE",
+    designerId: "dh-3",
+    price: 95000,
+    category: "kurtas",
+    gender: "unisex",
+    images: [
+      "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80",
+      "https://images.unsplash.com/photo-1520903920245-00c7244da1f6?w=800&q=80",
+    ],
+    sizes: ["S", "M", "L", "XL"],
+    description:
+      "Hand-spun pashmina phiran with sozni needlework across the yoke. 120 hours of spinning, 80 hours of embroidery. Passes through a wedding ring.",
+    story:
+      "Woven by artisan Farid Ahmad on a 200-year-old wooden loom. Each thread of the sozni embroidery is finer than a human hair.",
+    craftOrigin: "Kashmir",
+    material: "Handloom Pashmina",
+    technique: "Sozni Hand-Embroidery",
+    fit: "Oversized",
+    occasion: "Festive",
+    tags: ["pashmina", "phiran", "luxury", "traditional"],
+    verified: true,
+    piecesRemaining: 12,
+    limitedEdition: true,
+    customizable: true,
+    rating: 4.9,
+    mrp: 105000,
+    bestPrice: 89999,
+    colors: ["#A38F7A", "#101010"],
+    deliveryText: "Delivery within 3 days",
+  },
+
+  // Coats & Outerwear
+  {
+    id: "prod-7",
+    name: "Kani Weave Opera Coat",
+    designerName: "KASHMIR HAUTE",
+    designerId: "dh-3",
+    price: 175000,
+    category: "coats",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
+      "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80",
+    ],
+    sizes: ["S", "M", "L"],
+    description:
+      "Full-length opera coat in Kani-woven pashmina. The weave — a technique requiring two artisans working in tandem — creates a tapestry effect without embroidery. Six months per coat.",
+    craftOrigin: "Kashmir",
+    material: "Kani-Woven Pashmina",
+    technique: "Kani Weave",
+    fit: "Tailored",
+    occasion: "Cocktail",
+    tags: ["coat", "pashmina", "kani", "outerwear"],
+    verified: true,
+    piecesRemaining: 4,
+    limitedEdition: true,
+    customizable: true,
+    rating: 5.0,
+    mrp: 190000,
+    bestPrice: 169999,
+    colors: ["#101010", "#565656"],
+    deliveryText: "Delivery within 48 hours",
+  },
+
+  // Sherwanis & Bandhgalas
+  {
+    id: "prod-8",
+    name: "Midnight Bandhgala — Architectural Cut",
+    designerName: "NOIR STRUCTURE",
+    designerId: "dh-4",
+    price: 78000,
+    category: "sherwanis",
+    gender: "men",
+    images: [
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
+      "https://images.unsplash.com/photo-1598033129183-c4f50c736c10?w=800&q=80",
+    ],
+    sizes: ["36", "38", "40", "42", "44"],
+    description:
+      "Bandhgala in Italian super-150s wool. No embroidery — the cut is the decoration. 3D-drafted from body scans, hand-finished closures, fully canvassed construction.",
+    material: "Italian Super-150s Wool",
+    technique: "Bespoke Tailoring",
+    fit: "Slim Architectural",
+    occasion: "Bridal",
+    tags: ["bandhgala", "menswear", "tailoring", "traditional"],
+    verified: true,
+    customizable: true,
+    rating: 4.9,
+    mrp: 85000,
+    bestPrice: 74999,
+    colors: ["#101010"],
+    deliveryText: "Delivery within 2 days",
+  },
+  {
+    id: "prod-9",
+    name: "Ivory Sherwani — Court Reception",
+    designerName: "NOIR STRUCTURE",
+    designerId: "dh-4",
+    price: 125000,
+    category: "sherwanis",
+    gender: "men",
+    images: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80",
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
+    ],
+    sizes: ["36", "38", "40", "42", "44"],
+    description:
+      "Floor-length ivory sherwani with concealed button placket and structured shoulders. The silhouette is deliberately restrained — no trailing fabric, no excess volume.",
+    material: "Raw Silk Twill, Cotton Canvas Interlining",
+    technique: "Hand-Finished Tailoring",
+    fit: "Structured",
+    occasion: "Bridal",
+    tags: ["sherwani", "menswear", "bridal", "traditional"],
+    verified: true,
+    piecesRemaining: 6,
+    limitedEdition: true,
+    customizable: true,
+    rating: 4.8,
+    mrp: 140000,
+    bestPrice: 119999,
+    colors: ["#FAFAFA", "#E3DBCC"],
+    deliveryText: "Delivery within 3 days",
+  },
+
+  // Occasion & Cocktail
+  {
+    id: "prod-10",
+    name: "Zero-Waste Gown — Obsidian",
+    designerName: "STUDIO CIPHER",
+    designerId: "dh-6",
+    price: 92000,
+    category: "gowns",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
+      "https://images.unsplash.com/photo-1558171813-4c088754af7f?w=800&q=80",
+    ],
+    sizes: ["XS", "S", "M", "L"],
+    description:
+      "Floor-length gown cut from a single piece of fabric with zero waste. No seams on the bodice — the drape is structural. Available in obsidian black only.",
+    material: "Italian Crepe, Zero-Waste Single-Panel",
+    technique: "Zero-Waste Cutting",
+    fit: "Column",
+    occasion: "Cocktail",
+    tags: ["gown", "minimal", "sustainable"],
+    verified: true,
+    piecesRemaining: 7,
+    limitedEdition: true,
+    customizable: false,
+    rating: 4.7,
+    mrp: 100000,
+    bestPrice: 88000,
+    colors: ["#101010"],
+    deliveryText: "Delivery within 48 hours",
+  },
+
+  // Fine Accessories
+  {
+    id: "prod-11",
+    name: "Zardozi Clutch — Midnight",
+    designerName: "MAISON RIVIÈRE",
+    designerId: "dh-1",
+    price: 35000,
+    category: "accessories",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
+    ],
+    sizes: ["One Size"],
+    description:
+      "Hand-embroidered zardozi clutch in midnight silk. Interior lined in suede. Magnetic closure with concealed chain strap.",
+    craftOrigin: "Lucknow",
+    material: "Raw Silk, Zardozi Thread",
+    technique: "Zardozi Embroidery",
+    occasion: "Bridal",
+    tags: ["accessories", "clutch", "bridal", "traditional"],
+    verified: true,
+    customizable: false,
+    rating: 4.9,
+    mrp: 38000,
+    bestPrice: 33000,
+    colors: ["#101010", "#A38F7A"],
+    deliveryText: "Delivery within 2 days",
+  },
+  {
+    id: "prod-12",
+    name: "Silk Cape — Smoke Grey",
+    designerName: "VEERA SILK HOUSE",
+    designerId: "dh-5",
+    price: 55000,
+    category: "coats",
+    gender: "women",
+    images: [
+      "https://images.unsplash.com/photo-1586105251261-72a756257a11?w=800&q=80",
+      "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+    ],
+    sizes: ["Free Size"],
+    description:
+      "Kanchipuram silk cape with temple border detailing reinterpreted as a cropped outerwear piece. The drape is structured with internal boning.",
+    craftOrigin: "Kanchipuram",
+    material: "Pure Kanchipuram Silk",
+    technique: "Handloom Weaving",
+    fit: "Cropped Cape",
+    occasion: "Cocktail",
+    tags: ["cape", "silk", "contemporary"],
+    verified: true,
+    piecesRemaining: 10,
+    limitedEdition: true,
+    customizable: false,
+    rating: 4.8,
+    mrp: 60000,
+    bestPrice: 52000,
+    colors: ["#565656", "#E3DBCC"],
+    deliveryText: "Delivery within 3 days",
+  },
+  {
+    id: "prod-13",
+    name: "antigravity 3L Waterproof Technical Parka",
+    designerName: "antigravity",
+    designerId: "dh-7",
+    price: 78000,
+    category: "coats",
+    subcategory: "technical",
+    gender: "unisex",
+    images: [
+      "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
+    ],
+    sizes: ["S", "M", "L", "XL"],
+    description:
+      "Avant-garde 3-layer membrane waterproof technical parka. Designed for urban movement in extreme conditions. Made in Tokyo.",
+    story:
+      "Constructed with laser-cut bonding and articulated sleeves for zero restriction. Tested under Tokyo rainfall.",
+    craftOrigin: "Tokyo",
+    material: "3L Technical Waterproof Nylon",
+    technique: "Laser-Cut Seam Bonding",
+    fit: "Articulated Fit",
+    occasion: "Everyday",
+    tags: ["techwear", "parka", "waterproof", "monochrome"],
+    verified: true,
+    piecesRemaining: 5,
+    limitedEdition: true,
+    customizable: true,
+    rating: 4.9,
+    mrp: 85000,
+    bestPrice: 72000,
+    colors: ["#101010", "#565656"],
+    deliveryText: "Delivery within 48 hours",
+  },
+  {
+    id: "prod-14",
+    name: "antigravity Modular Articulated Cargo Pant",
+    designerName: "antigravity",
+    designerId: "dh-7",
+    price: 42000,
+    category: "coats",
+    subcategory: "technical",
+    gender: "unisex",
+    images: [
+      "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800&q=80",
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
+    ],
+    sizes: ["S", "M", "L", "XL"],
+    description:
+      "Monochrome technical pant with detachable magnetic cargo pockets and ergonomic knee gussets.",
+    craftOrigin: "Tokyo",
+    material: "Water-Repellent Stretch Cordura",
+    technique: "Modular Articulation",
+    fit: "Ergonomic Tapered",
+    occasion: "Everyday",
+    tags: ["cargo", "pants", "techwear", "monochrome"],
+    verified: true,
+    piecesRemaining: 8,
+    limitedEdition: true,
+    customizable: false,
+    rating: 4.8,
+    mrp: 48000,
+    bestPrice: 39000,
+    colors: ["#101010"],
+    deliveryText: "Delivery within 2 days",
+  },
+];
+
+// ── Category Tree ────────────────────────
+
+export const CATEGORIES: Category[] = [
+  {
+    slug: "men",
+    label: "Men",
+    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
+    children: [
+      {
+        slug: "sherwanis",
+        label: "Sherwanis & Bandhgalas",
+        image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
+        caption: "Ceremony wear that feels like armour, not fancy dress.",
+        children: [
+          { slug: "sherwanis-bridal", label: "Bridal", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" },
+          { slug: "sherwanis-reception", label: "Reception & Cocktail", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80" },
+        ],
+      },
+      {
+        slug: "kurtas-men",
+        label: "Designer Kurtas",
+        image: "https://images.unsplash.com/photo-1596755094514-f87e34085b56?w=800&q=80",
+      },
+      {
+        slug: "nehru-jackets",
+        label: "Nehru Jackets & Bundis",
+        image: "https://images.unsplash.com/photo-1598033129183-c4f50c736c10?w=800&q=80",
+      },
+      {
+        slug: "indo-western-men",
+        label: "Indo-Western & Fusion",
+        image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80",
+      },
+      {
+        slug: "coats-men",
+        label: "Coats & Outerwear",
+        image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
+      },
+      {
+        slug: "trousers-men",
+        label: "Tailored Trousers & Dhotis",
+        image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800&q=80",
+      },
+      {
+        slug: "footwear-men",
+        label: "Handcrafted Juttis & Loafers",
+        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
+      },
+    ],
+  },
+  {
+    slug: "women",
+    label: "Women",
+    image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80",
+    children: [
+      {
+        slug: "lehengas",
+        label: "Lehengas",
+        image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80",
+        caption: "The Lehenga Edit — hand-finished, limited to 12 pieces.",
+        children: [
+          { slug: "lehengas-bridal", label: "Bridal", image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80" },
+          { slug: "lehengas-cocktail", label: "Cocktail & Reception", image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d44?w=800&q=80" },
+        ],
+      },
+      {
+        slug: "sarees",
+        label: "Sarees",
+        image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+        caption: "Temple silks woven for a generation that wears them differently.",
+        children: [
+          { slug: "sarees-kanjivaram", label: "Kanjivaram", image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80" },
+          { slug: "sarees-contemporary", label: "Contemporary Drape", image: "https://images.unsplash.com/photo-1558171813-4c088754af7f?w=800&q=80" },
+        ],
+      },
+      {
+        slug: "anarkalis-shararas",
+        label: "Anarkalis & Sharara Sets",
+        image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80",
+      },
+      {
+        slug: "kurtas-women",
+        label: "Designer Kurtas & Sets",
+        image: "https://images.unsplash.com/photo-1596755094514-f87e34085b56?w=800&q=80",
+        caption: "Heritage block-prints meet modern silhouettes.",
+      },
+      {
+        slug: "gowns",
+        label: "Gowns & Cocktail Wear",
+        image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
+        caption: "Occasion dressing without the costume.",
+      },
+      {
+        slug: "coords-women",
+        label: "Indo-Western & Co-ords",
+        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
+      },
+      {
+        slug: "coats-women",
+        label: "Coats & Capes",
+        image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
+      },
+      {
+        slug: "dupattas",
+        label: "Heritage Dupattas & Stoles",
+        image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80",
+      },
+      {
+        slug: "accessories",
+        label: "Fine Accessories & Jewellery",
+        image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&q=80",
+      },
+    ],
+  },
+  {
+    slug: "traditional",
+    label: "Traditional",
+    image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+    caption: "Timeless handcrafted weaves, embroidery, and classic ceremony styles.",
+    children: [
+      { slug: "lehengas", label: "Bridal Lehengas", image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80" },
+      { slug: "sarees", label: "Sarees & Handlooms", image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80" },
+      { slug: "sarees-kanjivaram", label: "Kanjivaram Temple Silks", image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80" },
+      { slug: "banarasi-weaves", label: "Banarasi & Brocades", image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80" },
+      { slug: "sherwanis", label: "Sherwanis & Royal Bandhgalas", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80" },
+      { slug: "zardozi-couture", label: "Hand Embroidered Zardozi", image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d44?w=800&q=80" },
+      { slug: "blockprint-heritage", label: "Jaipur Block Prints & Indigo", image: "https://images.unsplash.com/photo-1596755094514-f87e34085b56?w=800&q=80" },
+    ],
+  },
+  {
+    slug: "limited-edition",
+    label: "Limited Edition",
+    image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80",
+    caption: "Highly exclusive, numbered pieces with low availability.",
+    children: [
+      { slug: "lehengas-bridal", label: "Bridal Masterpieces (1 of 3)", image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80" },
+      { slug: "sarees-kanjivaram", label: "24K Gold Zari Sarees", image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80" },
+      { slug: "coats-women", label: "Handwoven Opera Coats", image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80" },
+      { slug: "technical-outerwear", label: "Avant-Garde Technical Drops", image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80" },
+      { slug: "pashmina-limited", label: "Sozni Pashmina Capsules", image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80" },
+      { slug: "runway-edits", label: "Private Atelier Runway Edits", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80" },
+    ],
+  },
+];
+
+// ── Stories Data ──────────────────────────
+
+export const STORIES: StoryItem[] = [
+  {
+    id: "story-0",
+    designerId: "dh-7",
+    designerName: "antigravity",
+    designerLogo: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200&q=80",
+    label: "Tokyo Drops",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
+        caption: "antigravity 3L Waterproof Technical Parka — Designed in Tokyo.",
+        ctaLabel: "Shop Technical",
+        ctaLink: "/product/prod-13",
+      },
+    ],
+  },
+  {
+    id: "story-1",
+    designerId: "dh-1",
+    designerName: "MAISON RIVIÈRE",
+    designerLogo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
+    label: "Just Landed",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80",
+        caption: "Midnight Garden Bridal — Now available. Limited to 3 pieces.",
+        ctaLabel: "Shop the Drop",
+        ctaLink: "/product/prod-1",
+      },
+      {
+        image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=800&q=80",
+        caption: "14,000 hours of zardozi. One lehenga.",
+      },
+    ],
+  },
+  {
+    id: "story-2",
+    designerId: "dh-3",
+    designerName: "KASHMIR HAUTE",
+    designerLogo: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&q=80",
+    label: "Winter Capsule",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80",
+        caption: "The Kani Weave Opera Coat — six months per piece.",
+        ctaLabel: "View Collection",
+        ctaLink: "/designer/kashmir-haute",
+      },
+      {
+        image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
+        caption: "Fewer than 400 garments a year. Deliberately.",
+      },
+    ],
+  },
+  {
+    id: "story-3",
+    designerId: "dh-5",
+    designerName: "VEERA SILK HOUSE",
+    designerLogo: "https://images.unsplash.com/photo-1618354691373-d851c5c3d990?w=200&q=80",
+    label: "Bridal '26",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+        caption: "24-karat gold zari. 45 days on a single handloom.",
+        ctaLabel: "Explore Bridal",
+        ctaLink: "/category/sarees",
+      },
+    ],
+  },
+  {
+    id: "story-4",
+    designerId: "dh-6",
+    designerName: "STUDIO CIPHER",
+    designerLogo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&q=80",
+    label: "Drop 04",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
+        caption: "12 pieces. One colour. Zero waste.",
+        ctaLabel: "Shop Cipher",
+        ctaLink: "/designer/studio-cipher",
+      },
+    ],
+  },
+  {
+    id: "story-5",
+    designerId: "dh-4",
+    designerName: "NOIR STRUCTURE",
+    designerLogo: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&q=80",
+    label: "Groom Edit",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
+        caption: "Menswear for ceremonies — without the costume.",
+        ctaLabel: "View Collection",
+        ctaLink: "/designer/noir-structure",
+      },
+    ],
+  },
+  {
+    id: "story-6",
+    designerId: "dh-2",
+    designerName: "ATELIER KISHANGARH",
+    designerLogo: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&q=80",
+    label: "Festive Edit",
+    slides: [
+      {
+        image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d44?w=800&q=80",
+        caption: "Mughal miniatures on handloom silk.",
+        ctaLabel: "Shop Festive",
+        ctaLink: "/designer/atelier-kishangarh",
+      },
+    ],
+  },
+];
+
+// ── Feed Posts ────────────────────────────
+
+export const FEED_POSTS: FeedPostData[] = [
+  {
+    id: "feed-0",
+    type: "designer-spotlight",
+    designerId: "dh-7",
+    designerName: "antigravity",
+    designerLogo: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200&q=80",
+    designerVerified: true,
+    tag: "NEW DROP",
+    image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
+    caption: "antigravity | Defining technical apparel. Genderless high-performance wear. Designed in Tokyo.",
+    link: "/designer/antigravity",
+    likesCount: 1420,
+    productTag: {
+      name: "3L Waterproof Technical Parka",
+      price: 78000,
+      productId: "prod-13",
+    },
+  },
+  {
+    id: "feed-1",
+    type: "category",
+    categorySlug: "lehengas",
+    designerName: "MAISON RIVIÈRE",
+    designerLogo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
+    designerVerified: true,
+    tag: "New Drop",
+    image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80",
+    caption: "The Lehenga Edit — hand-finished, limited to 12 pieces.",
+    link: "/category/lehengas",
+  },
+  {
+    id: "feed-2",
+    type: "designer-spotlight",
+    designerId: "dh-6",
+    designerName: "STUDIO CIPHER",
+    designerLogo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&q=80",
+    designerVerified: true,
+    tag: "Exclusive Edit",
+    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
+    caption: "Genderless occasion wear. Zero decoration, total impact.",
+    link: "/designer/studio-cipher",
+  },
+  {
+    id: "feed-3",
+    type: "category",
+    categorySlug: "sarees",
+    designerName: "VEERA SILK HOUSE",
+    designerLogo: "https://images.unsplash.com/photo-1618354691373-d851c5c3d990?w=200&q=80",
+    designerVerified: true,
+    tag: "Heritage",
+    image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+    caption: "Temple silks woven for a generation that wears them differently.",
+    link: "/category/sarees",
+  },
+  {
+    id: "feed-4",
+    type: "category",
+    categorySlug: "kurtas",
+    designerName: "ATELIER KISHANGARH",
+    designerLogo: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&q=80",
+    designerVerified: true,
+    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b56?w=800&q=80",
+    caption: "Heritage block-prints. Each motif carved in 1962, still pressing today.",
+    link: "/category/kurtas-women",
+  },
+  {
+    id: "feed-5",
+    type: "designer-spotlight",
+    designerId: "dh-3",
+    designerName: "KASHMIR HAUTE",
+    designerLogo: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&q=80",
+    designerVerified: true,
+    tag: "Private Sale",
+    image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80",
+    caption: "The world's finest pashmina, shaped into modern silhouettes.",
+    link: "/designer/kashmir-haute",
+  },
+  {
+    id: "feed-6",
+    type: "category",
+    categorySlug: "sherwanis",
+    designerName: "NOIR STRUCTURE",
+    designerLogo: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&q=80",
+    designerVerified: true,
+    tag: "New Drop",
+    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
+    caption: "Sherwanis & Bandhgalas — ceremony wear that feels like armour.",
+    link: "/category/sherwanis",
+  },
+  {
+    id: "feed-7",
+    type: "category",
+    categorySlug: "coats",
+    designerName: "KASHMIR HAUTE",
+    designerLogo: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&q=80",
+    designerVerified: true,
+    image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
+    caption: "Coats & Outerwear — Kani-woven pashmina, six months per piece.",
+    link: "/category/coats-women",
+  },
+  {
+    id: "feed-8",
+    type: "category",
+    categorySlug: "bespoke",
+    designerName: "DESIGNER'S STREET",
+    designerLogo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
+    designerVerified: true,
+    tag: "Bespoke",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
+    caption: "Your vision, their hands. Book a design consultation.",
+    link: "/bespoke",
+  },
+  {
+    id: "feed-9",
+    type: "category",
+    categorySlug: "accessories",
+    designerName: "MAISON RIVIÈRE",
+    designerLogo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
+    designerVerified: true,
+    image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&q=80",
+    caption: "Fine Accessories — the finishing gesture.",
+    link: "/category/accessories",
+  },
+];
+
+// ── Helpers ──────────────────────────────
+
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(price);
+}
+
+export function getDesignerById(id: string): DesignerHouse | undefined {
+  return DESIGNERS.find((d) => d.id === id);
+}
+
+export function getDesignerByHandle(handle: string): DesignerHouse | undefined {
+  return DESIGNERS.find((d) => d.handle === handle);
+}
+
+export function getProductsByDesigner(designerId: string): Product[] {
+  return PRODUCTS.filter((p) => p.designerId === designerId);
+}
+
+export function getProductsByCategory(category: string): Product[] {
+  return PRODUCTS.filter((p) => p.category === category);
+}
+
+export function getProductById(id: string): Product | undefined {
+  return PRODUCTS.find((p) => p.id === id);
+}
+
+export function findCategoryBySlug(slug: string, cats: Category[] = CATEGORIES): Category | undefined {
+  for (const cat of cats) {
+    if (cat.slug === slug) return cat;
+    if (cat.children) {
+      const found = findCategoryBySlug(slug, cat.children);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
