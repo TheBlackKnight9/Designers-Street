@@ -1,10 +1,11 @@
 import { PRODUCTS, FEED_POSTS } from "@/lib/mock-data";
 import { productToViewerMedia, feedPostToViewerMedia } from "@/lib/media/adapters";
+import { resolveShoppableReel } from "@/lib/media/shoppable";
 import type { MediaPoolEntry } from "./types";
 
 /**
- * Build a flat catalog of discoverable media from mock/seed sources.
- * Later: replace with API-backed cursor pages without changing the viewer.
+ * Continuous discovery pool — prefer shoppable product videos
+ * so swipe sessions stay in a buyable luxury-commerce loop.
  */
 export function buildMediaPool(): MediaPoolEntry[] {
   const pool: MediaPoolEntry[] = [];
@@ -13,9 +14,10 @@ export function buildMediaPool(): MediaPoolEntry[] {
   for (const product of PRODUCTS) {
     const items = productToViewerMedia(product);
     for (const item of items) {
+      if (item.type !== "video") continue;
       if (seen.has(item.id)) continue;
       seen.add(item.id);
-      pool.push({
+      const shoppable = resolveShoppableReel({
         ...item,
         designerId: product.designerId,
         category: product.category,
@@ -24,20 +26,23 @@ export function buildMediaPool(): MediaPoolEntry[] {
         colors: product.colors,
         productId: product.id,
       });
+      pool.push(shoppable);
     }
   }
 
   for (const post of FEED_POSTS) {
     const items = feedPostToViewerMedia(post);
     for (const item of items) {
+      if (item.type !== "video") continue;
       if (seen.has(item.id)) continue;
       seen.add(item.id);
-      pool.push({
+      const shoppable = resolveShoppableReel({
         ...item,
-        designerId: post.designerId,
+        designerId: post.designerId ?? item.designerId,
         productId: post.productTag?.productId ?? item.productId,
-        tags: post.tag ? [post.tag.toLowerCase()] : undefined,
+        tags: post.tag ? [post.tag.toLowerCase()] : item.tags,
       });
+      pool.push(shoppable);
     }
   }
 

@@ -9,6 +9,9 @@ export function productCardToUiProduct(card: ProductCardDTO): Product {
   const imageUrls = card.gallery
     .filter((g) => g.type === "image")
     .map((g) => g.url);
+  const videoUrls = card.gallery
+    .filter((g) => g.type === "video")
+    .map((g) => g.url);
   const images =
     imageUrls.length > 0
       ? imageUrls
@@ -28,6 +31,7 @@ export function productCardToUiProduct(card: ProductCardDTO): Product {
     subcategory: card.subcategory ?? undefined,
     gender: card.gender,
     images,
+    videos: videoUrls.length ? videoUrls : undefined,
     sizes: card.sizes,
     colors: card.colors,
     tags: card.tags,

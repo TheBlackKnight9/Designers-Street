@@ -9,6 +9,9 @@ import { useOpenMediaViewer } from "@/context/MediaViewerContext";
 import type { FeedPostData } from "@/lib/types";
 import { feedPostToViewerMedia } from "@/lib/media";
 import { formatPrice } from "@/lib/mock-data";
+import { useFollow, useLike } from "@/hooks/useSocial";
+import { ShareButton } from "@/components/ShareButton";
+import { CommentPanel } from "@/components/comments/CommentPanel";
 
 interface FeedPostProps {
   post: FeedPostData;
@@ -16,42 +19,60 @@ interface FeedPostProps {
 
 export function FeedPost({ post }: FeedPostProps) {
   const { isWished, toggle: toggleWishlist } = useWishlist();
-  const { addItem: addToCart } = useCart();
+  const { addItem: addToCart, isInCart, quantityFor, openCart } = useCart();
   const { openMediaViewer } = useOpenMediaViewer();
 
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likesCount || 1420);
+  const {
+    liked: isLiked,
+    count: likesCount,
+    toggle: toggleLike,
+  } = useLike({
+    targetId: post.id,
+    initialLiked: post.likedByMe,
+    initialCount: post.likesCount ?? 0,
+  });
+  const { following: isFollowing, toggle: toggleFollow } = useFollow({
+    designerId: post.designerId,
+    initialFollowing: post.followingDesigner,
+  });
+
+  const [commentsCount, setCommentsCount] = useState(post.commentsCount ?? 0);
+  const [showComments, setShowComments] = useState(false);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const [showTagPopover, setShowTagPopover] = useState(true);
-  const [addedToast, setAddedToast] = useState(false);
+  const [authHint, setAuthHint] = useState<string | null>(null);
   const lastTapRef = useRef(0);
   const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const wished = isWished(post.id) || (post.productTag?.productId ? isWished(post.productTag.productId) : false);
+  const saveProductId = post.productTag?.productId;
+  const wished = saveProductId ? isWished(saveProductId) : false;
+  const bagProductId = post.productTag?.productId;
+  const inBag = bagProductId ? isInCart(bagProductId) : false;
+  const bagQty = bagProductId ? quantityFor(bagProductId) : 0;
 
-  // Toggle Like
-  const handleLikeToggle = () => {
-    if (isLiked) {
-      setIsLiked(false);
-      setLikesCount((prev) => Math.max(0, prev - 1));
-    } else {
-      setIsLiked(true);
-      setLikesCount((prev) => prev + 1);
-      setShowHeartAnim(true);
-      setTimeout(() => setShowHeartAnim(false), 800);
+  const handleLikeToggle = async () => {
+    try {
+      await toggleLike();
+      if (!isLiked) {
+        setShowHeartAnim(true);
+        setTimeout(() => setShowHeartAnim(false), 800);
+      }
+    } catch {
+      setAuthHint("Sign in to like");
     }
   };
 
-  // Double-tap image to like
   const handleDoubleTap = useCallback(() => {
-    if (!isLiked) {
-      setIsLiked(true);
-      setLikesCount((prev) => prev + 1);
-    }
-    setShowHeartAnim(true);
-    setTimeout(() => setShowHeartAnim(false), 800);
-  }, [isLiked]);
+    void (async () => {
+      try {
+        if (!isLiked) await toggleLike();
+        setShowHeartAnim(true);
+        setTimeout(() => setShowHeartAnim(false), 800);
+      } catch {
+        setAuthHint("Sign in to like");
+      }
+    })();
+  }, [isLiked, toggleLike]);
 
   const handleImageTap = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -80,14 +101,20 @@ export function FeedPost({ post }: FeedPostProps) {
     lastTapRef.current = now;
   };
 
-  // Handle Quick Add to Cart
+  // Handle Quick Add to Cart — state derives from CartContext (no ephemeral toast)
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const pId = post.productTag?.productId || post.id;
+    const pId = post.productTag?.productId;
+    if (!pId) return;
     const name = post.productTag?.name || post.caption.slice(0, 30);
     const price = post.productTag?.price || 78000;
+
+    if (isInCart(pId)) {
+      openCart();
+      return;
+    }
 
     addToCart({
       productId: pId,
@@ -97,9 +124,6 @@ export function FeedPost({ post }: FeedPostProps) {
       size: "M",
       image: post.image,
     });
-
-    setAddedToast(true);
-    setTimeout(() => setAddedToast(false), 2000);
   };
 
   return (
@@ -144,7 +168,9 @@ export function FeedPost({ post }: FeedPostProps) {
           )}
           <button
             type="button"
-            onClick={() => setIsFollowing(!isFollowing)}
+            onClick={() => {
+              void toggleFollow().catch(() => setAuthHint("Sign in to follow"));
+            }}
             className={`px-3 py-1 font-sans text-[10px] font-extrabold uppercase tracking-wider rounded-full transition-all cursor-pointer ${
               isFollowing
                 ? "bg-white text-[#2B2B2B] border border-gray-300"
@@ -247,15 +273,15 @@ export function FeedPost({ post }: FeedPostProps) {
         )}
       </div>
 
-      {/* Interactive Engagement Bar: Like, Wishlist, Add to Cart */}
+      {/* Interactive Engagement Bar: Like, Comment, Wishlist, Share, Add to Cart */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-white/40 bg-[#FDFCF8]">
         <div className="flex items-center gap-4">
-          {/* Like (Heart) Button */}
           <button
             type="button"
-            onClick={handleLikeToggle}
+            onClick={() => void handleLikeToggle()}
             className="flex items-center gap-1.5 cursor-pointer active:scale-90 transition-transform"
             aria-label="Like post"
+            aria-pressed={isLiked}
           >
             <svg
               className={`w-6 h-6 transition-colors ${
@@ -272,27 +298,50 @@ export function FeedPost({ post }: FeedPostProps) {
             </span>
           </button>
 
-          {/* Wishlist (Bookmarked Heart) Button */}
           <button
             type="button"
-            onClick={() => toggleWishlist(post.productTag?.productId || post.id)}
-            className="cursor-pointer active:scale-90 transition-transform p-1"
-            aria-label={wished ? "Remove from Wishlist" : "Save to Wishlist"}
+            onClick={() => setShowComments((v) => !v)}
+            className="flex items-center gap-1.5 cursor-pointer"
+            aria-label="Comments"
           >
-            <svg
-              className={`w-6 h-6 transition-colors ${
-                wished ? "fill-[#2B2B2B] text-[#2B2B2B]" : "fill-none text-[#2B2B2B]"
-              }`}
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+            <svg className="w-6 h-6 text-[#2B2B2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
+            <span className="font-sans text-xs font-bold text-[#2B2B2B]">
+              {commentsCount}
+            </span>
           </button>
+
+          {saveProductId && (
+            <button
+              type="button"
+              onClick={() => toggleWishlist(saveProductId)}
+              className="cursor-pointer active:scale-90 transition-transform p-1"
+              aria-label={wished ? "Remove from Wishlist" : "Save to Wishlist"}
+              aria-pressed={wished}
+            >
+              <svg
+                className={`w-6 h-6 transition-colors ${
+                  wished ? "fill-[#2B2B2B] text-[#2B2B2B]" : "fill-none text-[#2B2B2B]"
+                }`}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+              </svg>
+            </button>
+          )}
+
+          <ShareButton
+            title={post.designerName}
+            text={post.caption}
+            path={post.link || `/feed`}
+            className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#2B2B2B]"
+          />
         </div>
 
-        {/* Add to Cart (Shopping Cart) Button */}
         <button
           type="button"
           onClick={handleAddToCart}
@@ -301,9 +350,26 @@ export function FeedPost({ post }: FeedPostProps) {
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
           </svg>
-          <span>{addedToast ? "Added ✓" : "Add to Bag"}</span>
+          <span>
+            {inBag
+              ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
+              : "Add to Bag"}
+          </span>
         </button>
       </div>
+
+      {authHint && (
+        <p className="px-4 py-2 text-[10px] text-stone">
+          {authHint}.{" "}
+          <Link href="/account/login" className="underline">
+            Sign in
+          </Link>
+        </p>
+      )}
+
+      {showComments && (
+        <CommentPanel postId={post.id} onCountChange={setCommentsCount} />
+      )}
 
       {/* Caption & Designer handle */}
       <div className="px-4 py-3">

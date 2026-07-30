@@ -15,11 +15,18 @@ const CART_KEY = "ds-cart";
 
 interface CartContextValue {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
+  addItem: (
+    item: Omit<CartItem, "quantity">,
+    options?: { openDrawer?: boolean }
+  ) => void;
   removeItem: (productId: string, size: string) => void;
   updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;
   refreshCart: () => Promise<void>;
+  /** True if product (optionally size) is in the cart */
+  isInCart: (productId: string, size?: string) => boolean;
+  /** Total qty for a product (optionally a single size) */
+  quantityFor: (productId: string, size?: string) => number;
   total: number;
   itemCount: number;
   isOpen: boolean;
@@ -99,39 +106,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, hydrated, remote]);
 
   const addItem = useCallback(
-    (item: Omit<CartItem, "quantity">) => {
-      if (remote) {
-        setSyncing(true);
-        apiJson<CartPayload>("/api/cart", {
-          method: "POST",
-          body: JSON.stringify({
-            productId: item.productId,
-            size: item.size,
-            quantity: 1,
-          }),
-        })
-          .then((data) => setItems(data.items))
-          .catch(() => {
-            // optimistic local fallback if API down
-            setItems((prev) => {
-              const existing = prev.find(
-                (i) => i.productId === item.productId && i.size === item.size
-              );
-              if (existing) {
-                return prev.map((i) =>
-                  i.productId === item.productId && i.size === item.size
-                    ? { ...i, quantity: i.quantity + 1 }
-                    : i
-                );
-              }
-              return [...prev, { ...item, quantity: 1 }];
-            });
-          })
-          .finally(() => setSyncing(false));
-        setIsOpen(true);
-        return;
-      }
-
+    (item: Omit<CartItem, "quantity">, options?: { openDrawer?: boolean }) => {
+      const openDrawer = options?.openDrawer !== false;
+      const snapshot = items;
+      // Optimistic update first — UI must reflect cart membership immediately
       setItems((prev) => {
         const existing = prev.find(
           (i) => i.productId === item.productId && i.size === item.size
@@ -145,9 +123,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
         return [...prev, { ...item, quantity: 1 }];
       });
-      setIsOpen(true);
+      if (openDrawer) setIsOpen(true);
+
+      if (!remote) return;
+
+      setSyncing(true);
+      apiJson<CartPayload>("/api/cart", {
+        method: "POST",
+        body: JSON.stringify({
+          productId: item.productId,
+          size: item.size,
+          quantity: 1,
+        }),
+      })
+        .then((data) => setItems(data.items))
+        .catch(() => {
+          // Rollback so checkout never diverges from server cart
+          setItems(snapshot);
+          if (openDrawer) setIsOpen(false);
+        })
+        .finally(() => setSyncing(false));
     },
-    [remote]
+    [remote, items]
   );
 
   const removeItem = useCallback(
@@ -255,6 +252,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [items]
   );
 
+  const isInCart = useCallback(
+    (productId: string, size?: string) =>
+      items.some(
+        (i) =>
+          i.productId === productId &&
+          (size === undefined || i.size === size)
+      ),
+    [items]
+  );
+
+  const quantityFor = useCallback(
+    (productId: string, size?: string) =>
+      items
+        .filter(
+          (i) =>
+            i.productId === productId &&
+            (size === undefined || i.size === size)
+        )
+        .reduce((sum, i) => sum + i.quantity, 0),
+    [items]
+  );
+
   const value = useMemo(
     () => ({
       items,
@@ -263,6 +282,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       updateQuantity,
       clearCart,
       refreshCart,
+      isInCart,
+      quantityFor,
       total,
       itemCount,
       isOpen,
@@ -277,6 +298,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       updateQuantity,
       clearCart,
       refreshCart,
+      isInCart,
+      quantityFor,
       total,
       itemCount,
       isOpen,

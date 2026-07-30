@@ -8,3 +8,6 @@ export { WishlistRepository } from "./wishlist-repository";
 export { AddressRepository } from "./address-repository";
 export { OrderRepository } from "./order-repository";
 export { NotificationRepository } from "./notification-repository";
+export { LikeRepository } from "./like-repository";
+export { FollowRepository } from "./follow-repository";
+export { CommentRepository } from "./comment-repository";

@@ -63,7 +63,6 @@ function preloadAdjacent(item: ViewerMediaItem | undefined) {
       )
     );
   } else {
-    // Poster / thumb for video metadata feel
     preloadImage(
       item.thumbnailUrl ||
         getOptimizedMediaUrl(
@@ -71,6 +70,15 @@ function preloadAdjacent(item: ViewerMediaItem | undefined) {
           "thumb"
         )
     );
+    // Warm next video decode path
+    if (typeof document !== "undefined") {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.as = "video";
+      link.href = item.url;
+      document.head.appendChild(link);
+      window.setTimeout(() => link.remove(), 8000);
+    }
   }
 }
 
@@ -198,12 +206,16 @@ export function useMediaViewer({
     syncMediaParam(index, syncUrl);
   }, [open, index, syncUrl, continuous]);
 
-  // Adjacent preload
+  // Adjacent + next 2–3 preload (continuous reels)
   useEffect(() => {
     if (!open || count === 0) return;
     preloadAdjacent(queue[index - 1]);
     preloadAdjacent(queue[index + 1]);
-  }, [open, index, queue, count]);
+    if (continuous) {
+      preloadAdjacent(queue[index + 2]);
+      preloadAdjacent(queue[index + 3]);
+    }
+  }, [open, index, queue, count, continuous]);
 
   const goTo = useCallback(
     (i: number) => {

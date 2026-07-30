@@ -151,6 +151,12 @@ export default function ProfilePage() {
               needAuth: true,
             },
             {
+              href: "/notifications",
+              title: "Notifications",
+              desc: "Follows, likes, comments, and order updates.",
+              needAuth: true,
+            },
+            {
               href: "/account/addresses",
               title: "Addresses",
               desc: "Manage delivery addresses.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ViewerMediaItem } from "@/lib/media/types";
 import { useMediaViewer } from "@/hooks/useMediaViewer";
@@ -10,6 +10,7 @@ import { ImageViewer } from "./ImageViewer";
 import { VideoViewer } from "./VideoViewer";
 import { ThumbnailStrip } from "./ThumbnailStrip";
 import { GestureHandler } from "./GestureHandler";
+import { ReelChrome } from "./ReelChrome";
 
 export type MediaViewerProps = {
   open: boolean;
@@ -18,7 +19,6 @@ export type MediaViewerProps = {
   syncUrl?: boolean;
   source?: string;
   title?: string;
-  /** Instagram-style continuous vertical discovery */
   continuous?: boolean;
   onClose: () => void;
   onIndexChange?: (index: number) => void;
@@ -61,13 +61,30 @@ function MediaViewerInner({
     rootElement: rootEl,
   });
 
+  const onDoubleTapLike = useCallback(() => {
+    if (continuous) {
+      window.dispatchEvent(new CustomEvent("ds-reel-double-like"));
+      return;
+    }
+    if (current?.type === "image") toggleZoomAt();
+  }, [continuous, current?.type, toggleZoomAt]);
+
+  const nextItem = queue[index + 1];
+  const preloadUrl = nextItem?.type === "video" ? nextItem.url : null;
+  const preloadUrls = [1, 2, 3]
+    .map((offset) => {
+      const m = queue[index + offset];
+      return m?.type === "video" ? m.url : null;
+    })
+    .filter(Boolean) as string[];
+
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <MediaOverlay onBackdropClick={onClose}>
+    <MediaOverlay onBackdropClick={continuous ? undefined : onClose}>
       <div
         ref={setRootEl}
-        className="relative flex flex-col w-full h-full outline-none"
+        className="relative flex flex-col w-full h-full outline-none bg-black"
         tabIndex={-1}
       >
         <MediaControls
@@ -78,7 +95,8 @@ function MediaViewerInner({
           onNext={goNext}
           canPrev={index > 0}
           canNext={index < count - 1 || continuous}
-          title={continuous ? title ?? "Discover" : title}
+          title={continuous ? undefined : title}
+          minimal={continuous}
         />
 
         <GestureHandler
@@ -89,14 +107,19 @@ function MediaViewerInner({
           onSwipeRight={continuous ? undefined : goPrev}
           onSwipeUp={continuous ? goNext : undefined}
           onSwipeDown={continuous ? goPrev : undefined}
-          onDoubleTap={() => {
-            if (current?.type === "image") toggleZoomAt();
-          }}
+          onDoubleTap={onDoubleTapLike}
           onPinchZoom={continuous ? undefined : (d) => setZoom(zoom + d)}
           onWheelZoom={continuous ? undefined : (d) => setZoom(zoom + d)}
         >
           {current?.type === "video" ? (
-            <VideoViewer key={current.id} item={current} isActive />
+            <VideoViewer
+              key={current.id}
+              item={current}
+              isActive
+              reelMode={continuous}
+              preloadUrl={preloadUrl}
+              preloadUrls={preloadUrls}
+            />
           ) : current ? (
             <ImageViewer
               key={current.id}
@@ -106,16 +129,12 @@ function MediaViewerInner({
             />
           ) : (
             <div className="flex items-center justify-center h-full text-white/60 text-sm font-sans">
-              No media available
+              <span className="h-8 w-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             </div>
           )}
 
-          {continuous ? (
-            <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex justify-center">
-              <span className="rounded-full bg-black/40 px-3 py-1 text-[10px] font-medium uppercase tracking-widest text-white/70">
-                Swipe for more
-              </span>
-            </div>
+          {continuous && current ? (
+            <ReelChrome item={current} onCloseViewer={onClose} />
           ) : null}
         </GestureHandler>
 
@@ -127,9 +146,7 @@ function MediaViewerInner({
               onSelect={goTo}
             />
           </div>
-        ) : (
-          <div className="pb-[max(0.5rem,env(safe-area-inset-bottom))]" />
-        )}
+        ) : null}
       </div>
     </MediaOverlay>,
     document.body

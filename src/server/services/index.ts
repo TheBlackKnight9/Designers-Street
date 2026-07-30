@@ -12,3 +12,6 @@ export { WishlistService } from "./wishlist-service";
 export { AddressService } from "./address-service";
 export { OrderService } from "./order-service";
 export { NotificationService } from "./notification-service";
+export { LikeService } from "./like-service";
+export { FollowService } from "./follow-service";
+export { CommentService } from "./comment-service";

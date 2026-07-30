@@ -146,6 +146,8 @@ export function toFeedPostDTO(row: ProductWithDesigner): FeedPostDTO {
     designerVerified: row.designer.verified,
     tag: row.limitedEdition ? "Limited Edition" : "New Drop",
     image: card.coverImage,
+    videoUrl: card.videoPreview ?? undefined,
+    videoOnly: Boolean(card.videoPreview),
     caption: row.name,
     link: `/product/${row.id}`,
     productTag: {

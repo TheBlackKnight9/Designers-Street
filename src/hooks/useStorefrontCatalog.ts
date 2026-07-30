@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   isRemoteApiEnabled,
   listProducts,
@@ -187,7 +187,10 @@ export function useStorefrontProduct(productId: string): CatalogLoadState & {
   return { product, loading, error, reload, enabled };
 }
 
-export function useStorefrontFeed(pageSize = 8): CatalogLoadState & {
+export function useStorefrontFeed(
+  pageSize = 8,
+  sort: "recent" | "popular" | "trending" | "following" = "recent"
+): CatalogLoadState & {
   posts: FeedPostData[];
   hasMore: boolean;
   loadMore: () => void;
@@ -199,13 +202,14 @@ export function useStorefrontFeed(pageSize = 8): CatalogLoadState & {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  const loadingMoreRef = useRef(false);
   const reload = useCallback(() => setTick((t) => t + 1), []);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    listFeed({ limit: pageSize })
+    listFeed({ limit: pageSize, sort })
       .then((page) => {
         if (!cancelled) {
           setPosts(page.items);
@@ -225,21 +229,29 @@ export function useStorefrontFeed(pageSize = 8): CatalogLoadState & {
     return () => {
       cancelled = true;
     };
-  }, [pageSize, tick]);
+  }, [pageSize, sort, tick]);
 
   const loadMore = useCallback(() => {
-    if (!nextCursor || loadingMore) return;
+    if (!nextCursor || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
-    listFeed({ limit: pageSize, cursor: nextCursor })
+    listFeed({ limit: pageSize, cursor: nextCursor, sort })
       .then((page) => {
-        setPosts((prev) => [...prev, ...page.items]);
+        setPosts((prev) => {
+          const seen = new Set(prev.map((p) => p.id));
+          const add = (page.items || []).filter((p) => p.id && !seen.has(p.id));
+          return add.length ? [...prev, ...add] : prev;
+        });
         setNextCursor(page.nextCursor);
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Failed to load more");
       })
-      .finally(() => setLoadingMore(false));
-  }, [nextCursor, loadingMore, pageSize]);
+      .finally(() => {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      });
+  }, [nextCursor, pageSize, sort]);
 
   return {
     posts,

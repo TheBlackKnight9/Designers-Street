@@ -182,25 +182,41 @@ export class PublicCatalogService {
   async listFeed(options: {
     limit?: number;
     cursor?: string | null;
+    sort?: "recent" | "popular" | "trending" | "following";
+    viewerUserId?: string | null;
   } = {}): Promise<CursorPage<FeedPostDTO>> {
     trackPublicEvent("feed_viewed");
     const limit = options.limit ?? 10;
+    const sort = options.sort ?? "recent";
 
     if (!isDatabaseEnabled()) {
       const page = mockCursorPage(FEED_POSTS, limit, options.cursor);
       return { items: page.items, nextCursor: page.nextCursor };
     }
 
-    // Prefer Post table when seeded; fall back to product-backed feed
+    let followingDesignerIds: string[] | undefined;
+    if (sort === "following" && options.viewerUserId) {
+      const { FollowRepository } = await import(
+        "@/server/repositories/follow-repository"
+      );
+      followingDesignerIds = await new FollowRepository().listFollowingDesignerIds(
+        options.viewerUserId
+      );
+    }
+
     const postPage = await this.feed.findFeedPage({
       limit,
       cursor: options.cursor,
+      sort: sort === "following" && !followingDesignerIds?.length ? "recent" : sort,
+      followingDesignerIds,
     });
+
     if (postPage.items.length > 0 || options.cursor) {
-      return {
-        items: postPage.items,
-        nextCursor: postPage.nextCursor,
-      };
+      const items = await this.hydrateFeedEngagement(
+        postPage.items,
+        options.viewerUserId
+      );
+      return { items, nextCursor: postPage.nextCursor };
     }
 
     const { rows, nextCursor } = await this.products.findPublicPage({
@@ -209,10 +225,46 @@ export class PublicCatalogService {
       filters: { sort: "newest" },
     });
 
-    return {
-      items: rows.map(toFeedPostDTO),
-      nextCursor,
-    };
+    const items = await this.hydrateFeedEngagement(
+      rows.map(toFeedPostDTO),
+      options.viewerUserId
+    );
+    return { items, nextCursor };
+  }
+
+  private async hydrateFeedEngagement(
+    items: FeedPostDTO[],
+    viewerUserId?: string | null
+  ): Promise<FeedPostDTO[]> {
+    if (!viewerUserId || items.length === 0) return items;
+
+    const { LikeRepository } = await import(
+      "@/server/repositories/like-repository"
+    );
+    const { FollowRepository } = await import(
+      "@/server/repositories/follow-repository"
+    );
+    const likes = new LikeRepository();
+    const follows = new FollowRepository();
+
+    const postIds = items.map((i) => i.id);
+    const designerIds = items
+      .map((i) => i.designerId)
+      .filter((id): id is string => Boolean(id));
+
+    const [likedPosts, likedProducts, followed] = await Promise.all([
+      likes.listLikedPostIds(viewerUserId, postIds),
+      likes.listLikedProductIds(viewerUserId, postIds),
+      follows.listFollowedAmong(viewerUserId, designerIds),
+    ]);
+
+    return items.map((item) => ({
+      ...item,
+      likedByMe: likedPosts.has(item.id) || likedProducts.has(item.id),
+      followingDesigner: item.designerId
+        ? followed.has(item.designerId)
+        : false,
+    }));
   }
 
   async listCategories(): Promise<CategoryDTO[]> {

@@ -52,6 +52,40 @@ async function seedCategories(
   }
 }
 
+async function syncProductMedia(productId: string, images: string[], videos?: string[]) {
+  await prisma.mediaAsset.deleteMany({ where: { productId } });
+  let order = 0;
+  for (const url of images) {
+    await prisma.mediaAsset.create({
+      data: {
+        productId,
+        ownerType: "product",
+        kind: "image",
+        publicId: `demo/${productId}/img-${order}`,
+        url,
+        displayOrder: order,
+        altText: "Product image",
+      },
+    });
+    order += 1;
+  }
+  for (const url of videos ?? []) {
+    await prisma.mediaAsset.create({
+      data: {
+        productId,
+        ownerType: "product",
+        kind: "video",
+        publicId: `demo/${productId}/vid-${order}`,
+        url,
+        thumbnailUrl: images[0] ?? null,
+        displayOrder: order,
+        altText: "Product lookbook video",
+      },
+    });
+    order += 1;
+  }
+}
+
 async function main() {
   console.log("Seeding Designer's Street from mock-data…");
 
@@ -131,6 +165,7 @@ async function main() {
         customizable: p.customizable ?? false,
         rating: p.rating,
         deliveryText: p.deliveryText,
+        likesCount: 120 + (p.price % 900),
         status: "published",
       },
       update: {
@@ -160,16 +195,21 @@ async function main() {
         customizable: p.customizable ?? false,
         rating: p.rating,
         deliveryText: p.deliveryText,
+        likesCount: 120 + (p.price % 900),
         status: "published",
       },
     });
+    await syncProductMedia(p.id, p.images, p.videos);
   }
   console.log(`  products: ${PRODUCTS.length}`);
 
+  // Replace category tree so stale nested/duplicate slugs do not linger
+  await prisma.category.deleteMany({});
   await seedCategories(CATEGORIES);
-  console.log(`  categories: seeded tree`);
+  console.log(`  categories: ${CATEGORIES.length} browse roots`);
 
   for (const post of FEED_POSTS) {
+    const hasVideo = Boolean(post.videoUrl);
     await prisma.post.upsert({
       where: { id: post.id },
       create: {
@@ -182,11 +222,13 @@ async function main() {
         categorySlug: post.categorySlug,
         tag: post.tag,
         image: post.image,
+        videoUrl: post.videoUrl ?? null,
+        mediaType: hasVideo ? "video" : "image",
         caption: post.caption,
         link: post.link,
         likesCount: post.likesCount ?? 0,
+        commentsCount: post.commentsCount ?? 0,
         productTag: post.productTag ?? undefined,
-        mediaType: "image",
       },
       update: {
         type: mapPostType(post.type),
@@ -197,9 +239,12 @@ async function main() {
         categorySlug: post.categorySlug,
         tag: post.tag,
         image: post.image,
+        videoUrl: post.videoUrl ?? null,
+        mediaType: hasVideo ? "video" : "image",
         caption: post.caption,
         link: post.link,
         likesCount: post.likesCount ?? 0,
+        commentsCount: post.commentsCount ?? 0,
         productTag: post.productTag ?? undefined,
       },
     });

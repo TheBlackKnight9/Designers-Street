@@ -18,7 +18,10 @@ export async function GET(request: Request) {
         { status: 401 }
       );
     }
-    return ok({ user });
+    const followingCount = await prisma.follow.count({
+      where: { followerUserId: user.id },
+    });
+    return ok({ user, followingCount });
   } catch (error) {
     return fail(error);
   }

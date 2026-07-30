@@ -90,9 +90,12 @@ export function toFeedPost(row: DbPost): FeedPostData {
     designerVerified: row.designerVerified,
     tag: row.tag ?? undefined,
     image: row.image,
+    videoUrl: row.videoUrl ?? undefined,
+    videoOnly: row.mediaType === "video" && Boolean(row.videoUrl),
     caption: row.caption,
     link: row.link,
     likesCount: row.likesCount,
+    commentsCount: row.commentsCount,
     productTag: productTag ?? undefined,
   };
 }

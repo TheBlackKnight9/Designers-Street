@@ -106,10 +106,15 @@ export async function listProductCards(options?: {
       });
     }
     const start = options?.cursor
-      ? items.findIndex((p) => p.id === options.cursor) + 1
+      ? (() => {
+          const idx = items.findIndex((p) => p.id === options.cursor);
+          return idx < 0 ? -1 : idx + 1;
+        })()
       : 0;
-    const safe = start < 0 ? 0 : start;
-    const slice = items.slice(safe, safe + limit);
+    if (start < 0) {
+      return { items: [], nextCursor: null };
+    }
+    const slice = items.slice(start, start + limit);
     const cards: ProductCardDTO[] = slice.map((p) => {
       const gallery = p.images.map((url, i) => ({
         id: `${p.id}-img-${i}`,
@@ -146,7 +151,7 @@ export async function listProductCards(options?: {
     return {
       items: cards,
       nextCursor:
-        safe + limit < items.length
+        start + limit < items.length
           ? cards[cards.length - 1]?.id ?? null
           : null,
     };
@@ -298,17 +303,25 @@ export async function getDesignerByHandleApi(
 export async function listFeed(options?: {
   limit?: number;
   cursor?: string | null;
+  sort?: "recent" | "popular" | "trending" | "following";
 }): Promise<{ items: FeedPostData[]; nextCursor: string | null }> {
   if (!isRemoteApiEnabled()) {
     const limit = options?.limit ?? 10;
     const cursor = options?.cursor;
-    const start = cursor
-      ? FEED_POSTS.findIndex((p) => p.id === cursor) + 1
-      : 0;
-    const safeStart = start < 0 ? 0 : start;
-    const items = FEED_POSTS.slice(safeStart, safeStart + limit);
+    if (cursor) {
+      const idx = FEED_POSTS.findIndex((p) => p.id === cursor);
+      if (idx < 0) return { items: [], nextCursor: null };
+      const start = idx + 1;
+      const items = FEED_POSTS.slice(start, start + limit);
+      const nextCursor =
+        start + limit < FEED_POSTS.length
+          ? items[items.length - 1]?.id ?? null
+          : null;
+      return { items, nextCursor };
+    }
+    const items = FEED_POSTS.slice(0, limit);
     const nextCursor =
-      safeStart + limit < FEED_POSTS.length
+      limit < FEED_POSTS.length
         ? items[items.length - 1]?.id ?? null
         : null;
     return { items, nextCursor };
@@ -316,6 +329,7 @@ export async function listFeed(options?: {
   const params = new URLSearchParams();
   if (options?.limit) params.set("limit", String(options.limit));
   if (options?.cursor) params.set("cursor", options.cursor);
+  if (options?.sort) params.set("sort", options.sort);
   const q = params.toString();
   return getJson(`/api/feed${q ? `?${q}` : ""}`);
 }

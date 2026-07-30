@@ -168,6 +168,7 @@ model Product {
   rating           Float?
   deliveryText     String?       @map("delivery_text")
   status           ProductStatus @default(published)
+  likesCount       Int           @default(0) @map("likes_count")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
@@ -176,6 +177,7 @@ model Product {
   customizationRequests  CustomizationRequest[]
   wishlistItems          WishlistItem[]
   mediaAssets            MediaAsset[]
+  likes                  Like[]
 
   @@index([designerId])
   @@index([category])
@@ -216,6 +218,7 @@ model Post {
   caption          String
   link             String
   likesCount       Int       @default(0) @map("likes_count")
+  commentsCount    Int       @default(0) @map("comments_count")
   productTag       Json?     @map("product_tag")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
@@ -320,13 +323,18 @@ model MediaAsset {
 model Like {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
-  postId    String   @map("post_id")
+  postId    String?  @map("post_id")
+  productId String?  @map("product_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+  @@unique([userId, productId])
+  @@index([postId])
+  @@index([productId])
   @@map("likes")
 }
 
@@ -345,6 +353,8 @@ model Comment {
   replies Comment[] @relation("CommentThread")
 
   @@index([postId])
+  @@index([parentId])
+  @@index([userId])
   @@map("comments")
 }
 
@@ -507,14 +517,18 @@ model OrderEvent {
 }
 
 model Notification {
-  id        String    @id @default(cuid())
-  userId    String    @map("user_id")
-  type      String
-  title     String
-  body      String
-  orderId   String?   @map("order_id")
-  readAt    DateTime? @map("read_at")
-  createdAt DateTime  @default(now()) @map("created_at")
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  type         String
+  title        String
+  body         String
+  orderId      String?   @map("order_id")
+  postId       String?   @map("post_id")
+  productId    String?   @map("product_id")
+  designerId   String?   @map("designer_id")
+  actorUserId  String?   @map("actor_user_id")
+  readAt       DateTime? @map("read_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

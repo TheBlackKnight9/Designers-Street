@@ -18,6 +18,8 @@ import {
   useStorefrontProducts,
   useStorefrontDesigners,
 } from "@/hooks/useStorefrontCatalog";
+import { useLike } from "@/hooks/useSocial";
+import { ShareButton } from "@/components/ShareButton";
 
 interface PageProps {
   params: Promise<{ productId: string }>;
@@ -29,7 +31,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const catalogProduct = useStorefrontProduct(productId);
   const catalogList = useStorefrontProducts({ limit: 24 });
   const catalogDesigners = useStorefrontDesigners();
-  const { addItem } = useCart();
+  const { addItem, isInCart, quantityFor, openCart } = useCart();
   const { isWished, toggle } = useWishlist();
   const { openMediaViewer } = useOpenMediaViewer();
 
@@ -44,10 +46,21 @@ export default function ProductDetailPage({ params }: PageProps) {
     ? designers.find((d) => d.id === product.designerId || d.name === product.designerName) ?? null
     : null;
 
+  const {
+    liked: productLiked,
+    count: productLikes,
+    toggle: toggleProductLike,
+  } = useLike({
+    targetId: productId,
+    initialCount: 0,
+    mode: "product",
+  });
+
   const [selectedSize, setSelectedSize] = useState("");
   const [activeImage, setActiveImage] = useState(0);
   const [openSection, setOpenSection] = useState<string | null>("story");
   const [error, setError] = useState("");
+  const [likeHint, setLikeHint] = useState<string | null>(null);
 
   const openGallery = useCallback(
     (index: number) => {
@@ -133,6 +146,8 @@ export default function ProductDetailPage({ params }: PageProps) {
   }
 
   const wished = isWished(product.id);
+  const inBag = isInCart(product.id);
+  const bagQty = quantityFor(product.id);
 
   const recommendations = products.filter(
     (p) => p.id !== product.id && (p.category === product.category || p.designerId === product.designerId)
@@ -144,6 +159,10 @@ export default function ProductDetailPage({ params }: PageProps) {
       return;
     }
     setError("");
+    if (isInCart(product.id)) {
+      openCart();
+      return;
+    }
     addItem({
       productId: product.id,
       name: product.name,
@@ -301,13 +320,19 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 mb-5">
+          <div className="flex gap-3 mb-3">
             <button
               type="button"
               onClick={handleAddToBag}
-              className="flex-1 h-12 bg-[#2B2B2B] text-[#FAFAFA] font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press"
+              className={`flex-1 h-12 font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press ${
+                inBag
+                  ? "bg-white text-[#2B2B2B] border border-[#2B2B2B]"
+                  : "bg-[#2B2B2B] text-[#FAFAFA]"
+              }`}
             >
-              Add to Bag
+              {inBag
+                ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
+                : "Add to Bag"}
             </button>
             <button
               type="button"
@@ -316,6 +341,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                 wished ? "bg-[#2B2B2B] border-[#2B2B2B]" : "border-[#E0E0E0]"
               }`}
               aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+              aria-pressed={wished}
             >
               <svg
                 className={`h-5 w-5 transition-colors ${
@@ -329,6 +355,50 @@ export default function ProductDetailPage({ params }: PageProps) {
               </svg>
             </button>
           </div>
+
+          <div className="flex items-center gap-4 mb-5">
+            <button
+              type="button"
+              onClick={() =>
+                void toggleProductLike().catch(() =>
+                  setLikeHint("Sign in to like this piece")
+                )
+              }
+              className="flex items-center gap-1.5 font-sans text-xs font-semibold text-[#2B2B2B]"
+              aria-pressed={productLiked}
+              aria-label="Like product"
+            >
+              <svg
+                className={`h-5 w-5 ${
+                  productLiked ? "fill-red-500 text-red-500" : "fill-none text-[#2B2B2B]"
+                }`}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                />
+              </svg>
+              {productLikes > 0 ? productLikes : "Like"}
+            </button>
+            <ShareButton
+              title={product.name}
+              text={`${product.designerName} — ${product.name}`}
+              path={`/product/${product.id}`}
+              className="font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B] underline"
+            />
+          </div>
+          {likeHint && (
+            <p className="mb-4 text-[10px] text-stone">
+              {likeHint}.{" "}
+              <Link href="/account/login" className="underline">
+                Sign in
+              </Link>
+            </p>
+          )}
 
           {/* Customize CTA */}
           {product.customizable && (

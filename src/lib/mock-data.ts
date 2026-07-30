@@ -11,6 +11,14 @@ import type {
   FeedPostData,
 } from "./types";
 import { FASHION_VIDEOS as V } from "./fashion-videos";
+import {
+  BROWSE_CATEGORIES,
+  EXPANDED_DESIGNERS,
+  EXPANDED_PRODUCTS,
+  EXPANDED_FEED_POSTS,
+  EXPANDED_STORIES,
+  withSocialCounts,
+} from "./demo-expand";
 
 // ── Designer Houses ──────────────────────
 
@@ -637,150 +645,9 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
-// ── Category Tree ────────────────────────
+// ── Category Tree (flat browse — unique slugs, every category has products) ──
 
-export const CATEGORIES: Category[] = [
-  {
-    slug: "men",
-    label: "Men",
-    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
-    children: [
-      {
-        slug: "sherwanis",
-        label: "Sherwanis & Bandhgalas",
-        image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
-        caption: "Ceremony wear that feels like armour, not fancy dress.",
-        children: [
-          { slug: "sherwanis-bridal", label: "Bridal", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" },
-          { slug: "sherwanis-reception", label: "Reception & Cocktail", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80" },
-        ],
-      },
-      {
-        slug: "kurtas-men",
-        label: "Designer Kurtas",
-        image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
-      },
-      {
-        slug: "nehru-jackets",
-        label: "Nehru Jackets & Bundis",
-        image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80",
-      },
-      {
-        slug: "indo-western-men",
-        label: "Indo-Western & Fusion",
-        image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80",
-      },
-      {
-        slug: "coats-men",
-        label: "Coats & Outerwear",
-        image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
-      },
-      {
-        slug: "trousers-men",
-        label: "Tailored Trousers & Dhotis",
-        image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800&q=80",
-      },
-      {
-        slug: "footwear-men",
-        label: "Handcrafted Juttis & Loafers",
-        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
-      },
-    ],
-  },
-  {
-    slug: "women",
-    label: "Women",
-    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
-    children: [
-      {
-        slug: "lehengas",
-        label: "Lehengas",
-        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-        caption: "The Lehenga Edit — hand-finished, limited to 12 pieces.",
-        children: [
-          { slug: "lehengas-bridal", label: "Bridal", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80" },
-          { slug: "lehengas-cocktail", label: "Cocktail & Reception", image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80" },
-        ],
-      },
-      {
-        slug: "sarees",
-        label: "Sarees",
-        image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80",
-        caption: "Temple silks woven for a generation that wears them differently.",
-        children: [
-          { slug: "sarees-kanjivaram", label: "Kanjivaram", image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80" },
-          { slug: "sarees-contemporary", label: "Contemporary Drape", image: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=80" },
-        ],
-      },
-      {
-        slug: "anarkalis-shararas",
-        label: "Anarkalis & Sharara Sets",
-        image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
-      },
-      {
-        slug: "kurtas-women",
-        label: "Designer Kurtas & Sets",
-        image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
-        caption: "Heritage block-prints meet modern silhouettes.",
-      },
-      {
-        slug: "gowns",
-        label: "Gowns & Cocktail Wear",
-        image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
-        caption: "Occasion dressing without the costume.",
-      },
-      {
-        slug: "coords-women",
-        label: "Indo-Western & Co-ords",
-        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
-      },
-      {
-        slug: "coats-women",
-        label: "Coats & Capes",
-        image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
-      },
-      {
-        slug: "dupattas",
-        label: "Heritage Dupattas & Stoles",
-        image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80",
-      },
-      {
-        slug: "accessories",
-        label: "Fine Accessories & Jewellery",
-        image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800&q=80",
-      },
-    ],
-  },
-  {
-    slug: "traditional",
-    label: "Traditional",
-    image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80",
-    caption: "Timeless handcrafted weaves, embroidery, and classic ceremony styles.",
-    children: [
-      { slug: "lehengas", label: "Bridal Lehengas", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80" },
-      { slug: "sarees", label: "Sarees & Handlooms", image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80" },
-      { slug: "sarees-kanjivaram", label: "Kanjivaram Temple Silks", image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80" },
-      { slug: "banarasi-weaves", label: "Banarasi & Brocades", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80" },
-      { slug: "sherwanis", label: "Sherwanis & Royal Bandhgalas", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80" },
-      { slug: "zardozi-couture", label: "Hand Embroidered Zardozi", image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80" },
-      { slug: "blockprint-heritage", label: "Jaipur Block Prints & Indigo", image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80" },
-    ],
-  },
-  {
-    slug: "limited-edition",
-    label: "Limited Edition",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-    caption: "Highly exclusive, numbered pieces with low availability.",
-    children: [
-      { slug: "lehengas-bridal", label: "Bridal Masterpieces (1 of 3)", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80" },
-      { slug: "sarees-kanjivaram", label: "24K Gold Zari Sarees", image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80" },
-      { slug: "coats-women", label: "Handwoven Opera Coats", image: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80" },
-      { slug: "technical-outerwear", label: "Avant-Garde Technical Drops", image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80" },
-      { slug: "pashmina-limited", label: "Sozni Pashmina Capsules", image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80" },
-      { slug: "runway-edits", label: "Private Atelier Runway Edits", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80" },
-    ],
-  },
-];
+export const CATEGORIES: Category[] = BROWSE_CATEGORIES;
 
 // ── Stories Data ──────────────────────────
 
@@ -1190,7 +1057,12 @@ export function getProductsByDesigner(designerId: string): Product[] {
 }
 
 export function getProductsByCategory(category: string): Product[] {
-  return PRODUCTS.filter((p) => p.category === category);
+  return PRODUCTS.filter(
+    (p) =>
+      p.category === category ||
+      p.subcategory === category ||
+      Boolean(p.tags?.includes(category))
+  );
 }
 
 export function getProductById(id: string): Product | undefined {
@@ -1207,3 +1079,14 @@ export function findCategoryBySlug(slug: string, cats: Category[] = CATEGORIES):
   }
   return undefined;
 }
+
+// ── Merge demo expansion (single catalog source for mock + seed) ──
+(() => {
+  for (let i = 0; i < DESIGNERS.length; i++) {
+    DESIGNERS[i] = withSocialCounts(DESIGNERS[i], i);
+  }
+  DESIGNERS.push(...EXPANDED_DESIGNERS);
+  PRODUCTS.push(...EXPANDED_PRODUCTS);
+  FEED_POSTS.push(...EXPANDED_FEED_POSTS);
+  STORIES.push(...EXPANDED_STORIES);
+})();

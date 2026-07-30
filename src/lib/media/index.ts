@@ -14,7 +14,6 @@ export {
 } from "./cloudinary-delivery";
 
 export { MediaPlaybackCoordinator } from "./playback-coordinator";
-export { trackMediaEvent } from "./media-analytics";
 export {
   mediaItemsToViewerMedia,
   productToViewerMedia,
@@ -47,3 +46,18 @@ export {
 export type { WatchProgressEntry } from "./watch-progress";
 
 export { getPreferredMuted, setPreferredMuted } from "./mute-preference";
+
+export {
+  resolveShoppableReel,
+  isShoppableReel,
+  hasInReelCommerce,
+  hasInReelComments,
+} from "./shoppable";
+
+export { softHaptic } from "./haptics";
+export {
+  trackMediaEvent,
+  getBufferedAnalytics,
+  readPersistedAnalytics,
+} from "./media-analytics";
+export type { AnalyticsRecord } from "./media-analytics";

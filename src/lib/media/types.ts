@@ -18,6 +18,27 @@ export type ViewerMediaItem = {
   tags?: string[];
   price?: number;
   colors?: string[];
+  /** Commerce / social chrome (continuous reels) */
+  productName?: string;
+  productDescription?: string;
+  sizes?: string[];
+  limitedEdition?: boolean;
+  designerName?: string;
+  designerHandle?: string;
+  designerLogo?: string;
+  designerVerified?: boolean;
+  caption?: string;
+  likesCount?: number;
+  commentsCount?: number;
+  likedByMe?: boolean;
+  followingDesigner?: boolean;
+  /** Shoppable trust / floating card */
+  productImage?: string | null;
+  rating?: number;
+  piecesRemaining?: number;
+  deliveryText?: string;
+  designerFollowers?: string;
+  designerBio?: string;
 };
 
 export type MediaAnalyticsEvent =
@@ -28,7 +49,21 @@ export type MediaAnalyticsEvent =
   | "media_zoom"
   | "video_play"
   | "video_pause"
-  | "video_completed";
+  | "video_completed"
+  | "reel_viewed"
+  | "reel_watch_25"
+  | "reel_watch_50"
+  | "reel_watch_100"
+  | "product_opened"
+  | "add_to_bag"
+  | "buy_now"
+  | "share"
+  | "follow"
+  | "comment"
+  | "wishlist"
+  | "designer_profile_open"
+  | "size_selected"
+  | "color_selected";
 
 export type MediaAnalyticsPayload = {
   mediaId?: string;
@@ -36,8 +71,11 @@ export type MediaAnalyticsPayload = {
   index?: number;
   productId?: string;
   postId?: string;
+  designerId?: string;
   zoomLevel?: number;
   source?: string;
+  value?: string | number;
+  watchPct?: number;
 };
 
 export type OpenMediaViewerOptions = {

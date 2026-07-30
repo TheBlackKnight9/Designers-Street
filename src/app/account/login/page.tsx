@@ -4,12 +4,34 @@ import { FormEvent, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 async function mergeGuestState() {
   try {
     await fetch("/api/cart/merge", { method: "POST" });
   } catch {
-    /* guest cart optional */
+    /* guest cookie cart optional */
+  }
+  // Also merge localStorage guest cart (API-off / fallback path)
+  try {
+    const raw = localStorage.getItem("ds-cart");
+    const lines: { productId: string; size: string; quantity?: number }[] =
+      raw ? JSON.parse(raw) : [];
+    for (const line of lines) {
+      if (!line?.productId || !line?.size) continue;
+      await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: line.productId,
+          size: line.size,
+          quantity: line.quantity || 1,
+        }),
+      }).catch(() => undefined);
+    }
+    if (lines.length) localStorage.removeItem("ds-cart");
+  } catch {
+    /* ignore */
   }
   try {
     const raw = localStorage.getItem("ds-wishlist");
@@ -30,7 +52,7 @@ async function mergeGuestState() {
 function BuyerLoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/profile";
+  const next = safeInternalPath(params.get("next"), "/profile");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

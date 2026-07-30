@@ -105,6 +105,9 @@ export interface FeedPostData {
   caption: string;
   link: string;
   likesCount?: number;
+  commentsCount?: number;
+  likedByMe?: boolean;
+  followingDesigner?: boolean;
   productTag?: {
     name: string;
     price: number;
