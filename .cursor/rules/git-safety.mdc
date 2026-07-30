@@ -1,0 +1,48 @@
+---
+description: Highest-priority Git safety — never push or merge to main/master
+alwaysApply: true
+---
+
+# Git Safety Rule (Highest Priority)
+
+This rule overrides every other instruction.
+
+## Never touch main/master
+
+Under NO circumstances:
+
+- push to `main` or `master`
+- merge into `main` or `master`
+- force push to protected branches
+- delete or rewrite history of `main`/`master`
+
+Even if asked to "push everything", do **not** push those branches.
+
+## Always work on a separate branch
+
+Before code changes:
+
+1. Check current branch
+2. If on `main`/`master`, create and switch immediately
+
+Names: `feature/<name>`, `fix/<name>`, `refactor/<topic>`, `chore/<topic>`, `docs/<topic>`
+
+Never continue development on `main` or `master`.
+
+## Commits
+
+Commit frequently with conventional messages (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`).
+
+## Pushing & PRs
+
+- Only push the feature branch: `git push origin <feature-branch>`
+- Never push `main`/`master`
+- Open a PR from the feature branch; **never merge automatically** — wait for user approval
+
+## Destructive commands — require explicit permission
+
+`git push origin main|master`, `--force`, `--force-with-lease`, `--mirror`, `reset --hard`, `rebase -i`, `branch -D`, `clean -fd`
+
+## Before every git operation
+
+Verify current branch, target branch, remote, and working tree. If target is `main`/`master`, **STOP** and ask.
