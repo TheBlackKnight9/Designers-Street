@@ -46,7 +46,8 @@ NEXT_PUBLIC_USE_API=false
 |----------|---------|-----------|-----------------|------------|
 | `DATABASE_URL` | Postgres URI for Prisma | When `USE_DATABASE=true` | Project Settings → Database → URI | Prisma / `src/server/db.ts` |
 | `NEXT_PUBLIC_SUPABASE_URL` | API URL | For Auth clients | Project Settings → API | `src/server/auth/supabase.ts` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publishable/anon key | For Auth clients | Project Settings → API | `src/server/auth/supabase.ts` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Modern publishable key (preferred) | For Auth clients | Project Settings → API | `src/server/auth/supabase.ts` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Legacy anon JWT (fallback) | Optional if publishable set | Project Settings → API | same |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server admin key | Server tasks only | Project Settings → API → `service_role` | `createSupabaseServiceClient` |
 
 Project **desginer ef** ref: `jwqpqlifszfveuldpujn`  

@@ -40,4 +40,5 @@ export {
   createSupabaseBrowserClient,
   createSupabaseServiceClient,
   isSupabaseConfigured,
+  isSupabaseServiceConfigured,
 } from "@/server/auth/supabase";

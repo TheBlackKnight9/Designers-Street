@@ -1,6 +1,9 @@
 import { checkDatabaseConnection } from "@/server/db";
 import { isDatabaseEnabled, getAppEnv } from "@/server/utils/env";
-import { isSupabaseConfigured } from "@/server/auth/supabase";
+import {
+  isSupabaseConfigured,
+  isSupabaseServiceConfigured,
+} from "@/server/auth/supabase";
 import { isCloudinaryConfigured } from "@/server/media/cloudinary";
 import { NextResponse } from "next/server";
 
@@ -29,6 +32,7 @@ export async function GET() {
       database,
       useDatabase: wantsDb,
       supabaseConfigured: isSupabaseConfigured(),
+      supabaseServiceConfigured: isSupabaseServiceConfigured(),
       cloudinaryConfigured: isCloudinaryConfigured(),
       environment: getAppEnv(),
       timestamp: new Date().toISOString(),
