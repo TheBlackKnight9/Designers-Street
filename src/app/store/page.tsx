@@ -5,15 +5,18 @@ import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { formatPrice } from "@/lib/mock-data";
+import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { useData } from "@/context/DataContext";
 import { useCart } from "@/context/CartContext";
+import { useStorefrontProducts } from "@/hooks/useStorefrontCatalog";
 
 type SortOption = "default" | "price-low-high" | "price-high-low" | "customer-rating";
 type QuickFilterOption = "all" | "fast-delivery" | "best-seller" | "lowest-price" | "limited-edition";
 
 export default function StorePage() {
-  const { products } = useData();
+  const { products: ctxProducts } = useData();
+  const catalog = useStorefrontProducts({ limit: 100, filters: { sort: "newest" } });
+  const products = catalog.enabled ? catalog.products : ctxProducts;
   const { itemCount } = useCart();
 
   // States
@@ -56,7 +59,7 @@ export default function StorePage() {
     }
 
     return result;
-  }, [sortBy, selectedSize, quickFilter]);
+  }, [products, sortBy, selectedSize, quickFilter]);
 
   const uniqueSizes = useMemo(() => {
     const sizes = new Set<string>();
@@ -225,7 +228,13 @@ export default function StorePage() {
         </div>
 
         {/* Product Grid */}
-        {processedProducts.length > 0 ? (
+        {catalog.enabled && (catalog.loading || catalog.error) ? (
+          <CatalogStatus
+            loading={catalog.loading}
+            error={catalog.error}
+            onRetry={catalog.reload}
+          />
+        ) : processedProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-3 gap-y-5 p-4 bg-[#FAFAFA]">
             {processedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />

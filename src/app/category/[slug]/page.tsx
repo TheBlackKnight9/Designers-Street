@@ -6,9 +6,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { PRODUCTS, findCategoryBySlug, formatPrice } from "@/lib/mock-data";
+import { CatalogStatus } from "@/components/ui/CatalogStatus";
+import { findCategoryBySlug } from "@/lib/mock-data";
 import { useData } from "@/context/DataContext";
 import { useCart } from "@/context/CartContext";
+import {
+  useStorefrontProducts,
+  useStorefrontCategories,
+} from "@/hooks/useStorefrontCatalog";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,9 +25,19 @@ type QuickFilterOption = "all" | "fast-delivery" | "best-seller" | "lowest-price
 export default function CategoryPage({ params }: PageProps) {
   const router = useRouter();
   const { slug } = use(params);
-  const { products: allProducts } = useData();
+  const { products: ctxProducts } = useData();
+  const catalog = useStorefrontProducts({
+    limit: 100,
+    filters: { category: slug, sort: "newest" },
+  });
+  const catalogCategories = useStorefrontCategories();
+  const allProducts = catalog.enabled ? catalog.products : ctxProducts;
   const { itemCount } = useCart();
-  const category = findCategoryBySlug(slug);
+  const categoryTree =
+    catalogCategories.enabled && catalogCategories.categories.length > 0
+      ? catalogCategories.categories
+      : undefined;
+  const category = findCategoryBySlug(slug, categoryTree);
 
   // States
   const [searchOpen, setSearchOpen] = useState(false);
@@ -36,6 +51,19 @@ export default function CategoryPage({ params }: PageProps) {
 
   // Filter products matching this category or subcategory
   const baseProducts = useMemo(() => {
+    if (catalog.enabled) {
+      // API already filtered by category param; keep client extras for special slugs
+      const s = slug.toLowerCase();
+      if (s === "traditional" || s === "limited-edition") {
+        return allProducts.filter((p) => {
+          if (s === "traditional") {
+            return p.tags?.includes("traditional") || !!p.craftOrigin || !!p.technique;
+          }
+          return !!p.limitedEdition || (p.piecesRemaining !== undefined && p.piecesRemaining > 0);
+        });
+      }
+      return allProducts;
+    }
     const s = slug.toLowerCase();
     return allProducts.filter((p) => {
       if (s === "traditional") {
@@ -54,7 +82,7 @@ export default function CategoryPage({ params }: PageProps) {
         (s.includes("cocktail") && p.occasion === "Cocktail")
       );
     });
-  }, [slug, allProducts]);
+  }, [slug, allProducts, catalog.enabled]);
 
   // Apply filters and sort
   const processedProducts = useMemo(() => {
@@ -300,7 +328,13 @@ export default function CategoryPage({ params }: PageProps) {
         </div>
 
         {/* Product Grid */}
-        {processedProducts.length > 0 ? (
+        {catalog.enabled && (catalog.loading || catalog.error) ? (
+          <CatalogStatus
+            loading={catalog.loading}
+            error={catalog.error}
+            onRetry={catalog.reload}
+          />
+        ) : processedProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-3 gap-y-5 p-4 bg-[#FAFAFA]">
             {processedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />

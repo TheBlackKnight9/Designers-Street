@@ -130,6 +130,7 @@ model DesignerHouse {
   stories               Story[]
   follows               Follow[]
   customizationRequests CustomizationRequest[]
+  mediaAssets           MediaAsset[]
 
   @@map("designer_houses")
 }
@@ -170,6 +171,7 @@ model Product {
   orderItems             OrderItem[]
   customizationRequests  CustomizationRequest[]
   wishlistItems          WishlistItem[]
+  mediaAssets            MediaAsset[]
 
   @@index([designerId])
   @@index([category])
@@ -217,6 +219,7 @@ model Post {
   designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
   likes    Like[]
   comments Comment[]
+  mediaAssets MediaAsset[]
 
   @@index([designerId])
   @@index([createdAt])
@@ -232,6 +235,7 @@ model Story {
 
   designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
   slides   StorySlide[]
+  mediaAssets MediaAsset[]
 
   @@index([designerId])
   @@map("stories")
@@ -253,19 +257,58 @@ model StorySlide {
   @@map("story_slides")
 }
 
+enum MediaOwnerType {
+  product
+  post
+  designer
+  story
+  unattached
+}
+
 model MediaAsset {
-  id           String    @id @default(cuid())
+  id           String         @id @default(cuid())
+  /// Optional FKs — attach media to catalog / feed / profile / stories without later schema churn
+  productId    String?        @map("product_id")
+  postId       String?        @map("post_id")
+  designerId   String?        @map("designer_id")
+  storyId      String?        @map("story_id")
+  ownerType    MediaOwnerType @default(unattached) @map("owner_type")
+  /// image | video (API field name: type)
+  kind         MediaKind      @default(image)
+  /// Cloudinary public_id (API: cloudinaryPublicId)
+  publicId     String         @map("public_id")
+  /// HTTPS delivery URL (API: secureUrl)
   url          String
-  publicId     String?   @map("public_id")
-  kind         MediaKind @default(image)
   width        Int?
   height       Int?
-  durationMs   Int?      @map("duration_ms")
-  uploadedById String?   @map("uploaded_by")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  /// Duration in milliseconds for video (API: duration)
+  durationMs   Int?           @map("duration_ms")
+  format       String?
+  bytes        Int?
+  folder       String?
+  /// Accessible caption / alt text (nullable)
+  altText      String?        @map("alt_text")
+  /// Preview frame URL (esp. videos); nullable for images
+  thumbnailUrl String?        @map("thumbnail_url")
+  /// Gallery / carousel order within an owner (multiple media per product/post)
+  displayOrder Int            @default(0) @map("display_order")
+  uploadedById String?        @map("uploaded_by")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
 
-  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  product    Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
+  post       Post?          @relation(fields: [postId], references: [id], onDelete: SetNull)
+  designer   DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  story      Story?         @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  uploadedBy User?          @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
 
+  /// Non-unique — many media rows per product/post/designer/story
+  @@index([productId, displayOrder])
+  @@index([postId, displayOrder])
+  @@index([designerId, displayOrder])
+  @@index([storyId, displayOrder])
+  @@index([ownerType])
+  @@index([kind])
   @@index([uploadedById])
   @@map("media_assets")
 }

@@ -10,6 +10,8 @@ import { FEED_POSTS } from "@/lib/mock-data";
 import { useData } from "@/context/DataContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
+import { useOpenMediaViewer } from "@/context/MediaViewerContext";
+import { feedPostToViewerMedia } from "@/lib/media";
 
 interface PageProps {
   params: Promise<{ handle: string }>;
@@ -29,6 +31,7 @@ export default function DesignerProfilePage({ params }: PageProps) {
 
   const { isWished, toggle: toggleWishlist } = useWishlist();
   const { addItem: addToCart } = useCart();
+  const { openMediaViewer } = useOpenMediaViewer();
 
   if (!designer) {
     return (
@@ -223,17 +226,35 @@ export default function DesignerProfilePage({ params }: PageProps) {
                   >
                     {/* High-res Image */}
                     <div className="relative aspect-[4/5] w-full bg-[#D5DBE5]">
-                      <Image
-                        src={post.image}
-                        alt={post.caption}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-103"
-                        sizes="(max-width: 640px) 50vw, 33vw"
-                      />
+                      <button
+                        type="button"
+                        className="absolute inset-0 block w-full h-full cursor-zoom-in"
+                        onClick={() => {
+                          const media = feedPostToViewerMedia(post);
+                          const videoIdx = media.findIndex(
+                            (m) => m.type === "video"
+                          );
+                          openMediaViewer({
+                            media,
+                            initialIndex: videoIdx >= 0 ? videoIdx : 0,
+                            continuous: videoIdx >= 0 ? true : undefined,
+                            source: "designer-profile",
+                          });
+                        }}
+                        aria-label="Open media viewer"
+                      >
+                        <Image
+                          src={post.image}
+                          alt={post.caption}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-103 pointer-events-none"
+                          sizes="(max-width: 640px) 50vw, 33vw"
+                        />
+                      </button>
 
                       {/* Tag pill overlay */}
                       {post.tag && (
-                        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-black/70 backdrop-blur-md text-white rounded-full">
+                        <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-black/70 backdrop-blur-md text-white rounded-full pointer-events-none">
                           <span className="font-sans text-[8px] font-bold uppercase tracking-wider">
                             {post.tag}
                           </span>

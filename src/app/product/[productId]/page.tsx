@@ -1,15 +1,23 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useData } from "@/context/DataContext";
+import { useOpenMediaViewer } from "@/context/MediaViewerContext";
+import { productToViewerMedia } from "@/lib/media";
 import { formatPrice } from "@/lib/mock-data";
+import {
+  useStorefrontProduct,
+  useStorefrontProducts,
+  useStorefrontDesigners,
+} from "@/hooks/useStorefrontCatalog";
 
 interface PageProps {
   params: Promise<{ productId: string }>;
@@ -17,17 +25,90 @@ interface PageProps {
 
 export default function ProductDetailPage({ params }: PageProps) {
   const { productId } = use(params);
-  const { products, designers } = useData();
+  const { products: ctxProducts, designers: ctxDesigners } = useData();
+  const catalogProduct = useStorefrontProduct(productId);
+  const catalogList = useStorefrontProducts({ limit: 24 });
+  const catalogDesigners = useStorefrontDesigners();
   const { addItem } = useCart();
   const { isWished, toggle } = useWishlist();
+  const { openMediaViewer } = useOpenMediaViewer();
 
-  const product = products.find((p) => p.id === productId);
-  const designer = product ? designers.find((d) => d.id === product.designerId || d.name === product.designerName) : null;
+  const products = catalogList.enabled ? catalogList.products : ctxProducts;
+  const designers = catalogDesigners.enabled
+    ? catalogDesigners.designers
+    : ctxDesigners;
+  const product = catalogProduct.enabled
+    ? catalogProduct.product
+    : ctxProducts.find((p) => p.id === productId) ?? null;
+  const designer = product
+    ? designers.find((d) => d.id === product.designerId || d.name === product.designerName) ?? null
+    : null;
 
   const [selectedSize, setSelectedSize] = useState("");
   const [activeImage, setActiveImage] = useState(0);
   const [openSection, setOpenSection] = useState<string | null>("story");
   const [error, setError] = useState("");
+
+  const openGallery = useCallback(
+    (index: number) => {
+      if (!product) return;
+      const media = productToViewerMedia(product);
+      if (!media.length) return;
+      openMediaViewer({
+        media,
+        initialIndex: index,
+        syncUrl: true,
+        continuous: false,
+        source: "product-detail",
+      });
+    },
+    [openMediaViewer, product]
+  );
+
+  const openLookbook = useCallback(() => {
+    if (!product) return;
+    const media = productToViewerMedia(product);
+    const firstVideo = media.findIndex((m) => m.type === "video");
+    if (firstVideo < 0) return;
+    openMediaViewer({
+      media,
+      initialIndex: firstVideo,
+      continuous: true,
+      source: "product-detail-video",
+    });
+  }, [openMediaViewer, product]);
+
+  // Restore viewer from ?media=N on refresh
+  useEffect(() => {
+    if (!product?.images?.length) return;
+    const raw = new URLSearchParams(window.location.search).get("media");
+    if (raw == null) return;
+    const i = Number(raw);
+    if (!Number.isFinite(i) || i < 0 || i >= product.images.length) return;
+    setActiveImage(i);
+    openGallery(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
+
+  if (catalogProduct.enabled && catalogProduct.loading) {
+    return (
+      <>
+        <TopBar />
+        <CatalogStatus loading skeletonCount={1} />
+        <BottomNav />
+      </>
+    );
+  }
+
+  if (catalogProduct.enabled && catalogProduct.error) {
+    return (
+      <>
+        <TopBar />
+        <CatalogStatus error={catalogProduct.error} onRetry={catalogProduct.reload} />
+        <BottomNav />
+      </>
+    );
+  }
 
   if (!product) {
     return (
@@ -81,23 +162,52 @@ export default function ProductDetailPage({ params }: PageProps) {
       <main className="min-h-screen pb-4">
         {/* Image Carousel */}
         <div className="relative w-full aspect-[3/4] bg-[#F0F0F0]">
-          <Image
-            src={product.images[activeImage]}
-            alt={product.name}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+          <button
+            type="button"
+            className="absolute inset-0 block w-full h-full cursor-zoom-in"
+            onClick={() => openGallery(activeImage)}
+            aria-label="Open media viewer"
+          >
+            <Image
+              src={product.images[activeImage]}
+              alt={product.name}
+              fill
+              className="object-cover pointer-events-none"
+              priority
+              sizes="100vw"
+            />
+          </button>
+
+          {product.videos && product.videos.length > 0 ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openLookbook();
+              }}
+              className="absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-full bg-black/75 px-3 py-2 text-white backdrop-blur-sm"
+              aria-label="Play lookbook video"
+            >
+              <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M8 5.14v14l11-7-11-7z" />
+              </svg>
+              <span className="font-sans text-[10px] font-bold uppercase tracking-wider">
+                Lookbook
+              </span>
+            </button>
+          ) : null}
 
           {/* Image dots */}
           {product.images.length > 1 && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5">
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
               {product.images.map((_, i) => (
                 <button
                   key={i}
                   type="button"
-                  onClick={() => setActiveImage(i)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveImage(i);
+                  }}
                   className={`w-1.5 h-1.5 rounded-full transition-all ${
                     i === activeImage ? "bg-white w-4" : "bg-white/50"
                   }`}
@@ -109,7 +219,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
           {/* Limited badge */}
           {product.piecesRemaining && (
-            <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full">
+            <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full z-10 pointer-events-none">
               <span className="limited-badge text-[#2B2B2B]">
                 Limited — {product.piecesRemaining} remaining
               </span>

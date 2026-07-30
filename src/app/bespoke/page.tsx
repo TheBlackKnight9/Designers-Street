@@ -59,7 +59,7 @@ export default function BespokePage() {
         {/* Hero */}
         <div className="relative w-full aspect-[16/9] bg-[#F0F0F0]">
           <Image
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1600&q=80"
+            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"
             alt="Bespoke atelier"
             fill
             className="object-cover"

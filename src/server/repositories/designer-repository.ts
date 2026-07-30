@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { toDesignerHouse } from "@/server/utils/mappers";
 import type { DesignerHouse } from "@/lib/types";
+import type { Prisma } from "@prisma/client";
 
 export class DesignerRepository {
   async findAllActive(): Promise<DesignerHouse[]> {
@@ -21,5 +22,14 @@ export class DesignerRepository {
       where: { handle: { equals: handle, mode: "insensitive" } },
     });
     return row ? toDesignerHouse(row) : null;
+  }
+
+  async findByOwnerUserId(ownerUserId: string) {
+    return prisma.designerHouse.findUnique({ where: { ownerUserId } });
+  }
+
+  async update(id: string, data: Prisma.DesignerHouseUpdateInput) {
+    const row = await prisma.designerHouse.update({ where: { id }, data });
+    return toDesignerHouse(row);
   }
 }

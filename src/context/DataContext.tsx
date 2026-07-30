@@ -36,7 +36,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const savedPromo = localStorage.getItem("ds_promo");
 
       if (savedDesigners) setDesigners(JSON.parse(savedDesigners));
-      if (savedProducts) setProducts(JSON.parse(savedProducts));
+      if (savedProducts) {
+        const parsed = JSON.parse(savedProducts) as Product[];
+        // Refresh images/videos from seed so broken Unsplash URLs in old caches are fixed
+        setProducts(
+          parsed.map((p) => {
+            const seed = initialProducts.find((s) => s.id === p.id);
+            if (!seed) return p;
+            return {
+              ...p,
+              images: seed.images?.length ? seed.images : p.images,
+              // Always refresh videos from seed so new lookbook clips land for everyone
+              videos: seed.videos?.length ? seed.videos : p.videos,
+            };
+          })
+        );
+      }
       if (savedPromo) setPromoBanner(savedPromo);
     } catch (e) {
       console.error("Failed to load store data from localStorage", e);

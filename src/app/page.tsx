@@ -7,8 +7,14 @@ import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { CATEGORIES } from "@/lib/mock-data";
 import { useData } from "@/context/DataContext";
+import {
+  useStorefrontProducts,
+  useStorefrontCategories,
+  useStorefrontDesigners,
+} from "@/hooks/useStorefrontCatalog";
 
 // Hero slides for the visual hero section
 const HERO_SLIDES = [
@@ -16,7 +22,7 @@ const HERO_SLIDES = [
     id: "slide-1",
     title: "NEW SEASON DROPS",
     subtitle: "Couture silhouettes & limited edition ready-to-wear",
-    image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&q=80",
     ctaLabel: "EXPLORE COLLECTION",
     ctaLink: "/category/lehengas",
     tag: "Spring / Summer '26",
@@ -25,7 +31,7 @@ const HERO_SLIDES = [
     id: "slide-2",
     title: "BRIDAL & TROUSSEAU '26",
     subtitle: "Hand-embroidered zardozi & 24K gold zari temple weaves",
-    image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1600&q=80",
     ctaLabel: "VIEW BRIDAL EDIT",
     ctaLink: "/category/sarees",
     tag: "Masterpiece Series",
@@ -34,7 +40,7 @@ const HERO_SLIDES = [
     id: "slide-3",
     title: "BESPOKE & CUSTOM",
     subtitle: "White-glove made-to-measure by India's finest ateliers",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80",
     ctaLabel: "BOOK CONSULTATION",
     ctaLink: "/bespoke",
     tag: "Made to Measure",
@@ -57,7 +63,7 @@ const FEATURED_WEEK = [
     id: "feat-2",
     title: "LEHENGA COUTURE",
     subtitle: "Midnight navy raw silk with hand-zardozi",
-    image: "https://images.unsplash.com/photo-1610117238813-27404126b014?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
     badge: "Limited Edition",
     link: "/category/lehengas",
     colSpan: "col-span-12 sm:col-span-6",
@@ -67,7 +73,7 @@ const FEATURED_WEEK = [
     id: "feat-3",
     title: "TEMPLE SILK SAREES",
     subtitle: "Kanchipuram handlooms with gold zari borders",
-    image: "https://images.unsplash.com/photo-1610031340484-485bb87b2733?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80",
     badge: "Heritage Master",
     link: "/category/sarees",
     colSpan: "col-span-12 sm:col-span-7",
@@ -86,7 +92,18 @@ const FEATURED_WEEK = [
 ];
 
 export default function HomePage() {
-  const { products, designers, promoBanner } = useData();
+  const { products: ctxProducts, designers: ctxDesigners, promoBanner } = useData();
+  const catalogProducts = useStorefrontProducts({ limit: 24 });
+  const catalogCategories = useStorefrontCategories();
+  const catalogDesigners = useStorefrontDesigners();
+
+  const products = catalogProducts.enabled ? catalogProducts.products : ctxProducts;
+  const designers = catalogDesigners.enabled ? catalogDesigners.designers : ctxDesigners;
+  const categories =
+    catalogCategories.enabled && catalogCategories.categories.length > 0
+      ? catalogCategories.categories
+      : CATEGORIES;
+
   const [activeHero, setActiveHero] = useState(0);
   const [productFilter, setProductFilter] = useState<"all" | "women" | "men" | "limited">("all");
 
@@ -107,6 +124,9 @@ export default function HomePage() {
     if (productFilter === "limited") return p.limitedEdition;
     return true;
   }).slice(0, 6);
+
+  const arrivalsLoading = catalogProducts.enabled && catalogProducts.loading;
+  const arrivalsError = catalogProducts.enabled ? catalogProducts.error : null;
 
   return (
     <>
@@ -193,7 +213,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-1">
-            {CATEGORIES.flatMap((c) => (c.children ? c.children : [c])).slice(0, 8).map((cat) => (
+            {categories.flatMap((c) => (c.children ? c.children : [c])).slice(0, 8).map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/category/${cat.slug}`}
@@ -312,11 +332,21 @@ export default function HomePage() {
           </div>
 
           {/* 2-Column Product Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {newArrivals.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {arrivalsLoading || arrivalsError || newArrivals.length === 0 ? (
+            <CatalogStatus
+              loading={arrivalsLoading}
+              error={arrivalsError}
+              empty={!arrivalsLoading && !arrivalsError && newArrivals.length === 0}
+              emptyMessage="No new arrivals yet."
+              onRetry={catalogProducts.reload}
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {newArrivals.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* DESIGNER SPOTLIGHT Shelf */}

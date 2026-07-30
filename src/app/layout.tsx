@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { DataProvider } from "@/context/DataContext";
+import { MediaViewerProvider } from "@/context/MediaViewerContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -44,7 +45,7 @@ export default function RootLayout({
         <DataProvider>
           <CartProvider>
             <WishlistProvider>
-              {children}
+              <MediaViewerProvider>{children}</MediaViewerProvider>
             </WishlistProvider>
           </CartProvider>
         </DataProvider>

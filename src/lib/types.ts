@@ -35,6 +35,8 @@ export interface Product {
   subcategory?: string;       // e.g. "bridal", "cocktail"
   gender: "men" | "women" | "unisex";
   images: string[];
+  /** Optional lookbook / runway clips for the Universal Media Viewer */
+  videos?: string[];
   sizes: string[];
   description: string;
   story?: string;
@@ -96,6 +98,10 @@ export interface FeedPostData {
   designerVerified: boolean;
   tag?: string;               // "New Drop", "Exclusive Edit", "Private Sale"
   image: string;
+  /** Optional lookbook video — opens in Universal Media Viewer */
+  videoUrl?: string;
+  /** When true, post is video-only (viewer has no image slides; card uses 9:16) */
+  videoOnly?: boolean;
   caption: string;
   link: string;
   likesCount?: number;

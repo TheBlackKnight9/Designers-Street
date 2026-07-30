@@ -37,6 +37,8 @@ NEXT_PUBLIC_USE_API=false
 | `NEXT_PUBLIC_APP_URL` | Origin for server fetch to `/api` | No | `http://localhost:3000` | `src/lib/api/catalog.ts` |
 | `NEXT_PUBLIC_USE_API` | Façade uses `/api/*` vs mock | No | `false` | `src/lib/api/catalog.ts` |
 | `USE_DATABASE` | Services use Prisma vs mock | No | `false` | `src/server/utils/env.ts` |
+| `PUBLIC_API_RATE_LIMIT_MAX` | Max public catalog requests per IP per window | No | `120` | `src/server/utils/rate-limit.ts` |
+| `PUBLIC_API_RATE_LIMIT_WINDOW_SEC` | Rate-limit window (seconds) | No | `60` | same |
 
 ---
 
@@ -62,10 +64,16 @@ URL: `https://jwqpqlifszfveuldpujn.supabase.co`
 | `CLOUDINARY_CLOUD_NAME` | Cloud name | For media util | `src/server/media/cloudinary.ts` |
 | `CLOUDINARY_API_KEY` | API key | For media util | same |
 | `CLOUDINARY_API_SECRET` | API secret | For media util | same |
+| `MEDIA_MAX_IMAGE_MB` | Max image size (MB) | No (default 10) | `media-validation.ts` |
+| `MEDIA_MAX_VIDEO_MB` | Max video size (MB) | No (default 100) | same |
+| `MEDIA_MAX_IMAGES_PER_PRODUCT` | Gallery image cap | No (default 10) | dashboard product service |
+| `MEDIA_MAX_VIDEOS_PER_PRODUCT` | Gallery video cap | No (default 3) | same |
 
----
+### Designer dashboard (Phase 3)
 
-## Browser storage (not env)
+Requires `USE_DATABASE=true`, valid `DATABASE_URL`, Supabase Auth URL/keys, and Cloudinary for uploads.
+
+Routes: `/login`, `/signup`, `/dashboard/*` (middleware-protected).
 
 | Key | Purpose |
 |-----|---------|

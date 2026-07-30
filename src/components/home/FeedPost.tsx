@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
+import { useOpenMediaViewer } from "@/context/MediaViewerContext";
 import type { FeedPostData } from "@/lib/types";
+import { feedPostToViewerMedia } from "@/lib/media";
 import { formatPrice } from "@/lib/mock-data";
 
 interface FeedPostProps {
@@ -15,6 +17,7 @@ interface FeedPostProps {
 export function FeedPost({ post }: FeedPostProps) {
   const { isWished, toggle: toggleWishlist } = useWishlist();
   const { addItem: addToCart } = useCart();
+  const { openMediaViewer } = useOpenMediaViewer();
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -23,6 +26,7 @@ export function FeedPost({ post }: FeedPostProps) {
   const [showTagPopover, setShowTagPopover] = useState(true);
   const [addedToast, setAddedToast] = useState(false);
   const lastTapRef = useRef(0);
+  const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const wished = isWished(post.id) || (post.productTag?.productId ? isWished(post.productTag.productId) : false);
 
@@ -50,10 +54,28 @@ export function FeedPost({ post }: FeedPostProps) {
   }, [isLiked]);
 
   const handleImageTap = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      e.preventDefault();
+      if (singleTapTimer.current) {
+        clearTimeout(singleTapTimer.current);
+        singleTapTimer.current = null;
+      }
       handleDoubleTap();
+    } else {
+      singleTapTimer.current = setTimeout(() => {
+        const media = feedPostToViewerMedia(post);
+        const videoIdx = media.findIndex((m) => m.type === "video");
+        // Any post with a video enters continuous discovery on that video
+        openMediaViewer({
+          media,
+          initialIndex: videoIdx >= 0 ? videoIdx : 0,
+          continuous: videoIdx >= 0 ? true : undefined,
+          source: "feed",
+        });
+        singleTapTimer.current = null;
+      }, 280);
     }
     lastTapRef.current = now;
   };
@@ -134,19 +156,50 @@ export function FeedPost({ post }: FeedPostProps) {
         </div>
       </div>
 
-      {/* Full-bleed Editorial Image */}
-      <div className="relative w-full aspect-[4/5] bg-[#D5DBE5] group">
-        <Link href={post.link} className="block w-full h-full relative">
-          <div onClick={handleImageTap} className="w-full h-full relative">
+      {/* Full-bleed Editorial Image / Vertical video */}
+      <div
+        className={`relative w-full bg-[#D5DBE5] group ${
+          post.videoOnly ? "aspect-[9/16] max-h-[78vh] mx-auto" : "aspect-[4/5]"
+        }`}
+      >
+        <button
+          type="button"
+          onClick={handleImageTap}
+          className="block w-full h-full relative cursor-zoom-in"
+          aria-label={
+            post.videoUrl || post.videoOnly
+              ? "Play lookbook video"
+              : "Open media viewer"
+          }
+        >
+          {post.videoOnly && post.videoUrl ? (
+            <video
+              src={post.videoUrl}
+              poster={post.image}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              muted
+              loop
+              playsInline
+              autoPlay
+              preload="metadata"
+            />
+          ) : (
             <Image
               src={post.image}
               alt={post.caption}
               fill
-              className="object-cover"
+              className="object-cover pointer-events-none"
               sizes="100vw"
             />
-          </div>
-        </Link>
+          )}
+          {(post.videoUrl || post.videoOnly) ? (
+            <span className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/65 text-white pointer-events-none">
+              <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M8 5.14v14l11-7-11-7z" />
+              </svg>
+            </span>
+          ) : null}
+        </button>
 
         {/* Product Tag Overlay (Interactive Pill on Image) */}
         {post.productTag && showTagPopover && (

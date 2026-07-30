@@ -5,11 +5,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
+import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { CATEGORIES } from "@/lib/mock-data";
+import { useStorefrontCategories } from "@/hooks/useStorefrontCatalog";
 
 export default function CategoryIndexPage() {
   // Track expanded state for each main category slug (hidden by default)
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+  const catalog = useStorefrontCategories();
+  const categories =
+    catalog.enabled && catalog.categories.length > 0
+      ? catalog.categories
+      : CATEGORIES;
 
   const toggleCategory = (slug: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,8 +42,16 @@ export default function CategoryIndexPage() {
         </div>
 
         {/* Categories Stack */}
+        {catalog.enabled && (catalog.loading || catalog.error) ? (
+          <CatalogStatus
+            loading={catalog.loading}
+            error={catalog.error}
+            onRetry={catalog.reload}
+            skeletonCount={3}
+          />
+        ) : (
         <div className="px-4 space-y-5 pb-6">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const isExpanded = !!expandedMap[cat.slug];
             const hasChildren = cat.children && cat.children.length > 0;
 
@@ -113,6 +128,7 @@ export default function CategoryIndexPage() {
             );
           })}
         </div>
+        )}
       </main>
 
       <BottomNav />

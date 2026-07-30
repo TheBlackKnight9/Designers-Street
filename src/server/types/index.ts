@@ -1,4 +1,19 @@
-export type { DesignerHouse, Product, Category, FeedPostData, StoryItem, StorySlide, CartItem, BespokeConfig } from "@/lib/types";
+export type {
+  DesignerHouse,
+  Product,
+  Category,
+  FeedPostData,
+  StoryItem,
+  StorySlide,
+  CartItem,
+  BespokeConfig,
+} from "@/lib/types";
+
+export type {
+  MediaRecord,
+  MediaType,
+  CreateMediaInput,
+} from "@/server/types/media";
 
 export type UserRole = "buyer" | "designer" | "admin";
 

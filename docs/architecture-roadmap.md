@@ -407,31 +407,19 @@ For each feature: **where it lives**, **what to reuse**, **what to extend**, **w
 
 ## 6. Facebook-Style Image Viewer
 
-**Fit:** New overlay component modeled on **`StoryViewer`** (fullscreen, scroll lock, high z-index).
+> **Superseded by Phase 5 — [Universal Media Experience](./phase-5.md).**  
+> Do not ship a Feed-only or PDP-only image overlay. Use one `MediaViewer` (image + video primitives, `media[]` + index, URL sync, a11y, virtualized thumbs, progressive loading).
 
-| Layer | Approach |
-|-------|----------|
-| Component | e.g. `components/media/ImageViewer.tsx` (or `components/home/`) |
-| Open from | `FeedPost` image tap, PDP gallery, designer post grid |
-| UX | Swipe/dots between `images[]`; close; optional product tag reuse from FeedPost |
-| Styling | Dark scrim like StoryViewer; typography/buttons still sans + charcoal CTAs where needed |
-
-**Do not:** Navigate to a separate `/viewer` page unless deep-linking is required; overlay matches existing story pattern.
+**Historical note:** Original fit was an overlay modeled on `StoryViewer`. That intent remains, but scope is now the app-wide media system.
 
 ---
 
 ## 7. Fullscreen Vertical Video Viewer
 
-**Fit:** Sibling of StoryViewer — vertical/Reels-like — used by feed video posts.
+> **Superseded by Phase 5 — [Universal Media Experience](./phase-5.md).**  
+> Vertical / Reels-like playback belongs in `VideoViewer` inside the same `MediaViewer` shell (separate controls/gestures from images). Do not create a second standalone video app.
 
-| Layer | Approach |
-|-------|----------|
-| Component | e.g. `components/media/VerticalVideoViewer.tsx` |
-| Trigger | Feed video posts / story video slides |
-| Data | `videoUrl` on post/slide |
-| Chrome | Progress/close patterns inspired by StoryViewer; shop CTAs can reuse product tag + `useCart` |
-
-**Do not:** Embed a third-party short-video SDK that replaces FeedPost layout.
+**Historical note:** Sibling of StoryViewer for feed video posts — now a mode/primitive of the universal viewer, not a duplicate stack.
 
 ---
 

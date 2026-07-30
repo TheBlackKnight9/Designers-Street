@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useState, useRef, useCallback } from "react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
+import { useOpenMediaViewer } from "@/context/MediaViewerContext";
 import type { Product } from "@/lib/types";
+import { productToViewerMedia } from "@/lib/media";
 import { formatPrice } from "@/lib/mock-data";
 
 interface ProductCardProps {
@@ -17,6 +19,7 @@ interface ProductCardProps {
 export function ProductCard({ product, className = "", id }: ProductCardProps) {
   const { isWished, toggle } = useWishlist();
   const { addItem } = useCart();
+  const { openMediaViewer } = useOpenMediaViewer();
   const wished = isWished(product.id);
   const [showHeart, setShowHeart] = useState(false);
   const lastTapRef = useRef(0);
@@ -67,6 +70,39 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
             />
           </div>
         </Link>
+
+        {/* Expand → Universal Media Viewer (Home / Store / Designer shop) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const media = productToViewerMedia(product);
+            const firstVideo = media.findIndex((m) => m.type === "video");
+            openMediaViewer({
+              media,
+              // Opening a product video enters continuous discovery
+              initialIndex: firstVideo >= 0 ? firstVideo : 0,
+              continuous: firstVideo >= 0 ? true : undefined,
+              source: "product-card",
+            });
+          }}
+          className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-black/50 backdrop-blur-xs rounded-full text-white active:scale-90 transition-transform"
+          aria-label="Open media viewer"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+          </svg>
+        </button>
+
+        {product.videos && product.videos.length > 0 ? (
+          <span className="absolute top-2 left-2 z-10 flex h-7 items-center gap-1 rounded-full bg-black/55 px-2 text-[9px] font-bold uppercase tracking-wider text-white pointer-events-none">
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M8 5.14v14l11-7-11-7z" />
+            </svg>
+            Video
+          </span>
+        ) : null}
 
         {/* Rating badge: bottom-left (★ 5.0 style) */}
         <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1 px-2 py-0.5 bg-white/95 backdrop-blur-xs rounded-full shadow-xs border border-gray-100">

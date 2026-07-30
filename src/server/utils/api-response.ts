@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AppError } from "@/server/errors";
+import { AppError, RateLimitError } from "@/server/errors";
 
 export type ApiSuccess<T> = {
   ok: true;
@@ -34,6 +34,10 @@ export function fail(
   fallbackStatus = 500
 ): NextResponse<ApiFailure> {
   if (error instanceof AppError) {
+    const headers = new Headers();
+    if (error instanceof RateLimitError) {
+      headers.set("Retry-After", String(error.retryAfterSeconds));
+    }
     return NextResponse.json(
       {
         ok: false,
@@ -43,7 +47,7 @@ export function fail(
           ...(error.details !== undefined ? { details: error.details } : {}),
         },
       },
-      { status: error.statusCode }
+      { status: error.statusCode, headers }
     );
   }
 
