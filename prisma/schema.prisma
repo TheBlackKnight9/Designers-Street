@@ -1,0 +1,389 @@
+// Designer's Street — Prisma schema
+// Compatible with src/lib/types.ts (string IDs preserved for mock seed)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  buyer
+  designer
+  admin
+}
+
+enum AccountStatus {
+  draft
+  active
+  suspended
+}
+
+enum ProductStatus {
+  draft
+  published
+  archived
+}
+
+enum ProductGender {
+  men
+  women
+  unisex
+}
+
+enum PostType {
+  category
+  designer_spotlight
+}
+
+enum MediaType {
+  image
+  video
+}
+
+enum MediaKind {
+  image
+  video
+}
+
+enum OrderStatus {
+  pending
+  paid
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum CustomizationStatus {
+  draft
+  submitted
+  in_review
+  quoted
+  closed
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  name         String?
+  role         UserRole @default(buyer)
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  designerHouse        DesignerHouse?
+  likes                Like[]
+  comments             Comment[]
+  follows              Follow[]
+  orders               Order[]
+  customizationRequests CustomizationRequest[]
+  mediaAssets          MediaAsset[]
+  sessions             Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model DesignerHouse {
+  id                    String        @id
+  ownerUserId           String?       @unique @map("owner_user_id")
+  name                  String
+  handle                String        @unique
+  logo                  String
+  banner                String
+  bio                   String
+  foundingStory         String        @map("founding_story")
+  founded               String?
+  location              String
+  signatureTechniques   String[]      @map("signature_techniques")
+  verified              Boolean       @default(false)
+  exclusive             Boolean       @default(false)
+  offersBespoke         Boolean       @default(false) @map("offers_bespoke")
+  followersCount        String?       @map("followers_count")
+  followingCount        String?       @map("following_count")
+  postsCount            Int?          @map("posts_count")
+  website               String?
+  accountStatus         AccountStatus @default(active) @map("account_status")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  owner                 User?         @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  products              Product[]
+  posts                 Post[]
+  stories               Story[]
+  follows               Follow[]
+  customizationRequests CustomizationRequest[]
+
+  @@map("designer_houses")
+}
+
+model Product {
+  id               String        @id
+  designerId       String        @map("designer_id")
+  name             String
+  designerName     String        @map("designer_name")
+  price            Int
+  mrp              Int?
+  bestPrice        Int?          @map("best_price")
+  category         String
+  subcategory      String?
+  gender           ProductGender
+  images           String[]
+  sizes            String[]
+  colors           String[]      @default([])
+  tags             String[]      @default([])
+  description      String
+  story            String?
+  craftOrigin      String?       @map("craft_origin")
+  material         String?
+  technique        String?
+  fit              String?
+  occasion         String?
+  verified         Boolean       @default(false)
+  piecesRemaining  Int?          @map("pieces_remaining")
+  limitedEdition   Boolean       @default(false) @map("limited_edition")
+  customizable     Boolean       @default(false)
+  rating           Float?
+  deliveryText     String?       @map("delivery_text")
+  status           ProductStatus @default(published)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  designer               DesignerHouse           @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  orderItems             OrderItem[]
+  customizationRequests  CustomizationRequest[]
+  wishlistItems          WishlistItem[]
+
+  @@index([designerId])
+  @@index([category])
+  @@index([status])
+  @@map("products")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  label     String
+  image     String
+  caption   String?
+  parentId  String?  @map("parent_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryTree")
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Post {
+  id               String    @id
+  type             PostType
+  designerId       String?   @map("designer_id")
+  designerName     String    @map("designer_name")
+  designerLogo     String    @map("designer_logo")
+  designerVerified Boolean   @default(false) @map("designer_verified")
+  categorySlug     String?   @map("category_slug")
+  tag              String?
+  image            String
+  videoUrl         String?   @map("video_url")
+  mediaType        MediaType @default(image) @map("media_type")
+  caption          String
+  link             String
+  likesCount       Int       @default(0) @map("likes_count")
+  productTag       Json?     @map("product_tag")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  likes    Like[]
+  comments Comment[]
+
+  @@index([designerId])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model Story {
+  id         String    @id
+  designerId String    @map("designer_id")
+  label      String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  expiresAt  DateTime? @map("expires_at")
+
+  designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  slides   StorySlide[]
+
+  @@index([designerId])
+  @@map("stories")
+}
+
+model StorySlide {
+  id        String  @id @default(cuid())
+  storyId   String  @map("story_id")
+  position  Int     @default(0)
+  image     String
+  videoUrl  String? @map("video_url")
+  caption   String?
+  ctaLabel  String? @map("cta_label")
+  ctaLink   String? @map("cta_link")
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@map("story_slides")
+}
+
+model MediaAsset {
+  id           String    @id @default(cuid())
+  url          String
+  publicId     String?   @map("public_id")
+  kind         MediaKind @default(image)
+  width        Int?
+  height       Int?
+  durationMs   Int?      @map("duration_ms")
+  uploadedById String?   @map("uploaded_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([uploadedById])
+  @@map("media_assets")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  postId    String   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("likes")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  body      String
+  parentId  String?  @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentThread")
+
+  @@index([postId])
+  @@map("comments")
+}
+
+model Follow {
+  id             String   @id @default(cuid())
+  followerUserId String   @map("follower_user_id")
+  designerId     String   @map("designer_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  follower User          @relation(fields: [followerUserId], references: [id], onDelete: Cascade)
+  designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerUserId, designerId])
+  @@map("follows")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String      @map("user_id")
+  status          OrderStatus @default(pending)
+  subtotal        Int
+  total           Int
+  currency        String      @default("INR")
+  shippingAddress Json?       @map("shipping_address")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String  @id @default(cuid())
+  orderId          String  @map("order_id")
+  productId        String? @map("product_id")
+  name             String
+  brand            String
+  price            Int
+  size             String
+  image            String
+  quantity         Int
+  customizationJson Json?  @map("customization_json")
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model CustomizationRequest {
+  id                       String               @id @default(cuid())
+  userId                   String?              @map("user_id")
+  productId                String?              @map("product_id")
+  designerId               String?              @map("designer_id")
+  baseDesign               String?              @map("base_design")
+  fabric                   String?
+  color                    String?
+  embellishment            String?
+  size                     String?
+  notes                    String?
+  measurementSessionBooked Boolean              @default(false) @map("measurement_session_booked")
+  status                   CustomizationStatus  @default(draft)
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+
+  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product  Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
+  designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("customization_requests")
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlist_items")
+}

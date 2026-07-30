@@ -2,56 +2,65 @@
 
 ## Summary
 
-This project currently uses **zero environment variables**. There is no `.env.example`, no `process.env` / `NEXT_PUBLIC_*` usage in source, and no server-side secrets.
+Phase 1 introduces optional backend env vars. **None are required** for the existing UI (defaults keep mock data).
 
-A `.env` / `.env.local` file is **not required** to run the app locally.
+Copy placeholders:
 
-`.gitignore` ignores `.env*` (standard Next.js template).
-
----
-
-## Variables
-
-| Variable Name | Purpose | Required? | Example Value | Where Used |
-|---------------|---------|-----------|---------------|------------|
-| — | No application env vars defined | N/A | N/A | N/A |
-
----
-
-## Optional Next.js / tooling variables (not used by app code)
-
-These may appear in general Next.js workflows but are **not referenced** by Designer's Street today:
-
-| Variable Name | Purpose | Required? | Example Value | Where Used |
-|---------------|---------|-----------|---------------|------------|
-| `PORT` | Override default HTTP port | No | `3000` | Next.js CLI (optional) |
-| `NODE_ENV` | `development` / `production` | Set by Next automatically | `development` | Next.js runtime |
-
----
-
-## Creating `.env`
-
-**Do not invent secret values.** Because there is no `.env.example` and no required secrets:
-
-- No `.env` was created during local setup.
-- When you add a backend later, introduce `.env.example` with placeholders only, e.g.:
-
-```env
-# NEXT_PUBLIC_API_BASE_URL=https://api.example.com
-# DATABASE_URL=
-# AUTH_SECRET=
+```bash
+copy .env.example .env
 ```
+
+Never commit real secrets. `.env` / `.env.local` are gitignored; `.env.example` is committed.
+
+---
+
+## Application / façade
+
+| Variable Name | Purpose | Required? | Example Value | Where Used |
+|---------------|---------|-----------|---------------|------------|
+| `NODE_ENV` | Runtime mode | No (set by Next) | `development` | Next.js / health |
+| `NEXT_PUBLIC_APP_URL` | Absolute origin for server-side fetch to `/api` | No | `http://localhost:3000` | `src/lib/api/catalog.ts` |
+| `NEXT_PUBLIC_USE_API` | Façade uses HTTP `/api/*` instead of in-process mock | No | `false` | `src/lib/api/catalog.ts` |
+| `USE_DATABASE` | Services/repositories use Prisma instead of mock-data | No | `false` | `src/server/utils/env.ts`, services |
+| `PORT` | Override Next port | No | `3000` | Next CLI |
+
+---
+
+## Database
+
+| Variable Name | Purpose | Required? | Example Value | Where Used |
+|---------------|---------|-----------|---------------|------------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes when `USE_DATABASE=true` | `postgresql://designers:designers@localhost:5432/designers_street?schema=public` | Prisma (`prisma/schema.prisma`), `src/server/db.ts` |
+
+Local Docker Compose credentials match the example above (`docker compose up -d`).
+
+---
+
+## Auth scaffold (Phase 2 ready)
+
+| Variable Name | Purpose | Required? | Example Value | Where Used |
+|---------------|---------|-----------|---------------|------------|
+| `AUTH_SECRET` | Hash pepper for session tokens | Yes before production auth | long random string | `src/server/auth/session.ts` |
+| `SESSION_COOKIE_NAME` | Session cookie name | No | `ds_session` | auth session helpers |
+| `SESSION_MAX_AGE_DAYS` | Session lifetime | No | `14` | auth session helpers |
+
+---
+
+## Media (Phase 3 placeholders)
+
+| Variable Name | Purpose | Required? | Example Value | Where Used |
+|---------------|---------|-----------|---------------|------------|
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud | No (Phase 3) | — | future upload sign |
+| `CLOUDINARY_API_KEY` | API key | No | — | future |
+| `CLOUDINARY_API_SECRET` | API secret | No | — | future |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Client cloud name | No | — | future |
 
 ---
 
 ## Browser storage (not env)
 
-Runtime “config” lives in `localStorage`:
-
 | Key | Purpose |
 |-----|---------|
-| `ds_designers` | Admin-edited designer list |
-| `ds_products` | Admin-edited product list |
-| `ds_promo` | Promo banner text |
-| `ds-cart` | Cart line items |
-| `ds-wishlist` | Wishlist product IDs |
+| `ds_designers` / `ds_products` / `ds_promo` | Admin catalog |
+| `ds-cart` | Cart |
+| `ds-wishlist` | Wishlist |
