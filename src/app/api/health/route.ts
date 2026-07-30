@@ -1,5 +1,7 @@
 import { checkDatabaseConnection } from "@/server/db";
 import { isDatabaseEnabled, getAppEnv } from "@/server/utils/env";
+import { isSupabaseConfigured } from "@/server/auth/supabase";
+import { isCloudinaryConfigured } from "@/server/media/cloudinary";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -10,13 +12,10 @@ export async function GET() {
 
   if (wantsDb) {
     database = (await checkDatabaseConnection()) ? "connected" : "disconnected";
-  } else {
-    // Still probe when DATABASE_URL is set (diagnostics only)
-    if (process.env.DATABASE_URL) {
-      database = (await checkDatabaseConnection())
-        ? "connected"
-        : "disconnected";
-    }
+  } else if (process.env.DATABASE_URL) {
+    database = (await checkDatabaseConnection())
+      ? "connected"
+      : "disconnected";
   }
 
   const healthy =
@@ -29,6 +28,8 @@ export async function GET() {
       api: "ok",
       database,
       useDatabase: wantsDb,
+      supabaseConfigured: isSupabaseConfigured(),
+      cloudinaryConfigured: isCloudinaryConfigured(),
       environment: getAppEnv(),
       timestamp: new Date().toISOString(),
     },

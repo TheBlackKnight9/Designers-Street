@@ -36,3 +36,8 @@ export {
   getAuthSecret,
 } from "@/server/auth/session";
 export * from "@/server/auth/permissions";
+export {
+  createSupabaseBrowserClient,
+  createSupabaseServiceClient,
+  isSupabaseConfigured,
+} from "@/server/auth/supabase";

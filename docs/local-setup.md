@@ -10,8 +10,8 @@
 | Yarn | Not required | Missing | — |
 | Python | Not required | 3.14.4 | Frontend-only |
 | Java / Rust / Go | Not required | — | — |
-| Docker | Not required | 29.6.1 present | No Dockerfile / compose in repo |
-| Database | Not required | — | Mock data + localStorage |
+| Docker | Not required | — | **Do not use** — DB is Supabase Postgres |
+| Database | Optional | Supabase | Only when `USE_DATABASE=true` + `DATABASE_URL` |
 
 ---
 

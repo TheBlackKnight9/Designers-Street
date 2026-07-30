@@ -1,14 +1,23 @@
-# Backend Foundation (Phase 1)
+# Backend Foundation (Phase 1 / 1.1)
 
 ## Overview
 
-Phase 1 adds a **backend foundation** under the existing Next.js app **without changing any shop UI**.
+Backend foundation under the existing Next.js app **without changing shop UI**.
 
-Default runtime behavior is unchanged:
+**Locked infrastructure (Phase 1.1):**
 
-- Pages still use `DataContext` + `mock-data` / localStorage.
-- `USE_DATABASE=false` and `NEXT_PUBLIC_USE_API=false` (defaults).
-- Route Handlers exist and return the **same TypeScript shapes** as `src/lib/types.ts`, backed by mock data until the DB flag is enabled.
+| Concern | Choice |
+|---------|--------|
+| Database | **Supabase PostgreSQL** + Prisma |
+| Auth (prepared) | **Supabase Auth** (no login UI yet) |
+| Media (prepared) | **Cloudinary** SDK util (no upload UI yet) |
+| Local Docker Postgres | **Removed** — not used |
+
+Default runtime (backward compatible):
+
+- `USE_DATABASE=false`
+- `NEXT_PUBLIC_USE_API=false`
+- Pages still use `DataContext` + `mock-data` / localStorage
 
 ```
 UI (unchanged)
@@ -17,9 +26,37 @@ UI (unchanged)
               └── fetch /api/*   (optional when NEXT_PUBLIC_USE_API=true)
                     └── Services
                           └── Repositories  (when USE_DATABASE=true)
-                                └── Prisma → PostgreSQL
+                                └── Prisma → Supabase Postgres
                           └── mock-data     (when USE_DATABASE=false)
 ```
+
+---
+
+## Supabase project
+
+| Field | Value |
+|-------|-------|
+| Name | `desginer ef` |
+| Ref / id | `jwqpqlifszfveuldpujn` |
+| Region | `ap-south-1` |
+| API URL | `https://jwqpqlifszfveuldpujn.supabase.co` |
+| Status | `ACTIVE_HEALTHY` |
+
+Dashboard: https://supabase.com/dashboard/project/jwqpqlifszfveuldpujn
+
+### Setup steps
+
+1. Open **Project Settings → Database** → copy **Connection string (URI)** into `DATABASE_URL` in `.env` (use the password shown once at project creation, or reset database password).
+2. Open **Project Settings → API** → copy **service_role** into `SUPABASE_SERVICE_ROLE_KEY` (server only — never `NEXT_PUBLIC_`).
+3. `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are already documented in `.env.example` / local `.env`.
+4. Keep `USE_DATABASE=false` until you intentionally switch APIs to Prisma.
+5. Optional seed (requires `DATABASE_URL`):
+
+```bash
+npm run db:seed
+```
+
+Prisma schema already matches tables applied on this Supabase project (Phase 1.1). Prefer `npm run db:seed` over re-running `migrate` if the schema is already present.
 
 ---
 
@@ -31,55 +68,76 @@ prisma/
   seed.ts
   migrations/20260730120000_init/
 
-docker-compose.yml          # local Postgres 16
-
 src/
   lib/api/                  # Client-safe façade (mock | remote)
   app/api/                  # Route Handlers
-    health/
-    products/
-    designers/
-    feed/
-    categories/
   server/
     db.ts                   # Prisma singleton
     errors/
     types/
-    utils/                  # api-response, logger, validation, mappers, env
-    repositories/           # DB access only
-    services/               # Business logic + mock/db switch
-    auth/                   # Session, permissions, middleware scaffold
+    utils/
+    repositories/
+    services/
+    auth/
+      session.ts            # Legacy session scaffold
+      permissions.ts
+      middleware-structure.ts  # NOT activated
+      supabase.ts           # Supabase Auth client helpers
+    media/
+      cloudinary.ts         # Cloudinary SDK + signed upload params helper
 ```
 
-**No** existing page/component files were redesigned or renamed.
+**No** existing page/component files redesigned or renamed.  
+**Removed:** `docker-compose.yml` and all Docker Postgres assumptions.
 
 ---
 
-## Database
+## Database (Supabase + Prisma)
 
-- **Engine:** PostgreSQL 16 (via `docker-compose.yml`)
-- **ORM:** Prisma (`@prisma/client`)
-- **IDs:** String IDs preserved (`dh-1`, `prod-1`, …) for seed compatibility
-- **Models:** users, sessions, designer_houses, products, categories, posts, stories, story_slides, media_assets, likes, comments, follows, orders, order_items, customization_requests, wishlist_items
+- **Engine:** Supabase-hosted PostgreSQL 17  
+- **ORM:** Prisma (`@prisma/client`)  
+- **IDs:** String IDs preserved (`dh-1`, `prod-1`, …) for mock seed compatibility  
+- **RLS:** Enabled on public tables (PostgREST anon denied by default; Prisma via `DATABASE_URL` uses the DB role)
 
-### Local DB commands
+With `USE_DATABASE=false` (default), the app never requires a live DB connection for UI.
 
-```bash
-docker compose up -d
-npm run db:migrate          # prisma migrate dev
-npm run db:seed             # import mock-data
-# or
-npm run db:setup
+---
+
+## Authentication (scaffold only)
+
+- Prefer **Supabase Auth** going forward: `createSupabaseBrowserClient` / `createSupabaseServiceClient` in `src/server/auth/supabase.ts`
+- Existing cookie/session scaffold remains for transitional use
+- **No** login pages, **no** Profile UI changes, **no** `middleware.ts` activated
+
+---
+
+## Media (Cloudinary — config only)
+
+- Package: official `cloudinary` SDK  
+- Utility: `src/server/media/cloudinary.ts`  
+  - `getCloudinary()`  
+  - `isCloudinaryConfigured()`  
+  - `createSignedUploadParams()` for future signed client uploads  
+- **No** upload UI or upload API routes in Phase 1.1  
+- `next.config.ts` already allows `res.cloudinary.com`
+
+---
+
+## Environment variables
+
+See `.env.example` and `docs/environment.md`.
+
+```env
+DATABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+USE_DATABASE=false
+NEXT_PUBLIC_USE_API=false
 ```
-
-Set in `.env`:
-
-```
-USE_DATABASE=true
-DATABASE_URL=postgresql://designers:designers@localhost:5432/designers_street?schema=public
-```
-
-With `USE_DATABASE=false` (default), the app never requires Postgres.
 
 ---
 
@@ -90,26 +148,10 @@ With `USE_DATABASE=false` (default), the app never requires Postgres.
 | `ProductService` | `ProductRepository` | List/get products |
 | `DesignerService` | `DesignerRepository` | List/get designers |
 | `FeedService` | `FeedRepository` | Feed cursor page, stories, categories |
-| `UserService` | `UserRepository` | User lookups / draft register (scaffold) |
-| `AuthService` | (uses `UserRepository`) | Session token create/resolve/destroy |
+| `UserService` | `UserRepository` | User lookups (scaffold) |
+| `AuthService` | (uses `UserRepository`) | Legacy session helpers |
 
 Repositories contain **no** business logic — only Prisma queries + mappers to frontend types.
-
----
-
-## Environment variables
-
-See `.env.example` and `docs/environment.md`.
-
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `DATABASE_URL` | Postgres connection | docker-compose URL |
-| `USE_DATABASE` | Services use Prisma vs mock | `false` |
-| `NEXT_PUBLIC_USE_API` | Façade fetch `/api` vs mock | `false` |
-| `NEXT_PUBLIC_APP_URL` | Absolute fetch base | `http://localhost:3000` |
-| `AUTH_SECRET` | Session token hashing | placeholder |
-| `SESSION_COOKIE_NAME` | Cookie name | `ds_session` |
-| `SESSION_MAX_AGE_DAYS` | Session TTL | `14` |
 
 ---
 
@@ -117,84 +159,50 @@ See `.env.example` and `docs/environment.md`.
 
 - JSON envelope: `{ ok: true, data }` or `{ ok: false, error: { code, message } }`
 - Helpers: `ok()` / `fail()` in `src/server/utils/api-response.ts`
-- Errors: `AppError`, `NotFoundError`, `ValidationError`, `UnauthorizedError`, `ForbiddenError`
 
-### Endpoints (Phase 1)
+### Endpoints
 
-| Method | Path | Notes |
-|--------|------|-------|
-| GET | `/api/health` | API + DB diagnostics |
-| GET | `/api/products` | Optional `?designerId=` / `?category=` |
-| GET | `/api/products/[id]` | |
-| GET | `/api/designers` | |
-| GET | `/api/designers/[id]` | |
-| GET | `/api/designers/handle/[handle]` | |
-| GET | `/api/feed` | `?limit=&cursor=` |
-| GET | `/api/feed/stories` | |
-| GET | `/api/categories` | Tree |
+| Method | Path |
+|--------|------|
+| GET | `/api/health` |
+| GET | `/api/products` |
+| GET | `/api/products/[id]` |
+| GET | `/api/designers` |
+| GET | `/api/designers/[id]` |
+| GET | `/api/designers/handle/[handle]` |
+| GET | `/api/feed` |
+| GET | `/api/feed/stories` |
+| GET | `/api/categories` |
 
----
-
-## Auth scaffold (no UI)
-
-- Roles: `buyer` \| `designer` \| `admin`
-- `AuthService` + cookie helpers
-- Permission helpers (`assertAdmin`, `assertDesigner`, …)
-- `middleware-structure.ts` preview — **not** enabled as `src/middleware.ts` (avoids changing request behavior)
+Health also reports `supabaseConfigured` and `cloudinaryConfigured`.
 
 ---
 
 ## Seed process
 
-`prisma/seed.ts` upserts from `src/lib/mock-data.ts`:
-
-1. Designers  
-2. Products  
-3. Category tree  
-4. Feed posts  
-5. Stories + slides  
+`prisma/seed.ts` upserts from `src/lib/mock-data.ts` (requires `DATABASE_URL`).
 
 ```bash
 npm run db:seed
-```
-
----
-
-## Health endpoint
-
-`GET /api/health` →
-
-```json
-{
-  "ok": true,
-  "status": "ok",
-  "api": "ok",
-  "database": "skipped" | "connected" | "disconnected",
-  "useDatabase": false,
-  "environment": "development",
-  "timestamp": "..."
-}
 ```
 
 ---
 
 ## Migration strategy (UI-safe)
 
-1. Keep defaults (`USE_DATABASE=false`, `NEXT_PUBLIC_USE_API=false`) → identical UX.  
-2. Start Postgres, migrate, seed.  
-3. Set `USE_DATABASE=true` → Route Handlers read DB; UI still on mock/context.  
-4. Later phases: point contexts at `src/lib/api` with `NEXT_PUBLIC_USE_API=true` **without** changing `ProductCard` / `FeedPost` props.
+1. Keep defaults → identical UX.  
+2. Fill Supabase + Cloudinary secrets in `.env`.  
+3. Set `USE_DATABASE=true` when ready for Route Handlers to read Supabase.  
+4. Later: point contexts at `src/lib/api` with `NEXT_PUBLIC_USE_API=true` without changing `ProductCard` / `FeedPost` props.
 
 ---
 
-## Scripts added
+## Scripts
 
 ```bash
 npm run db:generate
 npm run db:migrate
 npm run db:migrate:deploy
-npm run db:push
 npm run db:seed
 npm run db:studio
-npm run db:setup
 ```
