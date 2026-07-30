@@ -3,17 +3,31 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { PRODUCTS, DESIGNERS } from "@/lib/mock-data";
-import { formatPrice } from "@/lib/mock-data";
+import { PRODUCTS, DESIGNERS, formatPrice } from "@/lib/mock-data";
+import {
+  listProducts,
+  listDesigners,
+  isRemoteApiEnabled,
+} from "@/lib/api/catalog";
+import type { Product, DesignerHouse } from "@/lib/types";
 
 interface SearchOverlayProps {
   onClose: () => void;
 }
 
-const TRENDING = ["Bridal Lehengas", "Pashmina", "Sherwanis", "Cocktail Sarees", "Bespoke"];
+const TRENDING = [
+  "Bridal Lehengas",
+  "Pashmina",
+  "Sherwanis",
+  "Cocktail Sarees",
+  "Bespoke",
+];
 
 export function SearchOverlay({ onClose }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>(PRODUCTS);
+  const [catalogDesigners, setCatalogDesigners] =
+    useState<DesignerHouse[]>(DESIGNERS);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -24,33 +38,75 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isRemoteApiEnabled()) {
+      setCatalogProducts(PRODUCTS);
+      setCatalogDesigners(DESIGNERS);
+      return;
+    }
+    let cancelled = false;
+    Promise.all([listProducts({ limit: 100 }), listDesigners()])
+      .then(([products, designers]) => {
+        if (!cancelled) {
+          setCatalogProducts(products);
+          setCatalogDesigners(designers);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCatalogProducts([]);
+          setCatalogDesigners([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const lowerQuery = query.toLowerCase().trim();
 
-  const matchedProducts = lowerQuery.length >= 2
-    ? PRODUCTS.filter(
-        (p) =>
-          p.name.toLowerCase().includes(lowerQuery) ||
-          p.designerName.toLowerCase().includes(lowerQuery) ||
-          p.category.toLowerCase().includes(lowerQuery) ||
-          (p.occasion && p.occasion.toLowerCase().includes(lowerQuery)) ||
-          (p.tags && p.tags.some((t) => t.toLowerCase().includes(lowerQuery)))
-      ).slice(0, 6)
-    : [];
+  const matchedProducts =
+    lowerQuery.length >= 2
+      ? catalogProducts
+          .filter(
+            (p) =>
+              p.name.toLowerCase().includes(lowerQuery) ||
+              p.designerName.toLowerCase().includes(lowerQuery) ||
+              p.category.toLowerCase().includes(lowerQuery) ||
+              (p.occasion && p.occasion.toLowerCase().includes(lowerQuery)) ||
+              (p.tags && p.tags.some((t) => t.toLowerCase().includes(lowerQuery)))
+          )
+          .slice(0, 6)
+      : [];
 
-  const matchedDesigners = lowerQuery.length >= 2
-    ? DESIGNERS.filter(
-        (d) =>
-          d.name.toLowerCase().includes(lowerQuery) ||
-          d.bio.toLowerCase().includes(lowerQuery)
-      ).slice(0, 3)
-    : [];
+  const matchedDesigners =
+    lowerQuery.length >= 2
+      ? catalogDesigners
+          .filter(
+            (d) =>
+              d.name.toLowerCase().includes(lowerQuery) ||
+              d.bio.toLowerCase().includes(lowerQuery)
+          )
+          .slice(0, 3)
+      : [];
+
+  const suggestedDesigners = catalogDesigners.slice(0, 4);
 
   return (
     <div className="fixed inset-0 z-[70] bg-[#E0E5EC] flex flex-col animate-fade-in">
-      {/* Search Bar */}
       <div className="flex items-center gap-3 px-4 h-[var(--top-bar-height)] border-b border-white/40 shadow-xs">
-        <svg className="w-5 h-5 text-[#A0A0A0] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        <svg
+          className="w-5 h-5 text-[#A0A0A0] flex-shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.8}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+          />
         </svg>
         <input
           ref={inputRef}
@@ -69,11 +125,9 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-5">
         {lowerQuery.length < 2 ? (
           <>
-            {/* Trending */}
             <div className="mb-6">
               <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
                 Trending
@@ -92,13 +146,12 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
               </div>
             </div>
 
-            {/* Designer Suggestions */}
             <div>
               <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
                 Designer Houses
               </h3>
               <div className="space-y-3">
-                {DESIGNERS.slice(0, 4).map((d) => (
+                {suggestedDesigners.map((d) => (
                   <Link
                     key={d.id}
                     href={`/designer/${d.handle}`}
@@ -106,11 +159,21 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
                     className="flex items-center gap-3 tap-highlight py-1"
                   >
                     <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[#F0F0F0]">
-                      <Image src={d.logo} alt={d.name} fill className="object-cover" sizes="40px" />
+                      <Image
+                        src={d.logo}
+                        alt={d.name}
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
                     </div>
                     <div>
-                      <span className="font-sans text-sm font-medium text-[#2B2B2B] block">{d.name}</span>
-                      <span className="font-sans text-xs text-[#7A7A7A]">{d.location}</span>
+                      <span className="font-sans text-sm font-medium text-[#2B2B2B] block">
+                        {d.name}
+                      </span>
+                      <span className="font-sans text-xs text-[#7A7A7A]">
+                        {d.location}
+                      </span>
                     </div>
                   </Link>
                 ))}
@@ -119,7 +182,6 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
           </>
         ) : (
           <>
-            {/* Matched Designers */}
             {matchedDesigners.length > 0 && (
               <div className="mb-6">
                 <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
@@ -134,11 +196,21 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
                       className="flex items-center gap-3 tap-highlight py-1"
                     >
                       <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[#F0F0F0]">
-                        <Image src={d.logo} alt={d.name} fill className="object-cover" sizes="40px" />
+                        <Image
+                          src={d.logo}
+                          alt={d.name}
+                          fill
+                          className="object-cover"
+                          sizes="40px"
+                        />
                       </div>
                       <div>
-                        <span className="font-sans text-sm font-medium text-[#2B2B2B] block">{d.name}</span>
-                        <span className="font-sans text-xs text-[#7A7A7A]">{d.bio}</span>
+                        <span className="font-sans text-sm font-medium text-[#2B2B2B] block">
+                          {d.name}
+                        </span>
+                        <span className="font-sans text-xs text-[#7A7A7A]">
+                          {d.bio}
+                        </span>
                       </div>
                     </Link>
                   ))}
@@ -146,7 +218,6 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
               </div>
             )}
 
-            {/* Matched Products */}
             {matchedProducts.length > 0 && (
               <div>
                 <h3 className="font-sans text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
@@ -161,7 +232,13 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
                       className="flex items-center gap-3 tap-highlight py-1"
                     >
                       <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-[#F0F0F0] flex-shrink-0">
-                        <Image src={p.images[0]} alt={p.name} fill className="object-cover" sizes="56px" />
+                        <Image
+                          src={p.images[0]}
+                          alt={p.name}
+                          fill
+                          className="object-cover"
+                          sizes="56px"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] block">

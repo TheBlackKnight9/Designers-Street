@@ -47,3 +47,9 @@ export {
   ensureDesignerAccount,
   type DashboardContext,
 } from "@/server/auth/dashboard-session";
+export {
+  ensureBuyerAccount,
+  getOptionalAuthUser,
+  requireAuthUser,
+  requireBuyerContext,
+} from "@/server/auth/buyer-session";

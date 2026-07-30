@@ -7,8 +7,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/login",
-    "/signup",
+    /*
+     * Refresh Supabase session on app navigations; gate protected routes.
+     * Skip static assets and Next internals.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm)$).*)",
   ],
 };

@@ -1,0 +1,151 @@
+{
+  "passed": 28,
+  "failed": 1,
+  "results": [
+    {
+      "name": "health",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "products",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "feed",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "stories",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "categories",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "designers",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "designer_handle",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "product_detail",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "guest_cart_add",
+      "ok": true,
+      "detail": "items=1"
+    },
+    {
+      "name": "guest_cart_get",
+      "ok": true,
+      "detail": "qty=1"
+    },
+    {
+      "name": "buyer_signup",
+      "ok": true,
+      "detail": "3b50c8ae"
+    },
+    {
+      "name": "buyer_login",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "buyer_bootstrap",
+      "ok": true,
+      "detail": "buyer"
+    },
+    {
+      "name": "cart_merge",
+      "ok": true,
+      "detail": "items=1"
+    },
+    {
+      "name": "wishlist_persist",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "address_create",
+      "ok": true,
+      "detail": "cms7ruf1"
+    },
+    {
+      "name": "address_update",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "checkout_order",
+      "ok": true,
+      "detail": "cms7rumb"
+    },
+    {
+      "name": "stock_decrement",
+      "ok": false,
+      "detail": "5->2"
+    },
+    {
+      "name": "order_history",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "order_timeline",
+      "ok": true,
+      "detail": "events=1"
+    },
+    {
+      "name": "notification_created",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "name": "account_me",
+      "ok": true,
+      "detail": "buyer"
+    },
+    {
+      "name": "ui_home",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "ui_feed",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "ui_store",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "ui_product",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "ui_designer",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "ui_account_login",
+      "ok": true,
+      "detail": "status=200"
+    }
+  ]
+}

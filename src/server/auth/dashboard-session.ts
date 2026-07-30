@@ -51,6 +51,8 @@ export async function ensureDesignerAccount(input: {
   name?: string | null;
   houseName?: string | null;
   handle?: string | null;
+  /** Explicit designer onboarding only — never silently promote shoppers. */
+  promoteBuyer?: boolean;
 }): Promise<DashboardContext> {
   if (!isDatabaseEnabled()) {
     throw new ValidationError(
@@ -78,9 +80,19 @@ export async function ensureDesignerAccount(input: {
       },
     });
   } else if (user.role === "buyer") {
+    if (!input.promoteBuyer) {
+      throw new ForbiddenError(
+        "This account is registered as a buyer. Use designer signup to open a house, or continue shopping from your account."
+      );
+    }
     user = await prisma.user.update({
       where: { id: user.id },
       data: { role: "designer", name: input.name ?? user.name },
+    });
+  } else if (input.name && !user.name) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { name: input.name },
     });
   }
 

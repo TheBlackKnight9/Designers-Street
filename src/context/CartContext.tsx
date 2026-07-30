@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { CartItem } from "@/lib/types";
+import { isRemoteApiEnabled } from "@/lib/api/catalog";
 
 const CART_KEY = "ds-cart";
 
@@ -18,37 +19,119 @@ interface CartContextValue {
   removeItem: (productId: string, size: string) => void;
   updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;
+  refreshCart: () => Promise<void>;
   total: number;
   itemCount: number;
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+  syncing: boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers || {}),
+    },
+  });
+  const body = await res.json();
+  if (!res.ok || body?.ok === false) {
+    throw new Error(body?.error?.message || "Cart request failed");
+  }
+  return body.data as T;
+}
+
+type CartPayload = { items: CartItem[]; total: number; itemCount: number };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const remote = isRemoteApiEnabled();
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(CART_KEY);
-      if (stored) setItems(JSON.parse(stored));
-    } catch {
-      /* ignore */
+    let cancelled = false;
+    (async () => {
+      if (remote) {
+        try {
+          const data = await apiJson<CartPayload>("/api/cart");
+          if (!cancelled) setItems(data.items);
+        } catch {
+          try {
+            const stored = localStorage.getItem(CART_KEY);
+            if (stored && !cancelled) setItems(JSON.parse(stored));
+          } catch {
+            /* ignore */
+          }
+        }
+      } else {
+        try {
+          const stored = localStorage.getItem(CART_KEY);
+          if (stored && !cancelled) setItems(JSON.parse(stored));
+        } catch {
+          /* ignore */
+        }
+      }
+      if (!cancelled) setHydrated(true);
+    })();
+
+    function onSync() {
+      if (!remote) return;
+      apiJson<CartPayload>("/api/cart")
+        .then((data) => setItems(data.items))
+        .catch(() => undefined);
     }
-    setHydrated(true);
-  }, []);
+    window.addEventListener("ds:commerce-sync", onSync);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("ds:commerce-sync", onSync);
+    };
+  }, [remote]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || remote) return;
     localStorage.setItem(CART_KEY, JSON.stringify(items));
-  }, [items, hydrated]);
+  }, [items, hydrated, remote]);
 
   const addItem = useCallback(
     (item: Omit<CartItem, "quantity">) => {
+      if (remote) {
+        setSyncing(true);
+        apiJson<CartPayload>("/api/cart", {
+          method: "POST",
+          body: JSON.stringify({
+            productId: item.productId,
+            size: item.size,
+            quantity: 1,
+          }),
+        })
+          .then((data) => setItems(data.items))
+          .catch(() => {
+            // optimistic local fallback if API down
+            setItems((prev) => {
+              const existing = prev.find(
+                (i) => i.productId === item.productId && i.size === item.size
+              );
+              if (existing) {
+                return prev.map((i) =>
+                  i.productId === item.productId && i.size === item.size
+                    ? { ...i, quantity: i.quantity + 1 }
+                    : i
+                );
+              }
+              return [...prev, { ...item, quantity: 1 }];
+            });
+          })
+          .finally(() => setSyncing(false));
+        setIsOpen(true);
+        return;
+      }
+
       setItems((prev) => {
         const existing = prev.find(
           (i) => i.productId === item.productId && i.size === item.size
@@ -64,17 +147,64 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       });
       setIsOpen(true);
     },
-    []
+    [remote]
   );
 
-  const removeItem = useCallback((productId: string, size: string) => {
-    setItems((prev) =>
-      prev.filter((i) => !(i.productId === productId && i.size === size))
-    );
-  }, []);
+  const removeItem = useCallback(
+    (productId: string, size: string) => {
+      if (remote) {
+        setSyncing(true);
+        apiJson<CartPayload>(
+          `/api/cart?productId=${encodeURIComponent(productId)}&size=${encodeURIComponent(size)}`,
+          { method: "DELETE" }
+        )
+          .then((data) => setItems(data.items))
+          .catch(() => {
+            setItems((prev) =>
+              prev.filter(
+                (i) => !(i.productId === productId && i.size === size)
+              )
+            );
+          })
+          .finally(() => setSyncing(false));
+        return;
+      }
+      setItems((prev) =>
+        prev.filter((i) => !(i.productId === productId && i.size === size))
+      );
+    },
+    [remote]
+  );
 
   const updateQuantity = useCallback(
     (productId: string, size: string, quantity: number) => {
+      if (remote) {
+        setSyncing(true);
+        apiJson<CartPayload>("/api/cart", {
+          method: "PATCH",
+          body: JSON.stringify({ productId, size, quantity }),
+        })
+          .then((data) => setItems(data.items))
+          .catch(() => {
+            if (quantity <= 0) {
+              setItems((prev) =>
+                prev.filter(
+                  (i) => !(i.productId === productId && i.size === size)
+                )
+              );
+            } else {
+              setItems((prev) =>
+                prev.map((i) =>
+                  i.productId === productId && i.size === size
+                    ? { ...i, quantity }
+                    : i
+                )
+              );
+            }
+          })
+          .finally(() => setSyncing(false));
+        return;
+      }
       if (quantity <= 0) {
         setItems((prev) =>
           prev.filter((i) => !(i.productId === productId && i.size === size))
@@ -89,10 +219,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         )
       );
     },
-    []
+    [remote]
   );
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    if (remote) {
+      apiJson<CartPayload>("/api/cart?all=1", { method: "DELETE" })
+        .then((data) => setItems(data.items))
+        .catch(() => setItems([]));
+      return;
+    }
+    setItems([]);
+  }, [remote]);
+
+  const refreshCart = useCallback(async () => {
+    if (!remote) return;
+    try {
+      const data = await apiJson<CartPayload>("/api/cart");
+      setItems(data.items);
+    } catch {
+      /* keep current */
+    }
+  }, [remote]);
+
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
 
@@ -113,13 +262,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       updateQuantity,
       clearCart,
+      refreshCart,
       total,
       itemCount,
       isOpen,
       openCart,
       closeCart,
+      syncing,
     }),
-    [items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, isOpen, openCart, closeCart]
+    [
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clearCart,
+      refreshCart,
+      total,
+      itemCount,
+      isOpen,
+      openCart,
+      closeCart,
+      syncing,
+    ]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

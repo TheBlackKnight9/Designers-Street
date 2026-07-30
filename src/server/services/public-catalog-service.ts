@@ -191,7 +191,18 @@ export class PublicCatalogService {
       return { items: page.items, nextCursor: page.nextCursor };
     }
 
-    // Product-backed feed via public product page (decoupled from Post table)
+    // Prefer Post table when seeded; fall back to product-backed feed
+    const postPage = await this.feed.findFeedPage({
+      limit,
+      cursor: options.cursor,
+    });
+    if (postPage.items.length > 0 || options.cursor) {
+      return {
+        items: postPage.items,
+        nextCursor: postPage.nextCursor,
+      };
+    }
+
     const { rows, nextCursor } = await this.products.findPublicPage({
       limit,
       cursor: options.cursor,

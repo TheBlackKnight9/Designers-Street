@@ -1,13 +1,23 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { ensureDesignerAccount } from "@/server/auth/dashboard-session";
+import { prisma } from "@/server/db";
+import { requireDashboardContext } from "@/server/auth/dashboard-session";
 import { ok, fail } from "@/server/utils/api-response";
+import { ForbiddenError } from "@/server/errors";
+import { isDatabaseEnabled } from "@/server/utils/env";
 
 export const runtime = "nodejs";
 
-/** GET /api/auth/me — current dashboard user + house */
+/**
+ * GET /api/auth/me — designer dashboard session only.
+ * Does not promote buyers. Buyers should use GET /api/account/me.
+ */
 export async function GET() {
   try {
+    if (!isDatabaseEnabled()) {
+      throw new ForbiddenError("Designer dashboard requires database mode");
+    }
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -20,14 +30,14 @@ export async function GET() {
       );
     }
 
-    const ctx = await ensureDesignerAccount({
-      authUserId: user.id,
-      email: user.email,
-      name:
-        (user.user_metadata?.full_name as string | undefined) ||
-        (user.user_metadata?.name as string | undefined) ||
-        null,
-    });
+    const existing = await prisma.user.findUnique({ where: { id: user.id } });
+    if (existing?.role === "buyer") {
+      throw new ForbiddenError(
+        "Buyer accounts cannot access the designer dashboard. Use /account or designer signup."
+      );
+    }
+
+    const ctx = await requireDashboardContext();
 
     return ok({
       user: ctx.user,

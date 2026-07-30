@@ -9,16 +9,20 @@ function getPublishableKey(): string | undefined {
 }
 
 /**
- * Refresh Supabase auth cookies and gate /dashboard routes.
+ * Refresh Supabase auth cookies and gate protected routes.
+ * Designer: /dashboard, /login, /signup
+ * Buyer: /account/login|signup (no force-redirect to dashboard)
+ * Checkout/orders require auth when hitting those paths.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = getPublishableKey();
+  const path = request.nextUrl.pathname;
 
   if (!url || !key) {
-    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+    if (path.startsWith("/dashboard")) {
       const redirect = request.nextUrl.clone();
       redirect.pathname = "/login";
       redirect.searchParams.set("error", "supabase_not_configured");
@@ -48,9 +52,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
   const isDashboard = path.startsWith("/dashboard");
-  const isAuthPage = path === "/login" || path === "/signup";
+  const isBuyerAuth =
+    path === "/account/login" ||
+    path === "/account/signup" ||
+    path === "/account/forgot-password" ||
+    path === "/account/reset-password";
+  const needsBuyerAuth =
+    path.startsWith("/checkout") ||
+    path.startsWith("/orders") ||
+    path === "/account/settings" ||
+    path === "/account/addresses";
 
   if (isDashboard && !user) {
     const redirect = request.nextUrl.clone();
@@ -59,9 +71,21 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirect);
   }
 
-  if (isAuthPage && user) {
+  if (needsBuyerAuth && !user) {
     const redirect = request.nextUrl.clone();
-    redirect.pathname = "/dashboard";
+    redirect.pathname = "/account/login";
+    redirect.searchParams.set("next", path);
+    return NextResponse.redirect(redirect);
+  }
+
+  // Do not auto-redirect authenticated users away from designer login/signup.
+  // Buyers must not be forced into /dashboard (which would fail authz).
+  // Designer login/signup handle post-auth navigation themselves.
+
+  if (isBuyerAuth && user && (path === "/account/login" || path === "/account/signup")) {
+    const next = request.nextUrl.searchParams.get("next") || "/profile";
+    const redirect = request.nextUrl.clone();
+    redirect.pathname = next.startsWith("/") ? next : "/profile";
     redirect.search = "";
     return NextResponse.redirect(redirect);
   }

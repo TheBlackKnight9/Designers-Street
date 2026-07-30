@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
@@ -12,6 +12,9 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { useOpenMediaViewer } from "@/context/MediaViewerContext";
 import { feedPostToViewerMedia } from "@/lib/media";
+import { useStorefrontDesigner } from "@/hooks/useStorefrontCatalog";
+import { listFeed, isRemoteApiEnabled } from "@/lib/api/catalog";
+import type { FeedPostData } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ handle: string }>;
@@ -20,18 +23,72 @@ interface PageProps {
 export default function DesignerProfilePage({ params }: PageProps) {
   const { handle } = use(params);
   const { designers, products: allProducts } = useData();
+  const {
+    designer: apiDesigner,
+    products: apiProducts,
+    enabled: apiEnabled,
+    loading: apiLoading,
+  } = useStorefrontDesigner(handle);
 
-  const designer = designers.find(
-    (d) => d.handle.toLowerCase() === handle.toLowerCase() || d.name.toLowerCase() === handle.toLowerCase()
+  const mockDesigner = designers.find(
+    (d) =>
+      d.handle.toLowerCase() === handle.toLowerCase() ||
+      d.name.toLowerCase() === handle.toLowerCase()
   );
+  const designer = apiEnabled ? apiDesigner : mockDesigner;
 
   const [activeTab, setActiveTab] = useState<"posts" | "shop">("posts");
   const [isFollowing, setIsFollowing] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [feedPosts, setFeedPosts] = useState<FeedPostData[]>([]);
 
   const { isWished, toggle: toggleWishlist } = useWishlist();
   const { addItem: addToCart } = useCart();
   const { openMediaViewer } = useOpenMediaViewer();
+
+  useEffect(() => {
+    if (!designer) return;
+    if (!isRemoteApiEnabled()) {
+      const designerPosts = FEED_POSTS.filter(
+        (post) =>
+          post.designerId === designer.id ||
+          post.designerName.toLowerCase() === designer.name.toLowerCase()
+      );
+      setFeedPosts(
+        designerPosts.length > 0 ? designerPosts : FEED_POSTS.slice(0, 4)
+      );
+      return;
+    }
+    let cancelled = false;
+    listFeed({ limit: 40 })
+      .then((page) => {
+        if (cancelled) return;
+        const filtered = page.items.filter(
+          (post) =>
+            post.designerId === designer.id ||
+            post.designerName.toLowerCase() === designer.name.toLowerCase()
+        );
+        setFeedPosts(filtered);
+      })
+      .catch(() => {
+        if (!cancelled) setFeedPosts([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [designer]);
+
+  if (apiEnabled && apiLoading) {
+    return (
+      <>
+        <TopBar />
+        <main className="min-h-screen flex items-center justify-center px-6 bg-[#FDFCF8]">
+          <p className="font-sans text-sm text-[#7A7A7A]">Loading house…</p>
+        </main>
+        <BottomNav />
+      </>
+    );
+  }
 
   if (!designer) {
     return (
@@ -52,13 +109,15 @@ export default function DesignerProfilePage({ params }: PageProps) {
     );
   }
 
-  const products = allProducts.filter((p) => p.designerId === designer.id || p.designerName.toLowerCase() === designer.name.toLowerCase());
-  
-  // Get designer specific feed posts (or fall back to general feed posts if custom ones aren't tagged)
-  const designerPosts = FEED_POSTS.filter(
-    (post) => post.designerId === designer.id || post.designerName.toLowerCase() === designer.name.toLowerCase()
-  );
-  const displayPosts = designerPosts.length > 0 ? designerPosts : FEED_POSTS.slice(0, 4);
+  const products = apiEnabled
+    ? apiProducts
+    : allProducts.filter(
+        (p) =>
+          p.designerId === designer.id ||
+          p.designerName.toLowerCase() === designer.name.toLowerCase()
+      );
+
+  const displayPosts = feedPosts;
 
   const togglePostLike = (postId: string) => {
     setLikedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));

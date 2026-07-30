@@ -251,3 +251,58 @@ export function useStorefrontFeed(pageSize = 8): CatalogLoadState & {
     loadingMore,
   };
 }
+
+/** Designer public profile + products when API mode is on. */
+export function useStorefrontDesigner(handle: string): CatalogLoadState & {
+  designer: DesignerHouse | null;
+  products: Product[];
+  enabled: boolean;
+} {
+  const enabled = isRemoteApiEnabled();
+  const [designer, setDesigner] = useState<DesignerHouse | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(enabled);
+  const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
+  const reload = useCallback(() => setTick((t) => t + 1), []);
+
+  useEffect(() => {
+    if (!enabled || !handle) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    (async () => {
+      try {
+        const { getDesignerByHandleApi } = await import("@/lib/api/catalog");
+        const d = await getDesignerByHandleApi(handle);
+        if (cancelled) return;
+        setDesigner(d);
+        if (d) {
+          const items = await listProducts({
+            limit: 48,
+            filters: { designer: d.id },
+          });
+          if (!cancelled) setProducts(items);
+        } else {
+          setProducts([]);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load");
+          setDesigner(null);
+          setProducts([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, handle, tick]);
+
+  return { designer, products, loading, error, reload, enabled };
+}

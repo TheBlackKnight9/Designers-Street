@@ -84,6 +84,10 @@ model User {
   customizationRequests CustomizationRequest[]
   mediaAssets          MediaAsset[]
   sessions             Session[]
+  wishlistItems        WishlistItem[]
+  addresses            Address[]
+  cart                 Cart?
+  notifications        Notification[]
 
   @@map("users")
 }
@@ -365,11 +369,13 @@ model Order {
   total           Int
   currency        String      @default("INR")
   shippingAddress Json?       @map("shipping_address")
+  paymentStatus   String      @default("pending") @map("payment_status")
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")
 
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items OrderItem[]
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+  events  OrderEvent[]
 
   @@index([userId])
   @@map("orders")
@@ -424,9 +430,94 @@ model WishlistItem {
   productId String   @map("product_id")
   createdAt DateTime @default(now()) @map("created_at")
 
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
   @@index([userId])
   @@map("wishlist_items")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  label      String?
+  fullName   String   @map("full_name")
+  phone      String?
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String   @map("postal_code")
+  country    String   @default("IN")
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model Cart {
+  id         String   @id @default(cuid())
+  userId     String?  @unique @map("user_id")
+  guestToken String?  @unique @map("guest_token")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String   @map("cart_id")
+  productId String   @map("product_id")
+  name      String
+  brand     String
+  price     Int
+  size      String
+  image     String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId, size])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model OrderEvent {
+  id        String      @id @default(cuid())
+  orderId   String      @map("order_id")
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  type      String
+  title     String
+  body      String
+  orderId   String?   @map("order_id")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
 }

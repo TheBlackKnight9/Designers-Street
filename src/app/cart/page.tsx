@@ -119,12 +119,12 @@ export default function CartPage() {
                   {formatPrice(total)}
                 </span>
               </div>
-              <button
-                type="button"
-                className="w-full h-12 bg-[#2B2B2B] text-[#FAFAFA] font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press mb-3"
+              <Link
+                href="/checkout"
+                className="flex items-center justify-center w-full h-12 bg-[#2B2B2B] text-[#FAFAFA] font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press mb-3"
               >
                 Proceed to Checkout
-              </button>
+              </Link>
               <div className="text-center">
                 <span className="font-sans text-xs text-[#7A7A7A]">
                   Need help? <span className="font-semibold text-[#2B2B2B] underline">Speak to a stylist</span>

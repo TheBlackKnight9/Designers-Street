@@ -7,3 +7,8 @@ export { DashboardProductService } from "./dashboard-product-service";
 export {
   PublicCatalogService,
 } from "./public-catalog-service";
+export { CartService } from "./cart-service";
+export { WishlistService } from "./wishlist-service";
+export { AddressService } from "./address-service";
+export { OrderService } from "./order-service";
+export { NotificationService } from "./notification-service";
