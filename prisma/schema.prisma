@@ -1,0 +1,1005 @@
+// Designer's Street — Prisma schema
+// Compatible with src/lib/types.ts (string IDs preserved for mock seed)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  buyer
+  designer
+  admin
+}
+
+enum AccountStatus {
+  draft
+  active
+  suspended
+}
+
+enum ProductStatus {
+  draft
+  pending_review
+  published
+  archived
+}
+
+enum ProductGender {
+  men
+  women
+  unisex
+}
+
+enum PostType {
+  category
+  designer_spotlight
+}
+
+enum MediaType {
+  image
+  video
+}
+
+enum MediaKind {
+  image
+  video
+}
+
+enum OrderStatus {
+  pending
+  paid
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum CustomizationStatus {
+  draft
+  submitted
+  in_review
+  quoted
+  accepted
+  rejected
+  completed
+  closed
+}
+
+enum AppointmentStatus {
+  pending
+  accepted
+  rejected
+  completed
+  cancelled
+}
+
+enum LookbookKind {
+  seasonal
+  collection
+  campaign
+  editorial
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  name         String?
+  role         UserRole @default(buyer)
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  designerHouse        DesignerHouse?
+  likes                Like[]
+  comments             Comment[]
+  follows              Follow[]
+  orders               Order[]
+  customizationRequests CustomizationRequest[]
+  mediaAssets          MediaAsset[]
+  sessions             Session[]
+  wishlistItems        WishlistItem[]
+  addresses            Address[]
+  cart                 Cart?
+  notifications        Notification[]
+  appointmentRequests  AppointmentRequest[]
+  measurementProfiles  MeasurementProfile[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model DesignerHouse {
+  id                    String        @id
+  ownerUserId           String?       @unique @map("owner_user_id")
+  name                  String
+  handle                String        @unique
+  logo                  String
+  banner                String
+  bio                   String
+  foundingStory         String        @map("founding_story")
+  founded               String?
+  location              String
+  signatureTechniques   String[]      @map("signature_techniques")
+  verified              Boolean       @default(false)
+  exclusive             Boolean       @default(false)
+  offersBespoke         Boolean       @default(false) @map("offers_bespoke")
+  followersCount        String?       @map("followers_count")
+  followingCount        String?       @map("following_count")
+  postsCount            Int?          @map("posts_count")
+  website               String?
+  designPhilosophy      String?       @map("design_philosophy")
+  yearsExperience       Int?          @map("years_experience")
+  studioLocation        String?       @map("studio_location")
+  awards                String[]      @default([])
+  pressMentions         Json?         @map("press_mentions")
+  editorialGallery      String[]              @default([]) @map("editorial_gallery")
+  accountStatus         AccountStatus         @default(active) @map("account_status")
+  razorpayAccountId     String?               @map("razorpay_account_id")
+  razorpayAccountStatus String?               @map("razorpay_account_status")
+  listingsApproved      Boolean               @default(false) @map("listings_approved")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime              @updatedAt @map("updated_at")
+
+  owner                 User?                 @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  products              Product[]
+  posts                 Post[]
+  stories               Story[]
+  follows               Follow[]
+  customizationRequests CustomizationRequest[]
+  mediaAssets           MediaAsset[]
+  lookbooks             Lookbook[]
+  appointmentRequests   AppointmentRequest[]
+  editorialCampaigns    EditorialCampaign[]
+  editorialArticles     EditorialArticle[]
+  appointmentSlots      AppointmentSlot[]
+  businessVerification  BusinessVerification?
+
+  @@map("designer_houses")
+}
+
+model Product {
+  id               String        @id
+  designerId       String        @map("designer_id")
+  name             String
+  designerName     String        @map("designer_name")
+  price            Int
+  mrp              Int?
+  bestPrice        Int?          @map("best_price")
+  category         String
+  subcategory      String?
+  gender           ProductGender
+  images           String[]
+  sizes            String[]
+  colors           String[]      @default([])
+  tags             String[]      @default([])
+  description      String
+  story            String?
+  craftOrigin      String?       @map("craft_origin")
+  material         String?
+  technique        String?
+  fit              String?
+  occasion         String?
+  verified         Boolean       @default(false)
+  piecesRemaining  Int?          @map("pieces_remaining")
+  limitedEdition   Boolean       @default(false) @map("limited_edition")
+  editionTotal     Int?          @map("edition_total")
+  editionSold      Int           @default(0) @map("edition_sold")
+  customizable     Boolean       @default(false)
+  rating           Float?
+  deliveryText     String?       @map("delivery_text")
+  careInstructions String?       @map("care_instructions")
+  designerInspiration String?    @map("designer_inspiration")
+  badges           String[]      @default([])
+  editorsPick      Boolean       @default(false) @map("editors_pick")
+  madeToOrder      Boolean       @default(false) @map("made_to_order")
+  sustainable      Boolean       @default(false)
+  handcrafted      Boolean       @default(false)
+  recentPurchaseCount Int        @default(0) @map("recent_purchase_count")
+  status           ProductStatus @default(published)
+  likesCount       Int           @default(0) @map("likes_count")
+  listingType          ProductListingType @default(COMMERCIAL) @map("listing_type")
+  conceptCta           ConceptActionCTA?  @default(BESPOKE_INQUIRY) @map("concept_cta")
+  estimatedLaunch      String?            @map("estimated_launch")
+  weightGrams          Int?               @map("weight_grams")
+  netQuantity          String?            @map("net_quantity")
+  manufacturerName     String?            @map("manufacturer_name")
+  manufacturerAddress  String?            @map("manufacturer_address")
+  countryOfOrigin      String?            @default("India") @map("country_of_origin")
+  sizeChart            Json?              @map("size_chart")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @default(now()) @updatedAt @map("updated_at")
+
+  designer               DesignerHouse           @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  orderItems             OrderItem[]
+  customizationRequests  CustomizationRequest[]
+  wishlistItems          WishlistItem[]
+  mediaAssets            MediaAsset[]
+  likes                  Like[]
+  lookbookItems          LookbookItem[]
+  editorialCollectionItems EditorialCollectionItem[]
+  variants               ProductVariant[]
+  conceptInterests       ConceptInterest[]
+
+  @@index([designerId])
+  @@index([category])
+  @@index([status])
+  @@index([limitedEdition])
+  @@index([editorsPick])
+  @@map("products")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  label     String
+  image     String
+  caption   String?
+  parentId  String?  @map("parent_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryTree")
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Post {
+  id               String    @id
+  type             PostType
+  designerId       String?   @map("designer_id")
+  designerName     String    @map("designer_name")
+  designerLogo     String    @map("designer_logo")
+  designerVerified Boolean   @default(false) @map("designer_verified")
+  categorySlug     String?   @map("category_slug")
+  tag              String?
+  image            String
+  videoUrl         String?   @map("video_url")
+  mediaType        MediaType @default(image) @map("media_type")
+  caption          String
+  link             String
+  likesCount       Int       @default(0) @map("likes_count")
+  commentsCount    Int       @default(0) @map("comments_count")
+  productTag       Json?     @map("product_tag")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  likes    Like[]
+  comments Comment[]
+  mediaAssets MediaAsset[]
+
+  @@index([designerId])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model Story {
+  id         String    @id
+  designerId String    @map("designer_id")
+  label      String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  expiresAt  DateTime? @map("expires_at")
+
+  designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  slides   StorySlide[]
+  mediaAssets MediaAsset[]
+
+  @@index([designerId])
+  @@map("stories")
+}
+
+model StorySlide {
+  id        String  @id @default(cuid())
+  storyId   String  @map("story_id")
+  position  Int     @default(0)
+  image     String
+  videoUrl  String? @map("video_url")
+  caption   String?
+  ctaLabel  String? @map("cta_label")
+  ctaLink   String? @map("cta_link")
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@map("story_slides")
+}
+
+enum MediaOwnerType {
+  product
+  post
+  designer
+  story
+  unattached
+}
+
+model MediaAsset {
+  id           String         @id @default(cuid())
+  /// Optional FKs — attach media to catalog / feed / profile / stories without later schema churn
+  productId    String?        @map("product_id")
+  postId       String?        @map("post_id")
+  designerId   String?        @map("designer_id")
+  storyId      String?        @map("story_id")
+  ownerType    MediaOwnerType @default(unattached) @map("owner_type")
+  /// image | video (API field name: type)
+  kind         MediaKind      @default(image)
+  /// Cloudinary public_id (API: cloudinaryPublicId)
+  publicId     String         @map("public_id")
+  /// HTTPS delivery URL (API: secureUrl)
+  url          String
+  width        Int?
+  height       Int?
+  /// Duration in milliseconds for video (API: duration)
+  durationMs   Int?           @map("duration_ms")
+  format       String?
+  bytes        Int?
+  folder       String?
+  /// Accessible caption / alt text (nullable)
+  altText      String?        @map("alt_text")
+  /// Preview frame URL (esp. videos); nullable for images
+  thumbnailUrl String?        @map("thumbnail_url")
+  /// Gallery / carousel order within an owner (multiple media per product/post)
+  displayOrder Int            @default(0) @map("display_order")
+  uploadedById String?        @map("uploaded_by")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  product    Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
+  post       Post?          @relation(fields: [postId], references: [id], onDelete: SetNull)
+  designer   DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  story      Story?         @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  uploadedBy User?          @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  /// Non-unique — many media rows per product/post/designer/story
+  @@index([productId, displayOrder])
+  @@index([postId, displayOrder])
+  @@index([designerId, displayOrder])
+  @@index([storyId, displayOrder])
+  @@index([ownerType])
+  @@index([kind])
+  @@index([uploadedById])
+  @@map("media_assets")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  postId    String?  @map("post_id")
+  productId String?  @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, productId])
+  @@index([postId])
+  @@index([productId])
+  @@map("likes")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  body      String
+  parentId  String?  @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentThread")
+
+  @@index([postId])
+  @@index([parentId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model Follow {
+  id             String   @id @default(cuid())
+  followerUserId String   @map("follower_user_id")
+  designerId     String   @map("designer_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  follower User          @relation(fields: [followerUserId], references: [id], onDelete: Cascade)
+  designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@unique([followerUserId, designerId])
+  @@map("follows")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String      @map("user_id")
+  status          OrderStatus @default(pending)
+  subtotal        Int
+  total           Int
+  currency        String      @default("INR")
+  shippingAddress Json?       @map("shipping_address")
+  paymentStatus   String      @default("pending") @map("payment_status")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+  events  OrderEvent[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String  @id @default(cuid())
+  orderId          String  @map("order_id")
+  productId        String? @map("product_id")
+  name             String
+  brand            String
+  price            Int
+  size             String
+  image            String
+  quantity         Int
+  customizationJson Json?  @map("customization_json")
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model CustomizationRequest {
+  id                       String               @id @default(cuid())
+  userId                   String?              @map("user_id")
+  productId                String?              @map("product_id")
+  designerId               String?              @map("designer_id")
+  baseDesign               String?              @map("base_design")
+  fabric                   String?
+  color                    String?
+  embellishment            String?
+  size                     String?
+  notes                    String?
+  measurements             Json?
+  referenceImages          String[]             @default([]) @map("reference_images")
+  budget                   Int?
+  occasion                 String?
+  statusNotes              String?              @map("status_notes")
+  measurementSessionBooked Boolean              @default(false) @map("measurement_session_booked")
+  status                   CustomizationStatus  @default(draft)
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+
+  user        User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product     Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
+  designer    DesignerHouse?      @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  attachments BespokeAttachment[]
+  messages    BespokeMessage[]
+
+  @@index([userId])
+  @@index([designerId])
+  @@index([status])
+  @@map("customization_requests")
+}
+
+model Lookbook {
+  id          String      @id @default(cuid())
+  designerId  String      @map("designer_id")
+  title       String
+  slug        String
+  kind        LookbookKind @default(seasonal)
+  season      String?
+  coverImage  String      @map("cover_image")
+  description String?
+  published   Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  items    LookbookItem[]
+
+  @@unique([designerId, slug])
+  @@index([designerId])
+  @@index([published])
+  @@map("lookbooks")
+}
+
+model LookbookItem {
+  id           String    @id @default(cuid())
+  lookbookId   String    @map("lookbook_id")
+  mediaUrl     String    @map("media_url")
+  mediaKind    MediaKind @default(image) @map("media_kind")
+  caption      String?
+  productId    String?   @map("product_id")
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  lookbook Lookbook @relation(fields: [lookbookId], references: [id], onDelete: Cascade)
+  product  Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([lookbookId])
+  @@index([productId])
+  @@map("lookbook_items")
+}
+
+model AppointmentRequest {
+  id              String            @id @default(cuid())
+  userId          String            @map("user_id")
+  designerId      String            @map("designer_id")
+  slotId          String?           @map("slot_id")
+  preferredDate   String            @map("preferred_date")
+  preferredTime   String            @map("preferred_time")
+  appointmentType AppointmentType   @default(virtual) @map("appointment_type")
+  purpose         String
+  message         String?
+  status          AppointmentStatus @default(pending)
+  statusNotes     String?           @map("status_notes")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designer DesignerHouse    @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  slot     AppointmentSlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([designerId])
+  @@index([status])
+  @@map("appointment_requests")
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlist_items")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  label      String?
+  fullName   String   @map("full_name")
+  phone      String?
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String   @map("postal_code")
+  country    String   @default("IN")
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model Cart {
+  id         String   @id @default(cuid())
+  userId     String?  @unique @map("user_id")
+  guestToken String?  @unique @map("guest_token")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String   @map("cart_id")
+  productId String   @map("product_id")
+  name      String
+  brand     String
+  price     Int
+  size      String
+  image     String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId, size])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model OrderEvent {
+  id        String      @id @default(cuid())
+  orderId   String      @map("order_id")
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_events")
+}
+
+model Notification {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  type         String
+  title        String
+  body         String
+  orderId      String?   @map("order_id")
+  postId       String?   @map("post_id")
+  productId    String?   @map("product_id")
+  designerId   String?   @map("designer_id")
+  actorUserId  String?   @map("actor_user_id")
+  readAt       DateTime? @map("read_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum SectionType {
+  hero_campaign
+  designer_spotlight
+  editorial_collection
+  article_rail
+  lookbook_rail
+  limited_edition_shelf
+  editors_pick_shelf
+}
+
+model EditorialCampaign {
+  id                 String   @id @default(cuid())
+  title              String
+  slug               String   @unique
+  subtitle           String?
+  heroImage          String   @map("hero_image")
+  heroVideoUrl       String?  @map("hero_video_url")
+  headline           String
+  body               String
+  badge              String?
+  featuredDesignerId String?  @map("featured_designer_id")
+  ctaLabel           String?  @map("cta_label")
+  ctaLink            String?  @map("cta_link")
+  published          Boolean  @default(true)
+  sortOrder          Int      @default(0) @map("sort_order")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  featuredDesigner DesignerHouse? @relation(fields: [featuredDesignerId], references: [id], onDelete: SetNull)
+
+  @@index([published, sortOrder])
+  @@map("editorial_campaigns")
+}
+
+model EditorialCollection {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  tagline      String?
+  coverImage   String   @map("cover_image")
+  description  String?
+  curatorNotes String?  @map("curator_notes")
+  published    Boolean  @default(true)
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  items EditorialCollectionItem[]
+
+  @@index([published, sortOrder])
+  @@map("editorial_collections")
+}
+
+model EditorialCollectionItem {
+  id            String   @id @default(cuid())
+  collectionId  String   @map("collection_id")
+  productId     String   @map("product_id")
+  displayOrder  Int      @default(0) @map("display_order")
+  editorialNote String?  @map("editorial_note")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  collection EditorialCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product    Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, productId])
+  @@index([collectionId, displayOrder])
+  @@map("editorial_collection_items")
+}
+
+model EditorialArticle {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  category    String
+  excerpt     String
+  coverImage  String   @map("cover_image")
+  contentJson Json     @map("content_json")
+  authorName  String?  @map("author_name")
+  authorRole  String?  @map("author_role")
+  designerId  String?  @map("designer_id")
+  published   Boolean  @default(true)
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+
+  @@index([published, publishedAt])
+  @@map("editorial_articles")
+}
+
+model FeaturedSection {
+  id         String      @id @default(cuid())
+  title      String
+  subtitle   String?
+  type       SectionType
+  targetSlug String?     @map("target_slug")
+  sortOrder  Int         @default(0) @map("sort_order")
+  active     Boolean     @default(true)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  @@index([active, sortOrder])
+  @@map("featured_sections")
+}
+
+enum AppointmentType {
+  virtual
+  studio_visit
+  phone
+}
+
+enum BespokeStatus {
+  draft
+  submitted
+  under_review
+  accepted
+  in_production
+  ready
+  delivered
+  cancelled
+}
+
+enum AttachmentType {
+  inspiration_image
+  sketch
+  fabric_reference
+  measurement_document
+}
+
+model AppointmentSlot {
+  id          String          @id @default(cuid())
+  designerId  String          @map("designer_id")
+  date        String          // YYYY-MM-DD
+  startTime   String          @map("start_time") // HH:mm
+  endTime     String          @map("end_time")   // HH:mm
+  type        AppointmentType @default(virtual)
+  isAvailable Boolean         @default(true) @map("is_available")
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  designer     DesignerHouse       @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  appointments AppointmentRequest[]
+
+  @@index([designerId, date, isAvailable])
+  @@map("appointment_slots")
+}
+
+model MeasurementProfile {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String   @default("Standard Fit")
+  isDefault Boolean  @default(false) @map("is_default")
+  unit      String   @default("inches")
+  height    Float?
+  chest     Float?
+  waist     Float?
+  hip       Float?
+  shoulder  Float?
+  sleeve    Float?
+  inseam    Float?
+  neck      Float?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("measurement_profiles")
+}
+
+model BespokeAttachment {
+  id        String         @id @default(cuid())
+  requestId String         @map("request_id")
+  url       String
+  title     String?
+  type      AttachmentType @default(inspiration_image)
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  request CustomizationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@map("bespoke_attachments")
+}
+
+model BespokeMessage {
+  id         String   @id @default(cuid())
+  requestId  String   @map("request_id")
+  senderId   String   @map("sender_id")
+  senderRole String   // "buyer" | "designer" | "system"
+  message    String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  request CustomizationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt])
+  @@map("bespoke_messages")
+}
+
+enum ApplicationStatus {
+  pending
+  under_review
+  approved
+  rejected
+  more_info_needed
+}
+
+model DesignerApplication {
+  id               String            @id @default(cuid())
+  applicantName    String            @map("applicant_name")
+  applicantEmail   String            @map("applicant_email")
+  applicantPhone   String            @map("applicant_phone")
+  applicantCity    String            @map("applicant_city")
+  brandName        String            @map("brand_name")
+  brandStory       String            @map("brand_story") @db.Text
+  designPhilosophy String?           @map("design_philosophy") @db.Text
+  portfolioImages  String[]          @map("portfolio_images")
+  instagramHandle  String?           @map("instagram_handle")
+  websiteUrl       String?           @map("website_url")
+  categories       String[]
+  priceRange       String            @map("price_range")
+  status           ApplicationStatus @default(pending)
+  adminNotes       String?           @map("admin_notes") @db.Text
+  reviewedBy       String?           @map("reviewed_by")
+  reviewedAt       DateTime?         @map("reviewed_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  @@map("designer_applications")
+}
+
+model BusinessVerification {
+  id                 String        @id @default(cuid())
+  designerId         String        @unique @map("designer_id")
+  businessType       String        @map("business_type")
+  gstin              String?
+  panNumber          String        @map("pan_number")
+  bankAccountName    String        @map("bank_account_name")
+  bankAccountNumber  String        @map("bank_account_number")
+  bankIfsc           String        @map("bank_ifsc")
+  cancelledChequeUrl String?       @map("cancelled_cheque_url")
+  shippingPincode    String        @map("shipping_pincode")
+  shippingCity       String        @map("shipping_city")
+  shippingState      String        @map("shipping_state")
+  shippingAddress    String        @map("shipping_address")
+  isGstVerified      Boolean       @default(false) @map("is_gst_verified")
+  isBankVerified     Boolean       @default(false) @map("is_bank_verified")
+  verifiedAt         DateTime?     @map("verified_at")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  designer           DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@map("business_verifications")
+}
+
+enum ProductListingType {
+  COMMERCIAL
+  CONCEPT_ART
+}
+
+enum ConceptActionCTA {
+  EXPRESS_INTEREST
+  BESPOKE_INQUIRY
+  PRE_ORDER_DEPOSIT
+}
+
+enum ShippingZoneType {
+  zone_a
+  zone_b
+  zone_c
+  zone_d
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String   @map("product_id")
+  size      String
+  color     String?
+  sku       String   @unique
+  stock     Int      @default(0)
+  price     Int?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, size, color])
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ConceptInterest {
+  id        String   @id @default(cuid())
+  productId String   @map("product_id")
+  userId    String?  @map("user_id")
+  name      String
+  email     String
+  phone     String?
+  notes     String?  @db.Text
+  status    String   @default("new")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("concept_interests")
+}
+
+model ShippingZone {
+  id      String           @id @default(cuid())
+  pincode String           @unique
+  state   String
+  zone    ShippingZoneType
+
+  @@map("shipping_zones")
+}
+
+model ShippingRate {
+  id            String           @id @default(cuid())
+  designerId    String?          @map("designer_id")
+  zone          ShippingZoneType
+  weightSlabMin Int              @map("weight_slab_min")
+  weightSlabMax Int              @map("weight_slab_max")
+  price         Int
+
+  @@unique([designerId, zone, weightSlabMin])
+  @@map("shipping_rates")
+}
+
+
