@@ -38,6 +38,15 @@ const BUYER_ITEMS: NavItem[] = [
     ),
   },
   {
+    label: "Houses",
+    href: "/designers",
+    icon: (active: boolean) => (
+      <svg className="w-5.5 h-5.5" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25a.75.75 0 01-.75-.75V10.5a.75.75 0 01.225-.53l7.5-7.5a.75.75 0 011.05 0l7.5 7.5a.75.75 0 01.225.53v9.75a.75.75 0 01-.75.75H13.5z" />
+      </svg>
+    ),
+  },
+  {
     label: "Category",
     href: "/category",
     icon: (active: boolean) => (

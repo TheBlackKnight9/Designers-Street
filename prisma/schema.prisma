@@ -57,6 +57,8 @@ enum OrderStatus {
   shipped
   delivered
   cancelled
+  cancelled_by_designer
+  disputed
 }
 
 enum CustomizationStatus {
@@ -150,7 +152,14 @@ model DesignerHouse {
   studioLocation        String?       @map("studio_location")
   awards                String[]      @default([])
   pressMentions         Json?         @map("press_mentions")
-  editorialGallery      String[]              @default([]) @map("editorial_gallery")
+  editorialGallery      String[]      @default([]) @map("editorial_gallery")
+  socialLinks           Json?                 @map("social_links")
+  returnAddressLine1    String?               @map("return_address_line1")
+  returnAddressLine2    String?               @map("return_address_line2")
+  returnCity            String?               @map("return_city")
+  returnState           String?               @map("return_state")
+  returnPincode         String?               @map("return_pincode")
+  returnPhone           String?               @map("return_phone")
   accountStatus         AccountStatus         @default(active) @map("account_status")
   razorpayAccountId     String?               @map("razorpay_account_id")
   razorpayAccountStatus String?               @map("razorpay_account_status")
@@ -171,6 +180,8 @@ model DesignerHouse {
   editorialArticles     EditorialArticle[]
   appointmentSlots      AppointmentSlot[]
   businessVerification  BusinessVerification?
+  orders                Order[]
+  payouts               Payout[]
 
   @@map("designer_houses")
 }
@@ -224,6 +235,7 @@ model Product {
   manufacturerAddress  String?            @map("manufacturer_address")
   countryOfOrigin      String?            @default("India") @map("country_of_origin")
   sizeChart            Json?              @map("size_chart")
+  aPlusContent         Json?              @map("a_plus_content")
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @default(now()) @updatedAt @map("updated_at")
 
@@ -433,23 +445,125 @@ model Follow {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  userId          String      @map("user_id")
-  status          OrderStatus @default(pending)
-  subtotal        Int
-  total           Int
-  currency        String      @default("INR")
-  shippingAddress Json?       @map("shipping_address")
-  paymentStatus   String      @default("pending") @map("payment_status")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  id                  String        @id @default(cuid())
+  userId              String        @map("user_id")
+  parentPaymentId     String?       @map("parent_payment_id")
+  designerId          String?       @map("designer_id")
+  status              OrderStatus   @default(pending)
+  subtotal            Int
+  shippingFee         Int           @default(0) @map("shipping_fee")
+  total               Int
+  currency            String        @default("INR")
+  commissionAmount    Int           @default(0) @map("commission_amount")
+  commissionGst       Int           @default(0) @map("commission_gst")
+  tcsDeducted         Int           @default(0) @map("tcs_deducted")
+  designerNetEarnings Int           @default(0) @map("designer_net_earnings")
+  payoutId            String?       @map("payout_id")
+  razorpayTransferId  String?       @map("razorpay_transfer_id")
+  transferOnHoldUntil DateTime?     @map("transfer_on_hold_until")
+  shippingAddress     Json?         @map("shipping_address")
+  paymentStatus       String        @default("pending") @map("payment_status")
+  courierName         String?       @map("courier_name")
+  trackingNumber      String?       @map("tracking_number")
+  trackingUrl         String?       @map("tracking_url")
+  shippedAt           DateTime?     @map("shipped_at")
+  expectedDelivery    DateTime?     @map("expected_delivery")
+  deliveredAt         DateTime?     @map("delivered_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @default(now()) @updatedAt @map("updated_at")
 
-  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items   OrderItem[]
-  events  OrderEvent[]
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment  Payment?       @relation(fields: [parentPaymentId], references: [id], onDelete: SetNull)
+  designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  payout   Payout?        @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+  events   OrderEvent[]
+  disputes OrderDispute[]
 
   @@index([userId])
+  @@index([designerId])
+  @@index([parentPaymentId])
   @@map("orders")
+}
+
+enum PaymentStatus {
+  created
+  authorized
+  captured
+  failed
+  refunded
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  razorpayOrderId   String        @unique @map("razorpay_order_id")
+  razorpayPaymentId String?       @unique @map("razorpay_payment_id")
+  amount            Int
+  currency          String        @default("INR")
+  status            PaymentStatus @default(created)
+  method            String?
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@map("payments")
+}
+
+enum DisputeStatus {
+  open
+  investigating
+  resolved
+}
+
+model OrderDispute {
+  id          String        @id @default(cuid())
+  orderId     String        @map("order_id")
+  buyerReason String        @map("buyer_reason")
+  description String?
+  status      DisputeStatus @default(open)
+  adminNotes  String?       @map("admin_notes")
+  resolution  String?
+  resolvedBy  String?       @map("resolved_by")
+  resolvedAt  DateTime?     @map("resolved_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_disputes")
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+model Payout {
+  id                  String        @id @default(cuid())
+  designerId          String        @map("designer_id")
+  payoutPeriodStart   DateTime      @map("payout_period_start")
+  payoutPeriodEnd     DateTime      @map("payout_period_end")
+  grossSales          Int           @map("gross_sales")
+  totalCommission     Int           @map("total_commission")
+  totalCommissionGst  Int           @map("total_commission_gst")
+  totalTcsDeducted    Int           @map("total_tcs_deducted")
+  netAmount           Int           @map("net_amount")
+  status              PayoutStatus  @default(pending)
+  method              String        @default("razorpay_route")
+  razorpayBatchId     String?       @map("razorpay_batch_id")
+  paidAt              DateTime?     @map("paid_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  designer DesignerHouse @relation(fields: [designerId], references: [id], onDelete: Cascade)
+  orders   Order[]
+
+  @@index([designerId])
+  @@map("payouts")
 }
 
 model OrderItem {

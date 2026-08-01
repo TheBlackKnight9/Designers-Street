@@ -1,20 +1,24 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
-import { BottomNav } from "@/components/BottomNav";
 import { formatPrice } from "@/lib/mock-data";
-import { Suspense } from "react";
 
 type OrderDetail = {
   id: string;
   status: string;
   paymentStatus: string;
   subtotal: number;
+  shippingFee: number;
   total: number;
+  courierName?: string | null;
+  trackingNumber?: string | null;
+  trackingUrl?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
   createdAt: string;
   shippingAddress: Record<string, unknown> | null;
   items: Array<{
@@ -34,11 +38,24 @@ type OrderDetail = {
   }>;
 };
 
+const TIMELINE_STEPS = [
+  { key: "pending", label: "Placed" },
+  { key: "paid", label: "Confirmed" },
+  { key: "processing", label: "In Atelier" },
+  { key: "shipped", label: "Shipped" },
+  { key: "delivered", label: "Delivered" },
+];
+
 function OrderDetailInner({ orderId }: { orderId: string }) {
   const params = useSearchParams();
   const placed = params.get("placed") === "1";
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("Non-delivery / Item Not Received");
+  const [disputeDesc, setDisputeDesc] = useState("");
+  const [disputeSubmitting, setDisputeSubmitting] = useState(false);
 
   useEffect(() => {
     fetch(`/api/orders/${encodeURIComponent(orderId)}`)
@@ -47,116 +64,198 @@ function OrderDetailInner({ orderId }: { orderId: string }) {
         if (!body?.ok) throw new Error(body?.error?.message || "Not found");
         setOrder(body.data.order);
       })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Failed to load")
-      );
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load"));
   }, [orderId]);
+
+  async function handleDisputeSubmit() {
+    setDisputeSubmitting(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/dispute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ buyerReason: disputeReason, description: disputeDesc }),
+      });
+      const data = await res.json();
+      if (res.ok && data?.ok) {
+        setShowDisputeModal(false);
+        setOrder((prev) => (prev ? { ...prev, status: "disputed" } : null));
+      }
+    } catch {
+      /* handle error */
+    } finally {
+      setDisputeSubmitting(false);
+    }
+  }
 
   if (error) {
     return (
       <main className="min-h-screen px-4 py-16 text-center">
         <p className="text-sm text-red-700 mb-4">{error}</p>
-        <Link href="/orders" className="underline text-sm">
-          Back to orders
-        </Link>
+        <Link href="/orders" className="underline text-xs font-bold text-stone">Back to orders</Link>
       </main>
     );
   }
 
   if (!order) {
     return (
-      <main className="min-h-screen px-4 py-16 text-center text-stone text-sm">
-        Loading order…
+      <main className="min-h-screen px-4 py-16 text-center text-stone text-sm animate-pulse">
+        Loading order details…
       </main>
     );
   }
 
   const ship = order.shippingAddress || {};
+  const currentStepIndex = TIMELINE_STEPS.findIndex((s) => s.key === order.status);
 
   return (
-    <main className="min-h-screen pb-24">
-      <div className="px-4 pt-5 pb-4">
-        {placed && (
-          <p className="mb-3 text-sm text-emerald-800 bg-emerald-50 rounded-lg px-3 py-2">
-            Order placed. Payment is pending until checkout payment is enabled.
-          </p>
-        )}
-        <h1 className="font-display text-2xl font-bold text-[#2B2B2B] uppercase tracking-wide">
-          Order
-        </h1>
-        <p className="font-sans text-xs text-[#7A7A7A] mt-1">
-          {order.id.slice(0, 8)}… · {order.status} · payment{" "}
-          {order.paymentStatus}
+    <main className="min-h-screen pb-28 max-w-3xl mx-auto px-4 pt-6 space-y-6">
+      <div>
+        <Link href="/orders" className="text-xs font-bold text-stone hover:text-charcoal">
+          ← All Orders
+        </Link>
+        <div className="flex items-center justify-between mt-2">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
+            Order #{order.id.slice(-8)}
+          </h1>
+          <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-charcoal text-paper">
+            {order.status}
+          </span>
+        </div>
+        <p className="text-xs text-stone mt-1">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+      </div>
+
+      {/* Step-by-Step Visual Timeline */}
+      <div className="bg-white p-6 rounded-3xl border border-cloud space-y-4 shadow-xs">
+        <h2 className="font-display text-sm font-bold uppercase text-charcoal">Fulfillment Progress</h2>
+        <div className="grid grid-cols-5 gap-1 items-center">
+          {TIMELINE_STEPS.map((step, idx) => {
+            const isCompleted = currentStepIndex >= idx || order.status === "delivered";
+            return (
+              <div key={step.key} className="text-center space-y-1.5">
+                <div
+                  className={`w-6 h-6 mx-auto rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    isCompleted ? "bg-charcoal text-paper" : "bg-mist text-stone"
+                  }`}
+                >
+                  {isCompleted ? "✓" : idx + 1}
+                </div>
+                <span className="text-[10px] font-bold uppercase block text-stone truncate">{step.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Courier & Tracking Card */}
+      {order.courierName && (
+        <div className="bg-white p-6 rounded-3xl border border-cloud space-y-3 shadow-xs">
+          <h2 className="font-display text-sm font-bold uppercase text-charcoal">Courier Tracking Details</h2>
+          <div className="flex items-center justify-between text-xs">
+            <div>
+              <p className="font-bold text-charcoal">{order.courierName}</p>
+              <p className="font-mono text-stone">AWB: {order.trackingNumber}</p>
+            </div>
+            {order.trackingUrl && (
+              <a
+                href={order.trackingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 bg-charcoal text-paper text-xs font-bold uppercase rounded-full shadow-xs hover:bg-black"
+              >
+                Track Package ↗
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Purchased Items */}
+      <div className="bg-white p-6 rounded-3xl border border-cloud space-y-4 shadow-xs">
+        <h2 className="font-display text-sm font-bold uppercase text-charcoal">Garment Items</h2>
+        <div className="space-y-3">
+          {order.items.map((item) => (
+            <div key={item.id} className="flex gap-3 items-center">
+              <div className="relative w-14 h-16 rounded-xl bg-mist overflow-hidden shrink-0 border border-cloud">
+                <Image src={item.image} alt={item.name} fill className="object-cover" sizes="56px" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs uppercase text-stone font-bold">{item.brand}</p>
+                <p className="text-xs font-bold text-charcoal truncate">{item.name}</p>
+                <p className="text-[10px] text-stone">Size: {item.size} · Qty: {item.quantity}</p>
+              </div>
+              <p className="text-xs font-mono font-bold text-charcoal">{formatPrice(item.price * item.quantity)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Buyer Protection & Dispute Button */}
+      <div className="bg-white p-6 rounded-3xl border border-cloud space-y-3 shadow-xs">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-sm font-bold uppercase text-charcoal">Buyer Protection</h2>
+          <button
+            type="button"
+            onClick={() => setShowDisputeModal(true)}
+            className="text-xs font-bold text-stone underline hover:text-red-700"
+          >
+            Report Issue / Not Received
+          </button>
+        </div>
+        <p className="text-[11px] text-stone leading-relaxed">
+          If your order package is delayed or non-delivered, you can file a formal dispute to freeze payout settlement until verified.
         </p>
       </div>
 
-      <div className="px-4 space-y-3 mb-6">
-        {order.items.map((item) => (
-          <div key={item.id} className="flex gap-3 p-3 bg-[#F0F0F0] rounded-xl">
-            <div className="relative w-16 h-20 rounded-lg overflow-hidden bg-[#E0E0E0]">
-              <Image
-                src={item.image}
-                alt={item.name}
-                fill
-                className="object-cover"
-                sizes="64px"
+      {/* Dispute Modal */}
+      {showDisputeModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md p-6 rounded-3xl space-y-4 shadow-xl">
+            <h3 className="font-display text-lg font-bold uppercase text-charcoal">Report Non-Delivery / Dispute</h3>
+
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Dispute Reason</span>
+              <select
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs font-bold outline-none"
+              >
+                <option value="Non-delivery / Item Not Received">Non-delivery / Item Not Received</option>
+                <option value="Damaged Garment Received">Damaged Garment Received</option>
+                <option value="Wrong Item Shipped">Wrong Item Shipped</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Description / Details</span>
+              <textarea
+                rows={3}
+                value={disputeDesc}
+                onChange={(e) => setDisputeDesc(e.target.value)}
+                placeholder="Provide tracking notes or details for admin investigation..."
+                className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs outline-none resize-none"
               />
-            </div>
-            <div>
-              <p className="text-xs uppercase text-stone">{item.brand}</p>
-              <p className="text-sm font-medium">{item.name}</p>
-              <p className="text-xs text-stone">
-                Size {item.size} · Qty {item.quantity}
-              </p>
-              <p className="text-sm font-semibold mt-1">
-                {formatPrice(item.price * item.quantity)}
-              </p>
+            </label>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDisputeModal(false)}
+                className="flex-1 py-3 border border-cloud text-stone text-xs font-bold uppercase rounded-full"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={disputeSubmitting}
+                onClick={handleDisputeSubmit}
+                className="flex-2 py-3 bg-red-800 text-white text-xs font-bold uppercase rounded-full shadow-md disabled:opacity-60 hover:bg-red-900"
+              >
+                {disputeSubmitting ? "Filing..." : "Submit Dispute & Freeze Payout"}
+              </button>
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="px-4 mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-stone mb-2">
-          Shipping
-        </h2>
-        <p className="text-sm text-charcoal">
-          {String(ship.fullName || "")}
-          <br />
-          {String(ship.line1 || "")}
-          {ship.line2 ? `, ${String(ship.line2)}` : ""}
-          <br />
-          {String(ship.city || "")}, {String(ship.state || "")}{" "}
-          {String(ship.postalCode || "")}
-        </p>
-        <p className="text-sm font-semibold mt-3">
-          Total {formatPrice(order.total)}
-        </p>
-      </div>
-
-      <div className="px-4">
-        <h2 className="text-xs uppercase tracking-wider text-stone mb-3">
-          Timeline
-        </h2>
-        <ol className="space-y-3 border-l border-cloud pl-4">
-          {order.events.map((ev) => (
-            <li key={ev.id} className="relative">
-              <span className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-charcoal" />
-              <p className="text-sm font-semibold capitalize">{ev.status}</p>
-              {ev.note && <p className="text-xs text-stone">{ev.note}</p>}
-              <p className="text-[10px] text-stone mt-0.5">
-                {new Date(ev.createdAt).toLocaleString()}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      <div className="px-4 mt-8">
-        <Link href="/orders" className="text-sm underline text-stone">
-          ← All orders
-        </Link>
-      </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -170,16 +269,9 @@ export default function OrderDetailPage({
   return (
     <>
       <TopBar />
-      <Suspense
-        fallback={
-          <main className="min-h-screen px-4 py-16 text-center text-sm text-stone">
-            Loading…
-          </main>
-        }
-      >
+      <Suspense fallback={<main className="min-h-screen px-4 py-16 text-center text-sm text-stone">Loading…</main>}>
         <OrderDetailInner orderId={id} />
       </Suspense>
-      <BottomNav />
     </>
   );
 }

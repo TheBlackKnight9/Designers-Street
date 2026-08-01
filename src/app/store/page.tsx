@@ -194,6 +194,12 @@ export default function StorePage() {
 
         {/* Scrollable Quick-Filter pills exactly like image */}
         <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#F0F0F0] overflow-x-auto hide-scrollbar flex items-center gap-2">
+          <Link
+            href="/designers"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full font-sans text-xs font-bold border border-charcoal bg-charcoal text-paper shadow-xs hover:bg-black transition-colors"
+          >
+            🏬 Browse Houses
+          </Link>
           {[
             { id: "all", label: "✨ Shop All" },
             { id: "fast-delivery", label: "⚡ Fast Delivery" },

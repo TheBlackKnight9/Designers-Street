@@ -23,6 +23,7 @@ import { LuxuryBadges } from "@/components/luxury/LuxuryBadges";
 import { ScarcityStrip } from "@/components/luxury/ScarcityStrip";
 import { EditionBadge } from "@/components/luxury/EditionBadge";
 import { TrustSignals } from "@/components/luxury/TrustSignals";
+import { APlusContentRenderer } from "@/components/product/APlusContentRenderer";
 import { getEditionInfo } from "@/lib/luxury";
 import { getDesignerUrl } from "@/lib/routes";
 
@@ -566,6 +567,9 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* A+ Rich Content Module Renderer */}
+        <APlusContentRenderer modules={(product as any)?.aPlusContent} />
+
         {/* Recommendations */}
         {recommendations.length > 0 && (
           <div className="mt-8 px-4">
@@ -580,7 +584,6 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
         )}
       </main>
-      <BottomNav />
     </>
   );
 }

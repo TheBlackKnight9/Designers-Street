@@ -38,6 +38,17 @@ export function TopBar() {
           </button>
 
           <Link
+            href="/designers"
+            className="touch-target flex items-center justify-center p-2 rounded-full active:scale-95 transition-transform"
+            aria-label="Designer Houses"
+            title="Designer Houses Directory"
+          >
+            <svg className="w-5 h-5 text-[#2B2B2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25a.75.75 0 01-.75-.75V10.5a.75.75 0 01.225-.53l7.5-7.5a.75.75 0 011.05 0l7.5 7.5a.75.75 0 01.225.53v9.75a.75.75 0 01-.75.75H13.5z" />
+            </svg>
+          </Link>
+
+          <Link
             href="/wishlist"
             className="touch-target flex items-center justify-center relative p-2 rounded-full active:scale-95 transition-transform"
             aria-label="Wishlist"

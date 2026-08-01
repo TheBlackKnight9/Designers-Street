@@ -285,7 +285,10 @@ export async function listProductsByCategory(
 
 export async function listDesigners(): Promise<DesignerHouse[]> {
   if (!isRemoteApiEnabled()) return DESIGNERS;
-  return getJson<DesignerHouse[]>("/api/designers");
+  const res = await getJson<any>("/api/designers");
+  if (Array.isArray(res)) return res;
+  if (res && Array.isArray(res.items)) return res.items;
+  return [];
 }
 
 export async function getDesigner(id: string): Promise<DesignerHouse | null> {
