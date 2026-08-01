@@ -11,7 +11,7 @@ export default function SellerTermsPage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen bg-paper pb-24 px-4 pt-6 max-w-3xl mx-auto space-y-6">
+      <main className="min-h-screen bg-paper pb-12 px-4 pt-6 max-w-3xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard/settings/verification" className="text-xs text-stone hover:text-charcoal font-semibold">
             ← Back to Verification
@@ -60,7 +60,6 @@ export default function SellerTermsPage() {
           </section>
         </div>
       </main>
-      <BottomNav />
     </>
   );
 }

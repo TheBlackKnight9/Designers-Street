@@ -147,7 +147,6 @@ export default function AdminProductReviewsPage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </>
   );
 }

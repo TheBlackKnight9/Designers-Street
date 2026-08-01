@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { MediaViewerProvider } from "@/context/MediaViewerContext";
+import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -38,10 +39,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-paper text-charcoal">
+      <body className="min-h-full flex flex-col bg-paper text-charcoal pb-28">
         <CartProvider>
           <WishlistProvider>
-            <MediaViewerProvider>{children}</MediaViewerProvider>
+            <MediaViewerProvider>
+              {children}
+              <BottomNav />
+            </MediaViewerProvider>
           </WishlistProvider>
         </CartProvider>
       </body>

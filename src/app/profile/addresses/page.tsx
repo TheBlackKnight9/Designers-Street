@@ -444,7 +444,6 @@ export default function ProfileAddressesPage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </>
   );
 }

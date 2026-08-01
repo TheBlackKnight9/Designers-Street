@@ -490,7 +490,6 @@ export default function DesignerApplyPage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </>
   );
 }
