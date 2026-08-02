@@ -2,8 +2,8 @@ const DEFAULT_PLACEHOLDER =
   "https://images.unsplash.com/photo-1618220179428-22790b461013?w=800&q=80";
 
 /**
- * Validates and sanitizes image URLs for Next.js <Image /> component.
- * Prevents "Failed to parse src 'na' on next/image" and "Failed to construct 'URL': Invalid URL" errors.
+ * Validates and sanitizes image URLs for Next.js <Image /> and standard <img> tags.
+ * Prevents broken image icons when stored URLs are empty, invalid, or relative.
  */
 export function sanitizeImageUrl(
   url?: string | null,
@@ -12,29 +12,29 @@ export function sanitizeImageUrl(
   if (!url || typeof url !== "string") return fallback;
   const clean = url.trim();
 
-  // Common invalid string values stored in DB or form defaults
   if (
     clean === "" ||
     clean.toLowerCase() === "na" ||
     clean.toLowerCase() === "n/a" ||
     clean.toLowerCase() === "undefined" ||
-    clean.toLowerCase() === "null font-mono" ||
-    clean.toLowerCase() === "null"
+    clean.toLowerCase() === "null" ||
+    clean.toLowerCase().includes("null font-mono")
   ) {
     return fallback;
   }
 
-  // Valid formats for next/image
+  // Valid image URL formats
   if (
     clean.startsWith("/") ||
     clean.startsWith("http://") ||
     clean.startsWith("https://") ||
-    clean.startsWith("data:image/")
+    clean.startsWith("data:") ||
+    clean.startsWith("blob:")
   ) {
     return clean;
   }
 
-  // If missing leading slash for relative paths (e.g. "images/sample.jpg")
+  // Handle relative paths without leading slash
   if (!clean.includes("://") && !clean.startsWith("/")) {
     return `/${clean}`;
   }
@@ -58,6 +58,7 @@ export function isValidImageUrl(url?: string | null): boolean {
     clean.startsWith("/") ||
     clean.startsWith("http://") ||
     clean.startsWith("https://") ||
-    clean.startsWith("data:image/")
+    clean.startsWith("data:") ||
+    clean.startsWith("blob:")
   );
 }

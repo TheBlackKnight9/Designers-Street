@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/dashboard/Toast";
+import { sanitizeImageUrl } from "@/lib/utils/image-url";
 
 type Post = {
   id: string;
@@ -96,7 +97,7 @@ export default function DashboardPostsPage() {
             <div key={post.id} className="bg-white rounded-3xl border border-cloud overflow-hidden shadow-xs space-y-3">
               <div className="relative aspect-4/5 bg-black/5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={post.image} alt="" className="w-full h-full object-cover" />
+                <img src={sanitizeImageUrl(post.image)} alt="" className="w-full h-full object-cover" />
                 {post.videoUrl && (
                   <span className="absolute top-2 right-2 px-2 py-1 bg-black/70 text-white text-[9px] font-bold uppercase rounded-md backdrop-blur-xs">
                     ▶ Video

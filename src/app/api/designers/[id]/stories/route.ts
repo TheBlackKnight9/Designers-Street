@@ -7,13 +7,25 @@ import type { StoryItem } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-/** GET /api/feed/stories - Returns unique active stories & highlights for feed tray */
-export async function GET() {
+/** GET /api/designers/[id]/stories - Get unique stories for a specific designer house */
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
+
     let dbStories: StoryItem[] = [];
 
     try {
       const rows = await prisma.story.findMany({
+        where: {
+          OR: [
+            { designerId: id },
+            { designer: { handle: { equals: id, mode: "insensitive" } } },
+            { designer: { name: { equals: id, mode: "insensitive" } } },
+          ],
+        },
         include: {
           slides: true,
           designer: true,
@@ -28,7 +40,12 @@ export async function GET() {
       /* fallback */
     }
 
-    const memMapped: StoryItem[] = MEM_STORIES.map((s) => ({
+    const memMatches: StoryItem[] = MEM_STORIES.filter(
+      (s) =>
+        s.designerId === id ||
+        s.designer?.handle?.toLowerCase() === id.toLowerCase() ||
+        s.designer?.name?.toLowerCase() === id.toLowerCase()
+    ).map((s) => ({
       id: s.id,
       designerId: s.designerId,
       designerName: s.designer?.name || "Atelier",
@@ -42,10 +59,14 @@ export async function GET() {
       })),
     }));
 
-    // Deduplicate by story ID
-    const storyMap = new Map<string, StoryItem>();
+    const mockMatches = STORIES.filter(
+      (s) =>
+        s.designerId === id ||
+        s.designerName?.toLowerCase() === id.toLowerCase()
+    );
 
-    for (const story of memMapped) {
+    const storyMap = new Map<string, StoryItem>();
+    for (const story of memMatches) {
       storyMap.set(story.id, story);
     }
     for (const story of dbStories) {
@@ -53,7 +74,7 @@ export async function GET() {
         storyMap.set(story.id, story);
       }
     }
-    for (const mock of STORIES) {
+    for (const mock of mockMatches) {
       if (!storyMap.has(mock.id)) {
         storyMap.set(mock.id, mock);
       }
@@ -62,6 +83,6 @@ export async function GET() {
     const uniqueStories = Array.from(storyMap.values());
     return ok(uniqueStories);
   } catch (error) {
-    return ok(STORIES);
+    return fail(error);
   }
 }

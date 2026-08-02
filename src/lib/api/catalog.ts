@@ -367,8 +367,14 @@ export async function listFeed(options?: {
 }
 
 export async function listStories(): Promise<StoryItem[]> {
-  if (!isRemoteApiEnabled()) return STORIES;
-  return getJson<StoryItem[]>("/api/feed/stories");
+  try {
+    const res = await getJson<StoryItem[] | { stories?: StoryItem[] }>("/api/feed/stories");
+    const items = Array.isArray(res) ? res : ((res as any)?.stories || []);
+    if (items.length > 0) return items;
+    return STORIES;
+  } catch {
+    return STORIES;
+  }
 }
 
 export async function listCategories(): Promise<Category[]> {

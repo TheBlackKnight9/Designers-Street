@@ -95,7 +95,14 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
 
   return (
     <div className="fixed inset-0 z-[70] bg-[#E0E5EC] flex flex-col animate-fade-in">
-      <div className="flex items-center gap-3 px-4 h-[var(--top-bar-height)] border-b border-white/40 shadow-xs">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onClose();
+          window.location.href = query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/search";
+        }}
+        className="flex items-center gap-3 px-4 h-[var(--top-bar-height)] border-b border-white/40 shadow-xs"
+      >
         <svg
           className="w-5 h-5 text-[#A0A0A0] flex-shrink-0"
           fill="none"
@@ -117,6 +124,13 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
           placeholder="Search designers, collections, occasions…"
           className="flex-1 bg-transparent font-sans text-sm text-[#2B2B2B] placeholder:text-[#A0A0A0] outline-none"
         />
+        <Link
+          href={query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/search"}
+          onClick={onClose}
+          className="px-3 py-1.5 bg-[#2B2B2B] text-white font-sans text-xs font-bold uppercase rounded-full"
+        >
+          Search
+        </Link>
         <button
           type="button"
           onClick={onClose}
@@ -124,9 +138,19 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
         >
           Cancel
         </button>
-      </div>
+      </form>
 
       <div className="flex-1 overflow-y-auto px-4 py-5">
+        <div className="mb-4 bg-white p-3.5 rounded-2xl border border-cloud flex justify-between items-center shadow-xs">
+          <span className="text-xs font-bold text-charcoal">Looking for filters &amp; detailed discovery?</span>
+          <Link
+            href={query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/search"}
+            onClick={onClose}
+            className="px-3 py-1.5 bg-mist text-charcoal border border-cloud text-xs font-bold uppercase rounded-full hover:bg-cloud"
+          >
+            Faceted Search Page ↗
+          </Link>
+        </div>
         {lowerQuery.length < 2 ? (
           <>
             <div className="mb-6">

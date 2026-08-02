@@ -217,17 +217,36 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (!res.ok || !data?.ok) {
-        throw new Error(data?.error?.message || "Order creation failed");
+        throw new Error(data?.error?.message || "Order creation failed. Please try again.");
       }
 
-      const { razorpayOrderId, keyId, amount } = data.data;
+      const { razorpayOrderId, keyId, amount, isMockPayment } = data.data;
 
-      // 2. Load Razorpay SDK Script
+      // ── MOCK PAYMENT PATH (no real Razorpay keys set) ──────────────────
+      if (isMockPayment) {
+        await fetch("/api/checkout/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            razorpayPaymentId: `pay_mock_${Date.now()}`,
+            razorpayOrderId: razorpayOrderId,
+            razorpaySignature: "",
+          }),
+        });
+        await clearCart();
+        await refreshCart();
+        router.replace(`/orders/confirmation?razorpay_payment_id=pay_mock_${Date.now()}`);
+        return;
+      }
+
+      // ── REAL RAZORPAY PATH (test OR live key) ─────────────────────────
+      // 2. Load Razorpay SDK Script dynamically
       if (!window.Razorpay) {
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve, reject) => {
           const script = document.createElement("script");
           script.src = "https://checkout.razorpay.com/v1/checkout.js";
-          script.onload = resolve;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
           document.body.appendChild(script);
         });
       }
@@ -237,64 +256,68 @@ export default function CheckoutPage() {
         amount: amount,
         currency: "INR",
         name: "Designer's Street",
-        description: `Curated Luxury Order — ${appliedCoupon ? `${appliedCoupon.code} + ` : ""}₹100 Online Discount Applied`,
-        order_id: razorpayOrderId.startsWith("order_rzp_mock") ? undefined : razorpayOrderId,
-        handler: async function (response: any) {
+        description: `Curated Luxury Order${appliedCoupon ? ` · ${appliedCoupon.code}` : ""} · ₹100 Prepaid Discount Applied`,
+        image: "/logo.png",
+        order_id: razorpayOrderId,
+        handler: async function (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) {
           try {
             const verifyRes = await fetch("/api/checkout/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                razorpayPaymentId: response.razorpay_payment_id || `pay_mock_${Date.now()}`,
-                razorpayOrderId: razorpayOrderId,
-                razorpaySignature: response.razorpay_signature || "",
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
+                razorpaySignature: response.razorpay_signature,
               }),
             });
             const verifyData = await verifyRes.json();
 
+            if (!verifyRes.ok || !verifyData?.ok) {
+              setError("Payment verification failed. Please contact support with your payment ID: " + response.razorpay_payment_id);
+              setLoading(false);
+              return;
+            }
+
             await clearCart();
             await refreshCart();
-            const pId = response.razorpay_payment_id || verifyData?.data?.paymentId || "pay_mock";
-            router.replace(`/orders/confirmation?razorpay_payment_id=${pId}`);
+            router.replace(`/orders/confirmation?razorpay_payment_id=${response.razorpay_payment_id}`);
           } catch {
-            await clearCart();
-            await refreshCart();
-            router.replace(`/orders/confirmation?razorpay_payment_id=pay_mock_${Date.now()}`);
+            setError("Payment received but verification failed. Please save your Payment ID: " + response.razorpay_payment_id);
+            setLoading(false);
           }
         },
         prefill: {
-          name: useNew ? form.fullName : selectedAddr?.fullName,
-          contact: useNew ? form.phone : selectedAddr?.phone,
+          name: useNew ? form.fullName : selectedAddr?.fullName || "",
+          contact: useNew ? form.phone : selectedAddr?.phone || "",
         },
+        // No method filtering — Razorpay shows all enabled methods from the dashboard
+        // (UPI, Cards, Netbanking, Wallet, Pay Later) automatically
         theme: {
           color: "#101010",
+          hide_topbar: false,
         },
         modal: {
           ondismiss: function () {
             setLoading(false);
-            router.push("/checkout/failed?reason=dismissed");
+            setError("Payment was cancelled. Your cart is still saved.");
           },
+          animation: true,
+          backdropclose: false,
         },
       };
 
-      if (window.Razorpay && !keyId.startsWith("rzp_test_mock")) {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } else {
-        await fetch("/api/checkout/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            razorpayPaymentId: `pay_mock_${Date.now()}`,
-            razorpayOrderId: razorpayOrderId,
-          }),
-        });
-        await clearCart();
-        await refreshCart();
-        router.replace(`/orders/confirmation?razorpay_payment_id=pay_mock_${Date.now()}`);
-      }
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        setLoading(false);
+        setError(`Payment failed: ${response.error?.description || "Unknown error"}. Code: ${response.error?.code || ""}`);
+      });
+      rzp.open();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Checkout error");
+      setError(err instanceof Error ? err.message : "Checkout error. Please try again.");
       setLoading(false);
     }
   }

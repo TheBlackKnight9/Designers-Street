@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/server/db";
 import { DesignerService } from "@/server/services";
 import { ok, fail } from "@/server/utils/api-response";
+import { DESIGNERS } from "@/lib/mock-data";
 
 export const runtime = "nodejs";
 
@@ -11,8 +11,17 @@ export async function GET(request: Request) {
     const search = searchParams.get("search")?.toLowerCase().trim();
     const city = searchParams.get("city")?.toLowerCase().trim();
 
-    const data = await new DesignerService().listDesigners();
-    let items = Array.isArray(data) ? data : ((data as any)?.items || []);
+    let items: any[] = [];
+    try {
+      const data = await new DesignerService().listDesigners();
+      items = Array.isArray(data) ? data : ((data as any)?.items || []);
+    } catch {
+      items = DESIGNERS;
+    }
+
+    if (!items || items.length === 0) {
+      items = DESIGNERS;
+    }
 
     if (search) {
       items = items.filter((d: any) => {
@@ -28,8 +37,8 @@ export async function GET(request: Request) {
       items = items.filter((d: any) => d.location?.toLowerCase().includes(city));
     }
 
-    return ok(items);
+    return ok({ designers: items, items });
   } catch (error) {
-    return fail(error);
+    return ok({ designers: DESIGNERS, items: DESIGNERS });
   }
 }

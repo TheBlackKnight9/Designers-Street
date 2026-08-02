@@ -52,6 +52,7 @@ function BuyerLoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = safeInternalPath(params.get("next"), "/profile");
+  const notice = params.get("notice");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +118,11 @@ function BuyerLoginForm() {
         </p>
         <h1 className="font-display text-3xl font-bold text-charcoal mb-1">Customer Sign In</h1>
         <p className="text-xs text-stone mb-6">
-          Access your luxury orders, wishlist, and saved addresses.
+          {notice === "wishlist_login_required"
+            ? "Sign in to save pieces to your wishlist favorites."
+            : next.startsWith("/checkout")
+              ? "Sign in to complete checkout and place your order."
+              : "Access your luxury orders, wishlist, and saved addresses."}
         </p>
 
         {/* Google OAuth Button */}

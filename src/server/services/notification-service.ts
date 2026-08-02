@@ -2,8 +2,11 @@ import { NotificationRepository } from "@/server/repositories/notification-repos
 import { isDatabaseEnabled } from "@/server/utils/env";
 import { ValidationError } from "@/server/errors";
 import { prisma } from "@/server/db";
+import { EmailService } from "@/server/services/email-service";
 
 export class NotificationService {
+  private emailService = new EmailService();
+
   constructor(private readonly notifications = new NotificationRepository()) {}
 
   private requireDb() {
@@ -40,8 +43,32 @@ export class NotificationService {
     return user?.name || user?.email?.split("@")[0] || "Someone";
   }
 
+  private async getUserEmailAndName(userId: string) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+      });
+      return user;
+    } catch {
+      return null;
+    }
+  }
+
   async notifyOrderCreated(userId: string, orderId: string, total: number) {
     this.requireDb();
+
+    // Send Resend Email Notification
+    const user = await this.getUserEmailAndName(userId);
+    if (user?.email) {
+      await this.emailService.sendOrderConfirmation({
+        to: user.email,
+        customerName: user.name || "Valued Patron",
+        orderId,
+        totalAmount: total,
+      });
+    }
+
     return this.notifications.create({
       userId,
       type: "order_created",
@@ -57,6 +84,17 @@ export class NotificationService {
     status: string
   ) {
     this.requireDb();
+
+    const user = await this.getUserEmailAndName(userId);
+    if (user?.email) {
+      await this.emailService.sendOrderStatusUpdate({
+        to: user.email,
+        customerName: user.name || "Valued Patron",
+        orderId,
+        status,
+      });
+    }
+
     return this.notifications.create({
       userId,
       type: "order_updated",
@@ -68,6 +106,17 @@ export class NotificationService {
 
   async notifyOrderDelivered(userId: string, orderId: string) {
     this.requireDb();
+
+    const user = await this.getUserEmailAndName(userId);
+    if (user?.email) {
+      await this.emailService.sendOrderStatusUpdate({
+        to: user.email,
+        customerName: user.name || "Valued Patron",
+        orderId,
+        status: "Delivered",
+      });
+    }
+
     return this.notifications.create({
       userId,
       type: "order_delivered",

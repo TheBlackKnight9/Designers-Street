@@ -37,11 +37,11 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col">
+    <div className="min-h-screen bg-paper flex flex-col" suppressHydrationWarning>
       <AdminHouseSwitcher />
-      <div className="flex-1 flex flex-col md:flex-row">
-        <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-cloud p-5 flex flex-col justify-between shrink-0 bg-mist/30">
-        <div className="space-y-6">
+      <div className="flex-1 flex flex-col md:flex-row" suppressHydrationWarning>
+        <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-cloud p-5 flex flex-col justify-between shrink-0 bg-mist/30" suppressHydrationWarning>
+        <div className="space-y-6" suppressHydrationWarning>
           <div>
             <span className="text-[10px] tracking-label uppercase text-stone block">
               Designer Studio
@@ -50,7 +50,7 @@ export function DashboardShell({
               {designerName || "My House"}
             </p>
           </div>
-          <nav className="flex flex-row md:flex-col flex-wrap gap-1">
+          <nav className="flex flex-row md:flex-col flex-wrap gap-1" suppressHydrationWarning>
             {NAV.map((item) => {
               const active =
                 item.href === "/dashboard"
@@ -60,6 +60,7 @@ export function DashboardShell({
                 <Link
                   key={item.href}
                   href={item.href}
+                  suppressHydrationWarning
                   className={`px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
                     active
                       ? "bg-charcoal text-paper"
@@ -73,9 +74,10 @@ export function DashboardShell({
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-cloud/60 mt-6 hidden md:block">
+        <div className="pt-6 border-t border-cloud/60 mt-6 hidden md:block" suppressHydrationWarning>
           <button
             type="button"
+            suppressHydrationWarning
             onClick={logout}
             className="text-xs text-stone hover:text-charcoal font-semibold uppercase tracking-wider"
           >

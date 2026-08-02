@@ -65,7 +65,7 @@ export function StoriesStrip() {
 
             return (
               <button
-                key={story.id}
+                key={`${story.id}-${i}`}
                 type="button"
                 onClick={() => handleOpenStory(i)}
                 className="flex flex-col items-center gap-1.5 flex-shrink-0"

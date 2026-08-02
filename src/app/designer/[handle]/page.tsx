@@ -7,23 +7,20 @@ import { TopBar } from "@/components/TopBar";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { DesignerGridPost } from "@/components/designer/DesignerGridPost";
 import { ShareButton } from "@/components/ShareButton";
-import { DESIGNERS, FEED_POSTS, PRODUCTS } from "@/lib/mock-data";
+import { DESIGNERS, FEED_POSTS, PRODUCTS, STORIES } from "@/lib/mock-data";
 import { useStorefrontDesigner } from "@/hooks/useStorefrontCatalog";
 import { listFeed, isRemoteApiEnabled } from "@/lib/api/catalog";
 import { useFollow } from "@/hooks/useSocial";
 import { useDesignerLookbooks } from "@/hooks/useLuxury";
 import { LookbookCard } from "@/components/luxury/LookbookCard";
 import { CatalogStatus } from "@/components/ui/CatalogStatus";
-import type { FeedPostData } from "@/lib/types";
+import type { FeedPostData, StoryItem } from "@/lib/types";
 import { getDesignerUrl } from "@/lib/routes";
+import { StoryViewer } from "@/components/home/StoryViewer";
+import { sanitizeImageUrl, isValidImageUrl } from "@/lib/utils/image-url";
 
 interface PageProps {
   params: Promise<{ handle: string }>;
-}
-
-function isValidImageUrl(url?: string | null): boolean {
-  if (!url) return false;
-  return url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://");
 }
 
 export default function DesignerProfilePage({ params }: PageProps) {
@@ -44,6 +41,8 @@ export default function DesignerProfilePage({ params }: PageProps) {
 
   const [activeTab, setActiveTab] = useState<"store" | "concept_vault" | "posts" | "lookbooks" | "story">("store");
   const [feedPosts, setFeedPosts] = useState<FeedPostData[]>([]);
+  const [designerStories, setDesignerStories] = useState<StoryItem[]>([]);
+  const [activeStoryIdx, setActiveStoryIdx] = useState<number | null>(null);
   const [followSeed, setFollowSeed] = useState<{
     following: boolean;
     followersCount: number;
@@ -66,6 +65,35 @@ export default function DesignerProfilePage({ params }: PageProps) {
       cancelled = true;
     };
   }, [apiDesigner?.id, apiEnabled]);
+
+  // Fetch designer stories
+  useEffect(() => {
+    if (!designer?.id) return;
+    let cancelled = false;
+    fetch(`/api/designers/${encodeURIComponent(designer.id)}/stories`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (cancelled) return;
+        const items = res?.data || res?.stories || [];
+        if (Array.isArray(items) && items.length > 0) {
+          setDesignerStories(items);
+        } else {
+          // Fallback to mock stories matching designer
+          const matched = STORIES.filter(
+            (s) =>
+              s.designerId === designer.id ||
+              s.designerName?.toLowerCase() === designer.name.toLowerCase()
+          );
+          setDesignerStories(matched);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setDesignerStories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [designer]);
 
   const {
     following: isFollowing,
@@ -166,7 +194,7 @@ export default function DesignerProfilePage({ params }: PageProps) {
         {/* Full-bleed Banner */}
         <div className="relative w-full aspect-[16/7] bg-mist">
           {isValidImageUrl(designer.banner) ? (
-            <Image src={designer.banner} alt={designer.name} fill className="object-cover" priority sizes="100vw" />
+            <Image src={sanitizeImageUrl(designer.banner)} alt={designer.name} fill className="object-cover" priority sizes="100vw" />
           ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
@@ -181,9 +209,14 @@ export default function DesignerProfilePage({ params }: PageProps) {
         {/* Profile Header Info */}
         <div className="px-4 pt-3 pb-6 max-w-4xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-3">
-            <div className="relative w-20 h-20 rounded-full overflow-hidden bg-charcoal border-4 border-paper -mt-10 shadow-lg flex-shrink-0 flex items-center justify-center font-bold text-paper text-lg">
+            <div
+              onClick={() => designerStories.length > 0 && setActiveStoryIdx(0)}
+              className={`relative w-20 h-20 rounded-full overflow-hidden bg-charcoal -mt-10 shadow-lg flex-shrink-0 flex items-center justify-center font-bold text-paper text-lg ${
+                designerStories.length > 0 ? "ring-4 ring-gold cursor-pointer" : "border-4 border-paper"
+              }`}
+            >
               {isValidImageUrl(designer.logo) ? (
-                <Image src={designer.logo} alt={designer.name} fill className="object-cover" sizes="80px" />
+                <Image src={sanitizeImageUrl(designer.logo)} alt={designer.name} fill className="object-cover" sizes="80px" />
               ) : (
                 designer.name.charAt(0).toUpperCase()
               )}
@@ -215,6 +248,15 @@ export default function DesignerProfilePage({ params }: PageProps) {
             {designer.verified && (
               <span className="text-xs bg-charcoal text-paper px-1.5 py-0.5 rounded-full font-bold">✓</span>
             )}
+            {designerStories.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveStoryIdx(0)}
+                className="ml-2 px-2.5 py-0.5 bg-gold/20 text-gold-dark text-[10px] font-extrabold uppercase rounded-full border border-gold/40"
+              >
+                ▶ Watch Story ({designerStories.length})
+              </button>
+            )}
           </div>
 
           <p className="text-xs text-stone font-semibold mb-2">
@@ -243,7 +285,7 @@ export default function DesignerProfilePage({ params }: PageProps) {
                 ["concept_vault", `Concept Vault (${conceptProducts.length})`],
                 ["lookbooks", `Lookbooks (${lookbooks.length})`],
                 ["posts", `Feed (${feedPosts.length})`],
-                ["story", "Atelier Story"],
+                ["story", `Atelier Story (${designerStories.length})`],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -288,7 +330,7 @@ export default function DesignerProfilePage({ params }: PageProps) {
                   {conceptProducts.map((p) => (
                     <div key={p.id} className="bg-white p-3 rounded-2xl border border-cloud space-y-2 shadow-xs">
                       <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-mist">
-                        <Image src={p.images[0] || ""} alt={p.name} fill className="object-cover" sizes="200px" />
+                        <Image src={sanitizeImageUrl(p.images[0])} alt={p.name} fill className="object-cover" sizes="200px" />
                         <span className="absolute top-2 left-2 bg-charcoal/90 backdrop-blur-xs text-paper text-[9px] font-bold uppercase px-2 py-1 rounded-md">
                           🎨 Concept Art
                         </span>
@@ -343,28 +385,84 @@ export default function DesignerProfilePage({ params }: PageProps) {
           )}
 
           {activeTab === "story" && (
-            <div className="bg-white p-6 rounded-3xl border border-cloud space-y-4 text-xs text-charcoal leading-relaxed shadow-xs">
-              <section className="space-y-1">
-                <h2 className="font-display text-sm font-bold uppercase text-charcoal">Design Philosophy</h2>
-                <p>{(designer as any).designPhilosophy || designer.bio}</p>
-              </section>
-
-              {designer.signatureTechniques && designer.signatureTechniques.length > 0 && (
-                <section className="space-y-2 pt-3 border-t border-cloud">
-                  <h2 className="font-display text-sm font-bold uppercase text-charcoal">Craft Techniques</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {designer.signatureTechniques.map((t) => (
-                      <span key={t} className="px-3 py-1 bg-mist rounded-xl font-bold uppercase text-[10px] text-charcoal border border-cloud">
-                        {t}
-                      </span>
+            <div className="space-y-6">
+              {/* Published Ephemeral Stories & Highlights Section */}
+              {designerStories.length > 0 && (
+                <div className="space-y-3">
+                  <h2 className="font-display text-sm font-bold uppercase tracking-wide text-charcoal">
+                    Active House Stories &amp; Highlights
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {designerStories.map((story, i) => (
+                      <div
+                        key={story.id}
+                        onClick={() => setActiveStoryIdx(i)}
+                        className="group relative aspect-9/16 rounded-2xl overflow-hidden border border-cloud bg-black/5 cursor-pointer shadow-xs hover:shadow-md transition-all"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={sanitizeImageUrl(story.slides?.[0]?.image)}
+                          alt={story.label}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-between text-white">
+                          <span className="self-end px-2 py-0.5 bg-black/60 backdrop-blur-xs text-[9px] font-bold uppercase rounded-md">
+                            {story.slides.length} Slides
+                          </span>
+                          <div>
+                            <span className="text-[9px] font-bold uppercase text-gold block">
+                              {designer.name}
+                            </span>
+                            <p className="font-display text-xs font-bold uppercase line-clamp-1">
+                              {story.label}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </section>
+                </div>
               )}
+
+              {/* Design Philosophy & Craft Details */}
+              <div className="bg-white p-6 rounded-3xl border border-cloud space-y-4 text-xs text-charcoal leading-relaxed shadow-xs">
+                <section className="space-y-1">
+                  <h2 className="font-display text-sm font-bold uppercase text-charcoal">Design Philosophy</h2>
+                  <p>{(designer as any).designPhilosophy || designer.bio}</p>
+                </section>
+
+                {designer.signatureTechniques && designer.signatureTechniques.length > 0 && (
+                  <section className="space-y-2 pt-3 border-t border-cloud">
+                    <h2 className="font-display text-sm font-bold uppercase text-charcoal">Craft Techniques</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {designer.signatureTechniques.map((t) => (
+                        <span key={t} className="px-3 py-1 bg-mist rounded-xl font-bold uppercase text-[10px] text-charcoal border border-cloud">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
             </div>
           )}
         </div>
       </main>
+
+      {/* Story Viewer Modal */}
+      {activeStoryIdx !== null && designerStories[activeStoryIdx] && (
+        <StoryViewer
+          story={designerStories[activeStoryIdx]}
+          onClose={() => setActiveStoryIdx(null)}
+          onNext={() => {
+            if (activeStoryIdx < designerStories.length - 1) {
+              setActiveStoryIdx(activeStoryIdx + 1);
+            } else {
+              setActiveStoryIdx(null);
+            }
+          }}
+        />
+      )}
     </>
   );
 }

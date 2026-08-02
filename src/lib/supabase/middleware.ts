@@ -27,6 +27,7 @@ export async function updateSession(request: NextRequest) {
   const needsBuyerAuth =
     path.startsWith("/checkout") ||
     path.startsWith("/orders") ||
+    path === "/wishlist" ||
     path === "/account/settings" ||
     path === "/account/addresses" ||
     path === "/profile/addresses";

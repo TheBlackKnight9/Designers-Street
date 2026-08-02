@@ -15,8 +15,11 @@ const WISHLIST_KEY = "ds-wishlist";
 interface WishlistContextValue {
   ids: string[];
   isWished: (productId: string) => boolean;
-  toggle: (productId: string) => void;
+  /** Returns false when the guest was redirected to sign in */
+  toggle: (productId: string) => boolean;
   count: number;
+  signedIn: boolean;
+  hydrated: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
@@ -36,6 +39,16 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return body.data as T;
 }
 
+function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  const next = `${window.location.pathname}${window.location.search}`;
+  const params = new URLSearchParams({
+    next,
+    notice: "wishlist_login_required",
+  });
+  window.location.href = `/account/login?${params.toString()}`;
+}
+
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [ids, setIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -45,7 +58,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // Always hydrate guest local first
+      // Keep any leftover guest ids only so they can merge after login
       let localIds: string[] = [];
       try {
         const stored = localStorage.getItem(WISHLIST_KEY);
@@ -60,7 +73,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
           if (!cancelled) {
             setSignedIn(true);
             setIds(data.ids);
-            // Merge any leftover guest ids once
             if (localIds.length) {
               const merged = await apiJson<{ ids: string[] }>(
                 "/api/wishlist/merge",
@@ -76,13 +88,18 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch {
+          // Guest: favorites require login (same rule as checkout)
           if (!cancelled) {
             setSignedIn(false);
-            setIds(localIds);
+            setIds([]);
           }
         }
-      } else if (!cancelled) {
-        setIds(localIds);
+      } else {
+        // Mock mode still supports local-only wishlist
+        if (!cancelled) {
+          setSignedIn(false);
+          setIds(localIds);
+        }
       }
       if (!cancelled) setHydrated(true);
     })();
@@ -93,9 +110,9 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    if (remote && signedIn) return;
+    if (remote) return; // never persist guest favorites when API is on
     localStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
-  }, [ids, hydrated, remote, signedIn]);
+  }, [ids, hydrated, remote]);
 
   const isWished = useCallback(
     (productId: string) => ids.includes(productId),
@@ -103,7 +120,13 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   );
 
   const toggle = useCallback(
-    (productId: string) => {
+    (productId: string): boolean => {
+      // Production / API mode: sign-in required, like checkout
+      if (remote && !signedIn) {
+        redirectToLogin();
+        return false;
+      }
+
       if (remote && signedIn) {
         const prev = ids;
         const optimistic = prev.includes(productId)
@@ -115,14 +138,23 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ productId }),
         })
           .then((data) => setIds(data.ids))
-          .catch(() => setIds(prev));
-        return;
+          .catch((err) => {
+            setIds(prev);
+            const msg = err instanceof Error ? err.message : "";
+            if (/sign in|unauthor|auth|session/i.test(msg)) {
+              redirectToLogin();
+            }
+          });
+        return true;
       }
+
+      // Mock / offline mode
       setIds((prev) =>
         prev.includes(productId)
           ? prev.filter((id) => id !== productId)
           : [...prev, productId]
       );
+      return true;
     },
     [remote, signedIn, ids]
   );
@@ -130,8 +162,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const count = ids.length;
 
   const value = useMemo(
-    () => ({ ids, isWished, toggle, count }),
-    [ids, isWished, toggle, count]
+    () => ({ ids, isWished, toggle, count, signedIn, hydrated }),
+    [ids, isWished, toggle, count, signedIn, hydrated]
   );
 
   return (

@@ -37,6 +37,7 @@ interface PageProps {
 
 export default function ProductDetailPage({ params }: PageProps) {
   const { productId } = use(params);
+  const router = useRouter();
   const catalogProduct = useStorefrontProduct(productId);
   const catalogList = useStorefrontProducts({ limit: 24 });
   const catalogDesigners = useStorefrontDesigners();
@@ -158,7 +159,6 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const wished = isWished(product.id);
   const inBag = isInCart(product.id);
-  const router = useRouter();
   const bagQty = quantityFor(product.id);
 
   const recommendations = products.filter(

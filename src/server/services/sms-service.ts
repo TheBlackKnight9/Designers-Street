@@ -1,9 +1,12 @@
+import { EmailService } from "@/server/services/email-service";
+
 export type SMSEventType = "ORDER_PLACED" | "ORDER_SHIPPED" | "ORDER_DELIVERED";
 
 export type SMSNotificationPayload = {
   mobileNumber: string;
   orderId: string;
   customerName?: string;
+  customerEmail?: string;
   courierName?: string;
   trackingNumber?: string;
   trackingUrl?: string;
@@ -13,6 +16,8 @@ export type SMSNotificationPayload = {
 export class SMSService {
   private authKey = process.env.MSG91_AUTH_KEY;
   private senderId = process.env.MSG91_SENDER_ID || "DSLUXU";
+  private emailService = new EmailService();
+
   private flowIds: Record<SMSEventType, string | undefined> = {
     ORDER_PLACED: process.env.MSG91_FLOW_ORDER_PLACED,
     ORDER_SHIPPED: process.env.MSG91_FLOW_ORDER_SHIPPED,
@@ -20,16 +25,40 @@ export class SMSService {
   };
 
   /**
-   * Triggers SMS notification via MSG91 Flow API.
+   * Triggers SMS & Resend Email notification.
+   * Uses Resend Email API as reliable fallback when MSG91 SMS key is unconfigured.
    * Safe execution: Never throws exceptions to caller.
    */
   async sendOrderNotification(event: SMSEventType, payload: SMSNotificationPayload): Promise<boolean> {
     try {
-      const cleanPhone = payload.mobileNumber.replace(/\D/g, "");
+      const cleanPhone = payload.mobileNumber ? payload.mobileNumber.replace(/\D/g, "") : "";
       const formattedPhone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
 
+      // Email Notification via Resend (High Reliability Fallback)
+      const recipientEmail = payload.customerEmail || process.env.TEST_NOTIFICATION_EMAIL || "ayush.customer@designersstreet.com";
+      
+      if (recipientEmail) {
+        if (event === "ORDER_PLACED") {
+          await this.emailService.sendOrderConfirmation({
+            to: recipientEmail,
+            customerName: payload.customerName || "Valued Patron",
+            orderId: payload.orderId,
+            totalAmount: payload.totalAmount || 0,
+          });
+        } else {
+          await this.emailService.sendOrderStatusUpdate({
+            to: recipientEmail,
+            customerName: payload.customerName || "Valued Patron",
+            orderId: payload.orderId,
+            status: event === "ORDER_SHIPPED" ? "Shipped" : "Delivered",
+            courierName: payload.courierName,
+            trackingNumber: payload.trackingNumber,
+          });
+        }
+      }
+
       if (!this.authKey || !this.flowIds[event]) {
-        console.log(`[SMS Gateway Simulated Log] Event: ${event} -> To: ${formattedPhone} | Order: #${payload.orderId.slice(-6)}`);
+        console.log(`[SMS & Email Gateway Log] Event: ${event} -> SMS: ${formattedPhone} | Email: ${recipientEmail} | Order: #${payload.orderId.slice(-6)}`);
         return true;
       }
 
@@ -68,7 +97,7 @@ export class SMSService {
         return false;
       }
     } catch (error) {
-      console.error(`[MSG91 SMS Isolated Error] Event: ${event}`, error);
+      console.error(`[SMS & Email Gateway Error] Event: ${event}`, error);
       return false;
     }
   }

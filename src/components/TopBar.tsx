@@ -18,24 +18,25 @@ export function TopBar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-[var(--top-bar-height)] flex items-center justify-between px-4 bg-[#FDFCF8]/90 backdrop-blur-md border-b border-white/40 shadow-xs">
+      <header suppressHydrationWarning className="fixed top-0 left-0 right-0 z-50 h-[var(--top-bar-height)] flex items-center justify-between px-4 bg-[#FDFCF8]/90 backdrop-blur-md border-b border-white/40 shadow-xs">
         <Link href="/" className="flex items-center gap-1">
           <span className="font-display text-lg font-bold tracking-tight text-[#2B2B2B]">
             Designer&apos;s Street
           </span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
+        <div className="flex items-center gap-2" suppressHydrationWarning>
+          <Link
+            href="/search"
+            suppressHydrationWarning
             className="touch-target flex items-center justify-center p-2 rounded-full active:scale-95 transition-transform"
             aria-label="Search"
+            title="Search Store Catalog"
           >
             <svg className="w-5 h-5 text-[#2B2B2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
             </svg>
-          </button>
+          </Link>
 
           <Link
             href="/designers"

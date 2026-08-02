@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
@@ -36,6 +36,14 @@ function SearchContent() {
   const [designersList, setDesignersList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Sync initial query from URL search params
+  useEffect(() => {
+    const qFromUrl = searchParams.get("q");
+    if (qFromUrl !== null && qFromUrl !== query) {
+      setQuery(qFromUrl);
+    }
+  }, [searchParams]);
+
   // Autocomplete fetch on query change
   useEffect(() => {
     if (query.trim().length >= 2) {
@@ -58,15 +66,16 @@ function SearchContent() {
     fetch("/api/designers")
       .then((r) => r.json())
       .then((res) => {
-        if (res?.ok && Array.isArray(res.data?.designers)) {
-          setDesignersList(res.data.designers);
+        const items = res?.data?.designers || res?.data?.items || res?.data;
+        if (Array.isArray(items)) {
+          setDesignersList(items);
         }
       })
       .catch(() => {});
   }, []);
 
   // Fetch search results
-  async function performSearch() {
+  const performSearch = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -98,25 +107,34 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [query, listingType, category, designerId, size, sort, maxPrice, selectedColor]);
 
   useEffect(() => {
-    performSearch();
-  }, [listingType, category, designerId, size, sort, maxPrice, selectedColor]);
+    const timer = setTimeout(() => {
+      performSearch();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [performSearch]);
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     setShowDropdown(false);
+    if (query.trim()) {
+      router.replace(`/search?q=${encodeURIComponent(query.trim())}`);
+    } else {
+      router.replace("/search");
+    }
     performSearch();
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" suppressHydrationWarning>
       {/* Search Header Bar with Autocomplete */}
-      <div className="relative max-w-2xl mx-auto">
-        <form onSubmit={handleSearchSubmit} className="relative">
+      <div className="relative max-w-2xl mx-auto" suppressHydrationWarning>
+        <form onSubmit={handleSearchSubmit} className="relative" suppressHydrationWarning>
           <input
             type="text"
+            suppressHydrationWarning
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
@@ -125,6 +143,7 @@ function SearchContent() {
           />
           <button
             type="submit"
+            suppressHydrationWarning
             className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-charcoal text-paper rounded-full text-xs font-bold"
           >
             🔍
@@ -133,8 +152,8 @@ function SearchContent() {
 
         {/* Live Autocomplete Suggestions Dropdown */}
         {showDropdown && autocomplete && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl border border-cloud shadow-xl z-50 p-4 space-y-3">
-            {autocomplete.designerHouses.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl border border-cloud shadow-xl z-50 p-4 space-y-3" suppressHydrationWarning>
+            {autocomplete.designerHouses?.length > 0 && (
               <div>
                 <span className="text-[9px] font-bold uppercase tracking-wider text-stone block mb-1.5">Atelier Designer Houses</span>
                 <div className="flex flex-wrap gap-2">
@@ -154,7 +173,7 @@ function SearchContent() {
               </div>
             )}
 
-            {autocomplete.products.length > 0 && (
+            {autocomplete.products?.length > 0 && (
               <div>
                 <span className="text-[9px] font-bold uppercase tracking-wider text-stone block mb-1.5">Suggested Products</span>
                 <div className="space-y-1">
@@ -177,10 +196,10 @@ function SearchContent() {
       </div>
 
       {/* Faceted Filter Bar */}
-      <div className="bg-white p-5 rounded-3xl border border-cloud space-y-4 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cloud pb-3">
+      <div className="bg-white p-5 rounded-3xl border border-cloud space-y-4 shadow-xs" suppressHydrationWarning>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cloud pb-3" suppressHydrationWarning>
           {/* Listing Type Filter */}
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5" suppressHydrationWarning>
             {[
               { key: "ALL", label: "All Items" },
               { key: "COMMERCIAL", label: "Ready to Buy (Commercial)" },
@@ -189,6 +208,7 @@ function SearchContent() {
               <button
                 key={t.key}
                 type="button"
+                suppressHydrationWarning
                 onClick={() => setListingType(t.key)}
                 className={`px-3.5 py-1.5 text-xs font-bold uppercase rounded-full transition-colors ${
                   listingType === t.key
@@ -204,6 +224,7 @@ function SearchContent() {
           {/* Sort Selector */}
           <select
             value={sort}
+            suppressHydrationWarning
             onChange={(e) => setSort(e.target.value)}
             className="rounded-full border border-cloud bg-mist px-4 py-2 text-xs font-bold text-charcoal outline-none"
           >
@@ -215,11 +236,12 @@ function SearchContent() {
         </div>
 
         {/* Categories, Size & Designer Selectors */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs" suppressHydrationWarning>
           <div>
             <span className="text-[10px] font-bold uppercase text-stone block mb-1">Category</span>
             <select
               value={category}
+              suppressHydrationWarning
               onChange={(e) => setCategory(e.target.value)}
               className="w-full rounded-xl border border-cloud bg-mist p-2.5 outline-none font-medium"
             >
@@ -237,6 +259,7 @@ function SearchContent() {
             <span className="text-[10px] font-bold uppercase text-stone block mb-1">Designer House</span>
             <select
               value={designerId}
+              suppressHydrationWarning
               onChange={(e) => setDesignerId(e.target.value)}
               className="w-full rounded-xl border border-cloud bg-mist p-2.5 outline-none font-medium"
             >
@@ -253,6 +276,7 @@ function SearchContent() {
             <span className="text-[10px] font-bold uppercase text-stone block mb-1">Available Size</span>
             <select
               value={size}
+              suppressHydrationWarning
               onChange={(e) => setSize(e.target.value)}
               className="w-full rounded-xl border border-cloud bg-mist p-2.5 outline-none font-medium"
             >
@@ -268,6 +292,7 @@ function SearchContent() {
           <div className="flex items-end">
             <button
               type="button"
+              suppressHydrationWarning
               onClick={() => {
                 setQuery("");
                 setListingType("ALL");
@@ -277,6 +302,7 @@ function SearchContent() {
                 setSort("newest");
                 setMaxPrice(500000);
                 setSelectedColor("");
+                router.replace("/search");
               }}
               className="w-full py-2.5 border border-cloud rounded-xl text-stone hover:bg-mist font-bold uppercase text-[10px]"
             >
@@ -286,16 +312,17 @@ function SearchContent() {
         </div>
 
         {/* Price Range Slider & Color Chips */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-cloud/60 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-cloud/60 text-xs" suppressHydrationWarning>
           <div>
             <div className="flex justify-between items-center mb-1">
               <span className="text-[10px] font-bold uppercase text-stone">Max Price Range</span>
-              <span className="font-mono font-bold text-charcoal text-xs">
-                {maxPrice >= 500000 ? "Any Price" : `Under ₹${maxPrice.toLocaleString("en-IN")}`}
+              <span className="font-mono font-bold text-charcoal text-[11px]">
+                {maxPrice >= 500000 ? "Any Price" : `Under ₹${(maxPrice / 1000).toFixed(0)}K`}
               </span>
             </div>
             <input
               type="range"
+              suppressHydrationWarning
               min={10000}
               max={500000}
               step={10000}
@@ -307,28 +334,29 @@ function SearchContent() {
 
           <div>
             <span className="text-[10px] font-bold uppercase text-stone block mb-1">Color Palette</span>
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap" suppressHydrationWarning>
               {[
                 { name: "Red", bg: "#DC2626" },
                 { name: "Gold", bg: "#D97706" },
-                { name: "Maroon", bg: "#800000" },
-                { name: "Emerald", bg: "#047857" },
+                { name: "Maroon", bg: "#991B1B" },
+                { name: "Emerald", bg: "#059669" },
                 { name: "Navy", bg: "#1E3A8A" },
                 { name: "Pink", bg: "#EC4899" },
-                { name: "Black", bg: "#18181B" },
+                { name: "Black", bg: "#111827" },
               ].map((c) => (
                 <button
                   key={c.name}
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => setSelectedColor(selectedColor === c.name ? "" : c.name)}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all ${
                     selectedColor === c.name
-                      ? "border-charcoal bg-charcoal text-white"
+                      ? "border-charcoal bg-charcoal text-white shadow-xs"
                       : "border-cloud bg-mist text-stone hover:bg-cloud"
                   }`}
                 >
-                  <span className="w-2.5 h-2.5 rounded-full border border-white/50" style={{ backgroundColor: c.bg }} />
-                  <span>{c.name}</span>
+                  <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: c.bg }} />
+                  {c.name}
                 </button>
               ))}
             </div>

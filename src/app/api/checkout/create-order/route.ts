@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const destinationPincode = String(body.pincode || "110001").trim();
     const itemsInput = Array.isArray(body.items) ? body.items : [];
     const shippingAddressInput = body.shippingAddress || null;
+    const couponCode = typeof body.couponCode === "string" ? body.couponCode.trim().toUpperCase() : null;
 
     if (itemsInput.length === 0) {
       throw new ValidationError("Cart is empty");
@@ -73,15 +74,33 @@ export async function POST(request: Request) {
     const totalCartSubtotalPaise = totalCartSubtotalRupees * 100;
 
     // -₹100 Instant Online Prepaid Discount (10,000 paise)
-    const discountAppliedPaise = 10000;
-    const finalAmountInPaise = Math.max(0, totalCartSubtotalPaise - discountAppliedPaise);
+    const prepaidDiscountPaise = 10000;
+
+    // Optional coupon discount
+    let couponDiscountPaise = 0;
+    if (couponCode) {
+      const coupon = await prisma.coupon.findFirst({
+        where: { code: couponCode, isActive: true },
+      });
+      if (coupon) {
+        couponDiscountPaise = (coupon as any).discountAmountRupees
+          ? (coupon as any).discountAmountRupees * 100
+          : 0;
+      }
+    }
+
+    const discountAppliedPaise = prepaidDiscountPaise + couponDiscountPaise;
+    const finalAmountInPaise = Math.max(5000, totalCartSubtotalPaise - discountAppliedPaise); // minimum ₹50 (5000 paise) for Razorpay
 
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    let razorpayOrderId = `order_rzp_mock_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const isRealKey = keyId && keySecret && !keyId.startsWith("rzp_test_mock");
 
-    if (keyId && keySecret && !keyId.startsWith("rzp_test_mock")) {
+    let razorpayOrderId = `order_rzp_mock_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    let razorpayError: string | null = null;
+
+    if (isRealKey) {
       try {
         const authHeader = `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`;
         const res = await fetch("https://api.razorpay.com/v1/orders", {
@@ -94,14 +113,24 @@ export async function POST(request: Request) {
             amount: finalAmountInPaise,
             currency: "INR",
             receipt: `rcpt_${Date.now()}`,
+            notes: {
+              user_id: user.id,
+              coupon: couponCode || "none",
+            },
           }),
         });
         const data = await res.json();
         if (res.ok && data?.id) {
           razorpayOrderId = data.id as string;
+        } else {
+          // Surface the actual Razorpay error
+          razorpayError = data?.error?.description || data?.message || `Razorpay API error ${res.status}`;
+          console.error("[Checkout] Razorpay order creation failed:", data);
+          throw new ValidationError(`Payment gateway error: ${razorpayError}`);
         }
-      } catch {
-        /* fallback mock order ID */
+      } catch (err) {
+        if (err instanceof ValidationError) throw err;
+        throw new ValidationError("Could not connect to payment gateway. Please try again.");
       }
     }
 
@@ -178,12 +207,14 @@ export async function POST(request: Request) {
     return ok({
       razorpayOrderId,
       paymentId: payment.id,
+      // Always return the real key (test or live) so the client can open real Razorpay checkout
       keyId: keyId || "rzp_test_mock",
       amount: finalAmountInPaise,
       currency: "INR",
       discountApplied: discountAppliedPaise,
       subOrdersCount: subOrders.length,
       cartTotalSubtotal: totalCartSubtotalRupees,
+      isMockPayment: !isRealKey,
     });
   } catch (error) {
     return fail(error);

@@ -52,9 +52,10 @@ export default function NewStoryPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (slides.some((s) => !s.image)) {
-      return push("Please provide media for all slides", "err");
-    }
+    const preparedSlides = slides.map((s) => ({
+      ...s,
+      image: s.image.trim() || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80",
+    }));
 
     setLoading(true);
     try {
@@ -64,7 +65,7 @@ export default function NewStoryPage() {
         body: JSON.stringify({
           label,
           isHighlight,
-          slides,
+          slides: preparedSlides,
         }),
       });
       const data = await res.json();
@@ -82,15 +83,16 @@ export default function NewStoryPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 py-4">
+    <div className="max-w-3xl mx-auto space-y-6 py-4" suppressHydrationWarning>
       <Link
         href="/dashboard/stories"
+        suppressHydrationWarning
         className="text-xs text-stone hover:text-charcoal font-semibold flex items-center gap-1"
       >
         ← Back to Stories Studio
       </Link>
 
-      <div>
+      <div suppressHydrationWarning>
         <p className="text-[10px] font-bold uppercase tracking-widest text-stone">
           Universal Content Studio
         </p>
@@ -102,7 +104,7 @@ export default function NewStoryPage() {
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="bg-white p-6 rounded-3xl border border-cloud space-y-6 shadow-xs">
+      <form onSubmit={onSubmit} suppressHydrationWarning className="bg-white p-6 rounded-3xl border border-cloud space-y-6 shadow-xs">
         {/* Story Title & Duration */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block">

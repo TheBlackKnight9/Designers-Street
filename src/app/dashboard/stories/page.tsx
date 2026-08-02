@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/dashboard/Toast";
+import { sanitizeImageUrl } from "@/lib/utils/image-url";
 
 type Story = {
   id: string;
@@ -99,7 +100,7 @@ export default function DashboardStoriesPage() {
                 {story.slides.slice(0, 3).map((slide) => (
                   <div key={slide.id} className="relative aspect-9/16 rounded-xl overflow-hidden border border-cloud bg-black/5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                    <img src={sanitizeImageUrl(slide.image)} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
