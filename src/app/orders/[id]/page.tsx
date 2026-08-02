@@ -189,21 +189,39 @@ function OrderDetailInner({ orderId }: { orderId: string }) {
         </div>
       </div>
 
-      {/* Buyer Protection & Dispute Button */}
-      <div className="bg-white p-6 rounded-3xl border border-cloud space-y-3 shadow-xs">
+      {/* GST Invoice & Buyer Protection Card */}
+      <div className="bg-white p-6 rounded-3xl border border-cloud space-y-4 shadow-xs">
+        <div className="flex items-center justify-between border-b border-cloud pb-3">
+          <div>
+            <h2 className="font-display text-sm font-bold uppercase text-charcoal">Tax Invoice &amp; Documents</h2>
+            <p className="text-[10px] text-stone mt-0.5">GST Compliant Official Invoice</p>
+          </div>
+          <a
+            href={`/api/orders/${order.id}/invoice`}
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-2 bg-charcoal text-paper font-sans text-xs font-bold uppercase rounded-full shadow-xs hover:bg-black flex items-center gap-1.5"
+          >
+            <span>📄</span>
+            <span>Download GST Invoice PDF</span>
+          </a>
+        </div>
+
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-sm font-bold uppercase text-charcoal">Buyer Protection</h2>
+          <div>
+            <h2 className="font-display text-xs font-bold uppercase text-charcoal">Buyer Protection Guarantee</h2>
+            <p className="text-[11px] text-stone leading-relaxed mt-0.5">
+              If your order package is delayed or non-delivered, you can file a formal dispute to freeze payout settlement.
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => setShowDisputeModal(true)}
-            className="text-xs font-bold text-stone underline hover:text-red-700"
+            className="text-xs font-bold text-stone underline hover:text-red-700 shrink-0 ml-3"
           >
-            Report Issue / Not Received
+            Report Issue / Dispute
           </button>
         </div>
-        <p className="text-[11px] text-stone leading-relaxed">
-          If your order package is delayed or non-delivered, you can file a formal dispute to freeze payout settlement until verified.
-        </p>
       </div>
 
       {/* Dispute Modal */}

@@ -1,31 +1,58 @@
-import { NextRequest } from "next/server";
-import { MeasurementService } from "@/server/services/measurement-service";
+import { PrismaClient } from "@prisma/client";
+import { requireBuyerContext } from "@/server/auth/buyer-session";
 import { ok, fail } from "@/server/utils/api-response";
-import { getAuthenticatedUser } from "@/server/auth/session";
 
-const service = new MeasurementService();
+const prisma = new PrismaClient();
 
-export async function GET(req: NextRequest) {
+/** GET /api/account/measurements */
+export async function GET() {
   try {
-    const user = await getAuthenticatedUser(req);
-    const userId = user?.id || "usr-1";
-    const profiles = await service.listByUser(userId);
-    return ok(profiles);
+    const user = await requireBuyerContext();
+    const profiles = await prisma.measurementProfile.findMany({
+      where: { userId: user.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+    });
+    return ok({ profiles });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch measurement profiles";
-    return fail(message, 500);
+    return fail(error);
   }
 }
 
-export async function POST(req: NextRequest) {
+/** POST /api/account/measurements */
+export async function POST(request: Request) {
   try {
-    const user = await getAuthenticatedUser(req);
-    const userId = user?.id || "usr-1";
-    const body = await req.json();
-    const created = await service.create(userId, body);
-    return ok(created);
+    const user = await requireBuyerContext();
+    const body = await request.json();
+
+    const name = String(body.name || "My Standard Fit").trim();
+    const unit = body.unit === "cm" ? "cm" : "inches";
+    const isDefault = Boolean(body.isDefault);
+
+    if (isDefault) {
+      await prisma.measurementProfile.updateMany({
+        where: { userId: user.id },
+        data: { isDefault: false },
+      });
+    }
+
+    const profile = await prisma.measurementProfile.create({
+      data: {
+        userId: user.id,
+        name,
+        unit,
+        isDefault,
+        height: body.height ? parseFloat(body.height) : null,
+        chest: body.chest || body.bustChest ? parseFloat(body.chest || body.bustChest) : null,
+        waist: body.waist ? parseFloat(body.waist) : null,
+        hip: body.hip || body.hips ? parseFloat(body.hip || body.hips) : null,
+        shoulder: body.shoulder ? parseFloat(body.shoulder) : null,
+        sleeve: body.sleeve || body.armLength ? parseFloat(body.sleeve || body.armLength) : null,
+        notes: body.notes ? String(body.notes) : null,
+      },
+    });
+
+    return ok({ profile }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create measurement profile";
-    return fail(message, 400);
+    return fail(error);
   }
 }

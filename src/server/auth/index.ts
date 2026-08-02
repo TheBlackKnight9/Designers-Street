@@ -44,7 +44,6 @@ export {
 } from "@/server/auth/supabase";
 export {
   requireDashboardContext,
-  ensureDesignerAccount,
   type DashboardContext,
 } from "@/server/auth/dashboard-session";
 export {

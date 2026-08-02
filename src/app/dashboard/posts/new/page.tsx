@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState, MouseEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/dashboard/Toast";
+import { MediaGalleryUploader } from "@/components/dashboard/MediaGalleryUploader";
 
 type Product = {
   id: string;
@@ -16,7 +17,6 @@ export default function NewPostPage() {
   const router = useRouter();
   const { push } = useToast();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [hotspot, setHotspot] = useState<{ xPercent: number; yPercent: number } | null>(null);
@@ -26,6 +26,7 @@ export default function NewPostPage() {
     videoUrl: "",
     caption: "",
     tag: "Product Showcase",
+    status: "published",
   });
 
   useEffect(() => {
@@ -38,46 +39,6 @@ export default function NewPostPage() {
       })
       .catch(() => undefined);
   }, []);
-
-  async function handleFileUpload(file: File | null) {
-    if (!file) return;
-
-    const isVideo = file.type.startsWith("video/");
-    const maxMB = isVideo ? 100 : 10;
-
-    if (file.size > maxMB * 1024 * 1024) {
-      return push(`File size exceeds maximum allowed limit (${maxMB}MB)`, "err");
-    }
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "designer-feed");
-
-      const res = await fetch("/api/media/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-
-      if (res.ok && (data?.data?.secureUrl || data?.url)) {
-        const mediaUrl = data?.data?.secureUrl || data?.url;
-        if (isVideo) {
-          setForm((f) => ({ ...f, videoUrl: mediaUrl, image: data?.data?.thumbnailUrl || mediaUrl }));
-        } else {
-          setForm((f) => ({ ...f, image: mediaUrl, videoUrl: "" }));
-        }
-        push("Media uploaded successfully", "ok");
-      } else {
-        push(data?.error?.message || "Upload failed", "err");
-      }
-    } catch {
-      push("Upload failed due to network error", "err");
-    } finally {
-      setUploading(false);
-    }
-  }
 
   function handleImageClick(e: MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -103,7 +64,7 @@ export default function NewPostPage() {
             id: selectedProduct.id,
             name: selectedProduct.name,
             price: selectedProduct.price,
-            image: selectedProduct.images[0],
+            image: selectedProduct.images?.[0] || "",
             xPercent: hotspot?.xPercent ?? 50,
             yPercent: hotspot?.yPercent ?? 50,
           }
@@ -120,112 +81,125 @@ export default function NewPostPage() {
 
       const data = await res.json();
       if (res.ok && data?.ok) {
-        push("Post published to customer feed!", "ok");
+        push(
+          form.status === "draft"
+            ? "Post saved as draft!"
+            : "Post published to customer feed!",
+          "ok"
+        );
         router.push("/dashboard/posts");
       } else {
-        push(data?.error?.message || "Failed to publish post", "err");
+        push(data?.error?.message || "Failed to create post", "err");
       }
     } catch {
-      push("Failed to publish post", "err");
+      push("Failed to create post due to network error", "err");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <Link href="/dashboard/posts" className="text-xs text-stone hover:text-charcoal font-semibold">
-        ← Back to Posts
+    <div className="max-w-3xl mx-auto space-y-6 py-4">
+      <Link
+        href="/dashboard/posts"
+        className="text-xs text-stone hover:text-charcoal font-semibold flex items-center gap-1"
+      >
+        ← Back to Posts Studio
       </Link>
 
-      <div>
-        <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
-          Create Feed Post
-        </h1>
-        <p className="text-xs text-stone mt-1">
-          Publish high-resolution editorial photos &amp; videos with product hotspot tags
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-stone">
+            Universal Content Studio
+          </p>
+          <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
+            Create Feed Post
+          </h1>
+          <p className="text-xs text-stone mt-0.5">
+            Publish high-resolution editorial photos &amp; videos with product hotspot tags
+          </p>
+        </div>
       </div>
 
       <form onSubmit={onSubmit} className="bg-white p-6 rounded-3xl border border-cloud space-y-6 shadow-xs">
-        {/* Media Upload Area */}
-        <div className="space-y-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone block">
-            1. Upload Media (4:5 Portrait Recommended)
+        {/* 1. Media Upload / Selection */}
+        <div className="space-y-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-charcoal block">
+            1. Media &amp; Preview (4:5 Portrait Recommended)
           </span>
 
           {form.image || form.videoUrl ? (
-            <div className="relative aspect-4/5 max-w-sm mx-auto rounded-2xl overflow-hidden border border-cloud bg-black/5" onClick={handleImageClick}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={form.image} alt="" className="w-full h-full object-cover" />
-
-              {/* Hotspot Tag Preview */}
-              {hotspot && (
-                <div
-                  className="absolute w-6 h-6 -ml-3 -mt-3 bg-white/90 text-charcoal rounded-full flex items-center justify-center font-bold text-xs shadow-md border border-charcoal/20 animate-bounce"
-                  style={{ left: `${hotspot.xPercent}%`, top: `${hotspot.yPercent}%` }}
-                >
-                  🛍️
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setForm({ ...form, image: "", videoUrl: "" });
-                  setHotspot(null);
-                }}
-                className="absolute top-2 right-2 bg-black/70 text-white rounded-full p-1 text-xs"
+            <div className="space-y-3">
+              <div
+                className="relative aspect-4/5 max-w-sm mx-auto rounded-2xl overflow-hidden border border-cloud bg-black/5 cursor-crosshair shadow-sm"
+                onClick={handleImageClick}
+                title="Click anywhere to place a product hotspot tag"
               >
-                Change Media
-              </button>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={form.image || form.videoUrl}
+                  alt="Post Preview"
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Hotspot Tag Overlay */}
+                {hotspot && (
+                  <div
+                    className="absolute w-7 h-7 -ml-3.5 -mt-3.5 bg-white/95 text-charcoal rounded-full flex items-center justify-center font-bold text-xs shadow-lg border border-charcoal/30 animate-pulse"
+                    style={{ left: `${hotspot.xPercent}%`, top: `${hotspot.yPercent}%` }}
+                  >
+                    🛍️
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setForm({ ...form, image: "", videoUrl: "" });
+                    setHotspot(null);
+                  }}
+                  className="absolute top-3 right-3 bg-black/80 text-white rounded-full px-3 py-1 text-xs font-bold shadow-md hover:bg-black"
+                >
+                  Change Media
+                </button>
+              </div>
+
+              <p className="text-[11px] text-stone text-center font-medium">
+                💡 {hotspot ? `Hotspot set at (${hotspot.xPercent}%, ${hotspot.yPercent}%)` : "Click anywhere on the image preview to place an interactive product hotspot!"}
+              </p>
             </div>
           ) : (
-            <div className="border-2 border-dashed border-cloud rounded-2xl p-8 text-center space-y-3 bg-mist/30">
-              <span className="text-3xl">📸</span>
-              <p className="text-xs font-bold text-charcoal">
-                {uploading ? "Uploading media to Cloudinary…" : "Upload Photo or Short Video (<60s)"}
-              </p>
-              <p className="text-[10px] text-stone">JPG, PNG, WebP (Max 10MB) or MP4, MOV (Max 100MB)</p>
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) => handleFileUpload(e.target.files?.[0] || null)}
-                className="hidden"
-                id="feed-media-upload"
-              />
-              <label
-                htmlFor="feed-media-upload"
-                className="inline-block px-5 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase rounded-full cursor-pointer hover:bg-black"
-              >
-                Select Media File
-              </label>
-            </div>
-          )}
-          {form.image && (
-            <p className="text-[10px] text-stone text-center italic">
-              💡 Tip: Click anywhere on the image preview above to place a product hotspot tag!
-            </p>
+            <MediaGalleryUploader
+              label="Select Media File or Direct Image URL"
+              folder="feed-posts"
+              onMediaAdded={(item) => {
+                if (item.type === "video") {
+                  setForm((f) => ({ ...f, videoUrl: item.url, image: item.url }));
+                } else {
+                  setForm((f) => ({ ...f, image: item.url, videoUrl: "" }));
+                }
+              }}
+            />
           )}
         </div>
 
-        {/* Product Hotspot Tagging */}
-        <div className="space-y-3 pt-2 border-t border-cloud">
+        {/* 2. Product Hotspot Tagging */}
+        <div className="space-y-3 pt-4 border-t border-cloud">
           <h2 className="font-display text-sm font-bold uppercase text-charcoal">
-            2. Attach Product Tag &amp; Hotspot
+            2. Attach Product Hotspot Tag
           </h2>
 
           <label className="block">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-              Select Product from Your Catalog
+              Select Product from Active House Catalog
             </span>
             <select
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:ring-2 focus:ring-gold/40"
+              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:ring-2 focus:ring-gold/40 font-medium"
             >
-              <option value="">No Product Tag</option>
+              <option value="">No Product Tagged</option>
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} (₹{p.price.toLocaleString("en-IN")})
@@ -235,32 +209,32 @@ export default function NewPostPage() {
           </label>
         </div>
 
-        {/* Post Type & Caption */}
-        <div className="space-y-4 pt-2 border-t border-cloud">
+        {/* 3. Post Category & Caption */}
+        <div className="space-y-4 pt-4 border-t border-cloud">
           <h2 className="font-display text-sm font-bold uppercase text-charcoal">
-            3. Post Details &amp; Caption
+            3. Post Category &amp; Caption
           </h2>
 
           <div className="grid grid-cols-3 gap-2">
-            {["Product Showcase", "Behind the Scenes", "Collection Drop"].map((type) => (
+            {["Product Showcase", "Behind the Scenes", "Collection Drop"].map((t) => (
               <button
-                key={type}
+                key={t}
                 type="button"
-                onClick={() => setForm({ ...form, tag: type })}
+                onClick={() => setForm({ ...form, tag: t })}
                 className={`py-2.5 text-xs font-bold uppercase rounded-xl border transition-colors ${
-                  form.tag === type
+                  form.tag === t
                     ? "bg-charcoal text-paper border-charcoal"
                     : "bg-mist text-stone border-cloud"
                 }`}
               >
-                {type}
+                {t}
               </button>
             ))}
           </div>
 
           <label className="block">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-              Caption (Hashtags &amp; Mentions) *
+              Caption (Supports #hashtags and @mentions) *
             </span>
             <textarea
               required
@@ -271,22 +245,54 @@ export default function NewPostPage() {
               className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:ring-2 focus:ring-gold/40"
             />
           </label>
+
+          <div className="flex gap-2">
+            {["#HauteCouture", "#Handcrafted", "#BridalWear", "#LuxuryFashion"].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  if (!form.caption.includes(tag)) {
+                    setForm((f) => ({ ...f, caption: f.caption ? `${f.caption} ${tag}` : tag }));
+                  }
+                }}
+                className="px-2.5 py-1 bg-mist text-stone text-[10px] font-bold rounded-lg border border-cloud hover:border-charcoal hover:text-charcoal"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="pt-4 border-t border-cloud flex justify-end gap-2">
+        {/* Actions */}
+        <div className="pt-4 border-t border-cloud flex items-center justify-between">
           <Link
             href="/dashboard/posts"
-            className="px-6 py-3 border border-cloud text-stone text-xs font-bold uppercase rounded-full"
+            className="px-5 py-2.5 border border-cloud text-stone text-xs font-bold uppercase rounded-full hover:bg-mist"
           >
             Cancel
           </Link>
-          <button
-            type="submit"
-            disabled={loading || uploading}
-            className="px-8 py-3 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full shadow-md disabled:opacity-60"
-          >
-            {loading ? "Publishing Post…" : "Publish to Customer Feed"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setForm((f) => ({ ...f, status: "draft" }));
+                const fakeEvent = { preventDefault: () => {} } as FormEvent;
+                onSubmit(fakeEvent);
+              }}
+              disabled={loading}
+              className="px-5 py-2.5 border border-cloud text-charcoal text-xs font-bold uppercase rounded-full hover:bg-mist"
+            >
+              Save Draft
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-7 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black disabled:opacity-60 transition-colors"
+            >
+              {loading ? "Publishing…" : "Publish to Customer Feed"}
+            </button>
+          </div>
         </div>
       </form>
     </div>

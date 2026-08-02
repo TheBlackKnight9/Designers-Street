@@ -24,6 +24,10 @@ import { ScarcityStrip } from "@/components/luxury/ScarcityStrip";
 import { EditionBadge } from "@/components/luxury/EditionBadge";
 import { TrustSignals } from "@/components/luxury/TrustSignals";
 import { APlusContentRenderer } from "@/components/product/APlusContentRenderer";
+import { ProductReviews } from "@/components/product/ProductReviews";
+import { useRouter } from "next/navigation";
+import { SizeRecommendation } from "@/components/product/SizeRecommendation";
+import { ConceptInterestModal } from "@/components/product/ConceptInterestModal";
 import { getEditionInfo } from "@/lib/luxury";
 import { getDesignerUrl } from "@/lib/routes";
 
@@ -66,6 +70,8 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [openSection, setOpenSection] = useState<string | null>("story");
   const [error, setError] = useState("");
   const [likeHint, setLikeHint] = useState<string | null>(null);
+  const [showConceptModal, setShowConceptModal] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const openGallery = useCallback(
     (index: number) => {
@@ -152,6 +158,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const wished = isWished(product.id);
   const inBag = isInCart(product.id);
+  const router = useRouter();
   const bagQty = quantityFor(product.id);
 
   const recommendations = products.filter(
@@ -176,6 +183,21 @@ export default function ProductDetailPage({ params }: PageProps) {
       size: selectedSize,
       image: product.images[0],
     });
+  };
+
+  const handleBuyNow = () => {
+    const sizeToUse = selectedSize || product.sizes[0] || "M";
+    if (!isInCart(product.id)) {
+      addItem({
+        productId: product.id,
+        name: product.name,
+        brand: product.designerName,
+        price: product.price,
+        size: sizeToUse,
+        image: product.images[0],
+      });
+    }
+    router.push("/checkout");
   };
 
   const toggleSection = (s: string) => setOpenSection(openSection === s ? null : s);
@@ -286,6 +308,13 @@ export default function ProductDetailPage({ params }: PageProps) {
             <h1 className="font-display text-xl font-bold text-[#2B2B2B] leading-tight mt-1">
               {product.name}
             </h1>
+            {/* Concept Showcase Badge */}
+            {(product as any).listingType === "CONCEPT_ART" && (
+              <div className="mt-2 mb-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-amber-900 font-sans text-xs font-bold uppercase tracking-wider">
+                <span>🎨 Concept Showcase &amp; Runway Prototype</span>
+              </div>
+            )}
+
             <LuxuryBadges
               product={product}
               designerVerified={designer?.verified}
@@ -293,7 +322,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             />
             <ScarcityStrip product={product} className="mt-3" />
             <EditionBadge product={product} className="mt-3" />
-            {/* Price Row: Our Price + Strikethrough MRP + Discount % */}
+            {/* Price Row: Our Price + Strikethrough MRP + Discount % + Free Shipping Badge */}
             <div className="flex items-baseline gap-2.5 mt-2.5 flex-wrap">
               <span className="font-sans text-xl font-extrabold text-[#2B2B2B]">
                 {formatPrice(product.price)}
@@ -308,6 +337,11 @@ export default function ProductDetailPage({ params }: PageProps) {
                     100
                 )}% OFF
               </span>
+              {(product as any).listingType !== "CONCEPT_ART" && (
+                <span className="px-2.5 py-0.5 bg-emerald-700 text-white rounded font-sans text-[9px] font-extrabold uppercase tracking-wider">
+                  ✓ FREE SHIPPING
+                </span>
+              )}
             </div>
 
             {/* Best Offer Price Callout Badge */}
@@ -325,11 +359,25 @@ export default function ProductDetailPage({ params }: PageProps) {
             )}
           </div>
 
+          {/* Recommended Size & Measurement Match Badge */}
+          <div className="mb-4">
+            <SizeRecommendation selectedSize={selectedSize} onSelectSize={setSelectedSize} />
+          </div>
+
           {/* Sizes */}
           <div className="mb-5">
-            <span className="font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B] block mb-3">
-              Select Size
-            </span>
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]">
+                Select Size
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowSizeGuide(true)}
+                className="font-sans text-xs font-bold uppercase tracking-wider text-charcoal underline"
+              >
+                📏 View Size Guide
+              </button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {product.sizes.map((size) => (
                 <button
@@ -353,21 +401,40 @@ export default function ProductDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 mb-3">
-            <button
-              type="button"
-              onClick={handleAddToBag}
-              className={`flex-1 h-12 font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press ${
-                inBag
-                  ? "bg-white text-[#2B2B2B] border border-[#2B2B2B]"
-                  : "bg-[#2B2B2B] text-[#FAFAFA]"
-              }`}
-            >
-              {inBag
-                ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
-                : "Add to Bag"}
-            </button>
+          {/* Actions: Add to Bag + Buy Now / Bespoke Quote */}
+          <div className="flex gap-2.5 mb-3">
+            {(product as any).listingType === "CONCEPT_ART" ? (
+              <button
+                type="button"
+                onClick={() => setShowConceptModal(true)}
+                className="flex-1 h-12 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black transition-colors"
+              >
+                🎨 {(product as any).conceptCta === "EXPRESS_INTEREST" ? "Express Interest" : (product as any).conceptCta === "PRE_ORDER_DEPOSIT" ? "Pre-Order Sample" : "Request Bespoke Quote"}
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleAddToBag}
+                  className={`flex-1 h-12 font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press ${
+                    inBag
+                      ? "bg-white text-[#2B2B2B] border border-[#2B2B2B]"
+                      : "bg-mist text-[#2B2B2B] border border-[#2B2B2B]"
+                  }`}
+                >
+                  {inBag
+                    ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
+                    : "Add to Bag"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="flex-1 h-12 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black transition-colors"
+                >
+                  ⚡ Buy Now
+                </button>
+              </>
+            )}
             <button
               type="button"
               onClick={() => toggle(product.id)}
@@ -564,6 +631,29 @@ export default function ProductDetailPage({ params }: PageProps) {
                 </div>
               )}
             </div>
+
+            {/* Legal Metrology Compliance */}
+            <div className="border-b border-[#EBEBEB]">
+              <button
+                type="button"
+                onClick={() => toggleSection("metrology")}
+                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]"
+              >
+                <span>⚖️ Legal Metrology &amp; Compliance</span>
+                <span className="text-sm">{openSection === "metrology" ? "−" : "+"}</span>
+              </button>
+              {openSection === "metrology" && (
+                <div className="pb-4 font-sans text-xs text-[#4A4A4A] leading-relaxed space-y-1.5">
+                  <p><strong>Net Quantity:</strong> {(product as any).netQuantity || "1 Piece"}</p>
+                  <p><strong>Shipping Weight:</strong> {(product as any).weightGrams ? `${(product as any).weightGrams}g` : "Standard"}</p>
+                  <p><strong>Country of Origin:</strong> {(product as any).countryOfOrigin || "India"}</p>
+                  <p><strong>Manufacturer / Brand:</strong> {(product as any).manufacturerName || product.designerName}</p>
+                  {(product as any).manufacturerAddress && (
+                    <p><strong>Manufacturer Address:</strong> {(product as any).manufacturerAddress}</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -580,6 +670,95 @@ export default function ProductDetailPage({ params }: PageProps) {
               {recommendations.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Verified Customer Reviews */}
+        <ProductReviews productId={product.id} />
+
+        {/* Concept Interest Lead Modal */}
+        {showConceptModal && (
+          <ConceptInterestModal product={product} onClose={() => setShowConceptModal(false)} />
+        )}
+
+        {/* Size Guide Drawer Modal */}
+        {showSizeGuide && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[85vh] overflow-y-auto">
+              <div className="flex justify-between items-center border-b border-cloud pb-3">
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-stone block">Garment Measurement Guide</span>
+                  <h3 className="font-display text-base font-bold uppercase text-charcoal">{product.name}</h3>
+                </div>
+                <button type="button" onClick={() => setShowSizeGuide(false)} className="text-xs font-bold text-stone hover:text-charcoal">
+                  ✕
+                </button>
+              </div>
+
+              {(product as any).sizeChart?.rows ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-stone font-semibold">Unit: {(product as any).sizeChart.unit || "inches"}</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-cloud text-[10px] font-bold uppercase text-stone bg-mist/50">
+                          <th className="py-2 px-2">Size</th>
+                          <th className="py-2 px-2">Chest</th>
+                          <th className="py-2 px-2">Waist</th>
+                          <th className="py-2 px-2">Hip</th>
+                          <th className="py-2 px-2">Shoulder</th>
+                          <th className="py-2 px-2">Length</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(product as any).sizeChart.rows.map((row: any) => (
+                          <tr key={row.size} className="border-b border-cloud/40">
+                            <td className="py-2 px-2 font-bold text-charcoal">{row.size}</td>
+                            <td className="py-2 px-2 text-stone">{row.chest || "—"}</td>
+                            <td className="py-2 px-2 text-stone">{row.waist || "—"}</td>
+                            <td className="py-2 px-2 text-stone">{row.hip || "—"}</td>
+                            <td className="py-2 px-2 text-stone">{row.shoulder || "—"}</td>
+                            <td className="py-2 px-2 text-stone">{row.length || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-stone font-semibold">Standard Atelier Size Guide (Inches)</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-cloud text-[10px] font-bold uppercase text-stone bg-mist/50">
+                          <th className="py-2 px-2">Size</th>
+                          <th className="py-2 px-2">Bust</th>
+                          <th className="py-2 px-2">Waist</th>
+                          <th className="py-2 px-2">Hip</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { size: "XS", bust: '32"', waist: '26"', hip: '35"' },
+                          { size: "S", bust: '34"', waist: '28"', hip: '37"' },
+                          { size: "M", bust: '36"', waist: '30"', hip: '39"' },
+                          { size: "L", bust: '38"', waist: '32"', hip: '41"' },
+                          { size: "XL", bust: '40"', waist: '34"', hip: '43"' },
+                        ].map((row) => (
+                          <tr key={row.size} className="border-b border-cloud/40">
+                            <td className="py-2 px-2 font-bold text-charcoal">{row.size}</td>
+                            <td className="py-2 px-2 text-stone">{row.bust}</td>
+                            <td className="py-2 px-2 text-stone">{row.waist}</td>
+                            <td className="py-2 px-2 text-stone">{row.hip}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

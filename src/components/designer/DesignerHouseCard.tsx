@@ -76,6 +76,35 @@ export function DesignerHouseCard({ house }: { house: any }) {
           </div>
         )}
 
+        {/* 3-Thumbnail Mini Product Preview */}
+        {house.products && house.products.length > 0 && (
+          <div className="grid grid-cols-3 gap-1.5 mt-3 pt-3 border-t border-cloud/60">
+            {house.products.slice(0, 3).map((prod: any, idx: number) => {
+              const img = prod.images?.[0] || prod.image;
+              return (
+                <div
+                  key={prod.id || idx}
+                  className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-mist border border-cloud"
+                >
+                  {isValidImageUrl(img) ? (
+                    <Image
+                      src={img}
+                      alt={prod.name || "Garment"}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="80px"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[9px] text-stone font-bold">
+                      {prod.name?.slice(0, 10)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="mt-4 pt-3 border-t border-cloud flex items-center justify-between text-xs font-bold uppercase tracking-wider text-charcoal">
           <span className="group-hover:translate-x-1 transition-transform inline-block">Explore Atelier →</span>
           <span className="text-[10px] text-stone font-mono">{productCount} Pieces</span>

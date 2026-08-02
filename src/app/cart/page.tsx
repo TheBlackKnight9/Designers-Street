@@ -10,6 +10,14 @@ import { formatPrice } from "@/lib/mock-data";
 export default function CartPage() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart();
 
+  // Group cart items by Designer House
+  const groupedItems: Record<string, typeof items> = {};
+  items.forEach((item) => {
+    const brand = item.brand || "Atelier House";
+    if (!groupedItems[brand]) groupedItems[brand] = [];
+    groupedItems[brand].push(item);
+  });
+
   return (
     <>
       <TopBar />
@@ -23,72 +31,96 @@ export default function CartPage() {
           </p>
         </div>
 
+        {/* Free Shipping Banner Highlight */}
+        {items.length > 0 && (
+          <div className="mx-4 mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-900 font-semibold shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span>✨</span>
+              <span>COMPLIMENTARY EXPRESS SHIPPING APPLIED</span>
+            </div>
+            <span className="px-2 py-0.5 bg-emerald-700 text-white text-[9px] font-extrabold uppercase rounded">
+              FREE SHIPPING
+            </span>
+          </div>
+        )}
+
         {items.length > 0 ? (
           <>
-            <div className="px-4 space-y-4 pb-6">
-              {items.map((item) => (
-                <div
-                  key={`${item.productId}-${item.size}`}
-                  className="flex gap-4 p-4 bg-[#F0F0F0] rounded-xl"
-                >
-                  {/* Image */}
-                  <Link
-                    href={`/product/${item.productId}`}
-                    className="relative w-20 h-24 rounded-lg overflow-hidden bg-[#E0E0E0] flex-shrink-0"
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                    />
-                  </Link>
+            <div className="px-4 space-y-6 pb-6">
+              {Object.entries(groupedItems).map(([brand, brandItems]) => (
+                <div key={brand} className="space-y-3 bg-white p-4 rounded-2xl border border-cloud shadow-xs">
+                  <div className="flex items-center justify-between border-b border-cloud pb-2">
+                    <h2 className="font-display text-xs font-bold uppercase tracking-wider text-charcoal">{brand}</h2>
+                    <span className="text-[9px] font-extrabold text-emerald-700 uppercase tracking-wider">✓ Direct House Fulfillment</span>
+                  </div>
 
-                  {/* Details */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[#A0A0A0]">
-                      {item.brand}
-                    </p>
-                    <p className="font-sans text-sm font-medium text-[#2B2B2B] truncate mt-0.5">
-                      {item.name}
-                    </p>
-                    <p className="font-sans text-xs text-[#7A7A7A] mt-0.5">
-                      Size: {item.size}
-                    </p>
-                    <p className="font-sans text-sm font-semibold text-[#2B2B2B] mt-1">
-                      {formatPrice(item.price)}
-                    </p>
-
-                    {/* Quantity + Remove */}
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
-                          className="w-7 h-7 flex items-center justify-center border border-[#E0E0E0] rounded-full text-xs font-bold text-[#2B2B2B]"
-                        >
-                          −
-                        </button>
-                        <span className="font-sans text-xs font-semibold text-[#2B2B2B] w-4 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
-                          className="w-7 h-7 flex items-center justify-center border border-[#E0E0E0] rounded-full text-xs font-bold text-[#2B2B2B]"
-                        >
-                          +
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.productId, item.size)}
-                        className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] underline"
+                  <div className="space-y-3">
+                    {brandItems.map((item) => (
+                      <div
+                        key={`${item.productId}-${item.size}`}
+                        className="flex gap-4 p-3 bg-[#F9F9F8] rounded-xl border border-cloud/50"
                       >
-                        Remove
-                      </button>
-                    </div>
+                        {/* Image */}
+                        <Link
+                          href={`/product/${item.productId}`}
+                          className="relative w-20 h-24 rounded-lg overflow-hidden bg-[#E0E0E0] flex-shrink-0"
+                        >
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                            sizes="80px"
+                          />
+                        </Link>
+
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[#A0A0A0]">
+                            {item.brand}
+                          </p>
+                          <p className="font-sans text-sm font-medium text-[#2B2B2B] truncate mt-0.5">
+                            {item.name}
+                          </p>
+                          <p className="font-sans text-xs text-[#7A7A7A] mt-0.5">
+                            Size: {item.size}
+                          </p>
+                          <p className="font-sans text-sm font-semibold text-[#2B2B2B] mt-1">
+                            {formatPrice(item.price)}
+                          </p>
+
+                          {/* Quantity + Remove */}
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
+                                className="w-7 h-7 flex items-center justify-center border border-[#E0E0E0] rounded-full text-xs font-bold text-[#2B2B2B]"
+                              >
+                                −
+                              </button>
+                              <span className="font-sans text-xs font-semibold text-[#2B2B2B] w-4 text-center">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
+                                className="w-7 h-7 flex items-center justify-center border border-[#E0E0E0] rounded-full text-xs font-bold text-[#2B2B2B]"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeItem(item.productId, item.size)}
+                              className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

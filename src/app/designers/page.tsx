@@ -6,19 +6,27 @@ import { TopBar } from "@/components/TopBar";
 import { DesignerHouseCard } from "@/components/designer/DesignerHouseCard";
 import { DESIGNERS } from "@/lib/mock-data";
 
+import { getIndianStates } from "@/lib/data/india-locations";
+
 const CITY_FILTERS = ["All", "Delhi", "Mumbai", "Jaipur", "Kolkata", "Bengaluru"];
+const CATEGORY_FILTERS = ["All Categories", "Lehengas", "Sarees", "Anarkalis", "Kurtas", "Indo-Western", "Accessories"];
 
 export default function DesignersDirectoryPage() {
   const [houses, setHouses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("All");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+
+  const indianStates = getIndianStates();
 
   useEffect(() => {
     let url = "/api/designers";
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("search", searchQuery.trim());
     if (selectedCity !== "All") params.set("city", selectedCity);
+    if (selectedState) params.set("state", selectedState);
     if (params.toString()) url += `?${params.toString()}`;
 
     fetch(url)
@@ -38,7 +46,7 @@ export default function DesignersDirectoryPage() {
       })
       .catch(() => setHouses(DESIGNERS as any[]))
       .finally(() => setLoading(false));
-  }, [searchQuery, selectedCity]);
+  }, [searchQuery, selectedCity, selectedState]);
 
   return (
     <>
@@ -55,24 +63,40 @@ export default function DesignersDirectoryPage() {
           </p>
         </div>
 
-        {/* Live Search Input */}
-        <div className="max-w-md mx-auto relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search ateliers by name, city (e.g. Jaipur), or technique..."
-            className="w-full rounded-2xl border border-cloud bg-white px-5 py-3.5 text-xs outline-none shadow-xs font-medium focus:ring-2 focus:ring-charcoal/20"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-3.5 text-xs text-stone font-bold hover:text-charcoal"
+        {/* Live Search & State Dropdown Row */}
+        <div className="max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2 relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, technique (Zardozi, Chikankari...)"
+              className="w-full rounded-2xl border border-cloud bg-white px-5 py-3 text-xs outline-none shadow-xs font-medium focus:ring-2 focus:ring-charcoal/20"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-3 text-xs text-stone font-bold hover:text-charcoal"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <div>
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="w-full h-full rounded-2xl border border-cloud bg-white px-4 py-3 text-xs font-bold outline-none text-charcoal shadow-xs cursor-pointer"
             >
-              ✕
-            </button>
-          )}
+              <option value="">36 States &amp; UTs</option>
+              {indianStates.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* City Filter Chips */}
@@ -81,14 +105,35 @@ export default function DesignersDirectoryPage() {
             <button
               key={city}
               type="button"
-              onClick={() => setSelectedCity(city)}
+              onClick={() => {
+                setSelectedCity(city);
+                setSelectedState("");
+              }}
               className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-colors border ${
-                selectedCity === city
+                selectedCity === city && !selectedState
                   ? "bg-charcoal text-paper border-charcoal shadow-xs"
                   : "bg-white text-stone border-cloud hover:border-stone"
               }`}
             >
               {city}
+            </button>
+          ))}
+        </div>
+
+        {/* Category Chips */}
+        <div className="flex items-center justify-center gap-1.5 flex-wrap pt-1 border-t border-cloud/40">
+          {CATEGORY_FILTERS.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-colors border ${
+                selectedCategory === cat
+                  ? "bg-stone text-white border-stone"
+                  : "bg-mist text-stone border-cloud hover:bg-cloud"
+              }`}
+            >
+              {cat}
             </button>
           ))}
         </div>

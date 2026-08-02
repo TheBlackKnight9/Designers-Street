@@ -171,7 +171,7 @@ export function BottomNav() {
       .catch(() => undefined);
   }, []);
 
-  const items = role === "designer" || role === "admin" ? DESIGNER_ITEMS : BUYER_ITEMS;
+  const items = role === "admin" ? DESIGNER_ITEMS : BUYER_ITEMS;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bottom-nav-glass border-t border-white/50" style={{ paddingBottom: "var(--safe-area-bottom)" }}>

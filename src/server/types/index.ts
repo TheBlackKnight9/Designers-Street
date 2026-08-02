@@ -15,6 +15,11 @@ export type {
   CreateMediaInput,
 } from "@/server/types/media";
 
+/**
+ * Platform user roles.
+ * "designer" is kept for backward-compat with existing DB rows but
+ * is never assigned to new users — treated as "buyer" at the permission layer.
+ */
 export type UserRole = "buyer" | "designer" | "admin";
 
 export type SessionUser = {

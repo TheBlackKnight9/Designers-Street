@@ -18,6 +18,11 @@ interface FeedPostProps {
   post: FeedPostData;
 }
 
+function isValidImageUrl(url?: string | null): boolean {
+  if (!url || url === "na" || url.trim() === "") return false;
+  return url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://");
+}
+
 export function FeedPost({ post }: FeedPostProps) {
   const { isWished, toggle: toggleWishlist } = useWishlist();
   const { addItem: addToCart, isInCart, quantityFor, openCart } = useCart();
@@ -137,13 +142,19 @@ export function FeedPost({ post }: FeedPostProps) {
             className="flex items-center gap-3 group"
           >
             <div className="w-10 h-10 rounded-full overflow-hidden relative bg-[#D5DBE5] border border-white/50 flex-shrink-0 shadow-xs">
-              <Image
-                src={post.designerLogo}
-                alt={post.designerName}
-                fill
-                className="object-cover"
-                sizes="40px"
-              />
+              {isValidImageUrl(post.designerLogo) ? (
+                <Image
+                  src={post.designerLogo}
+                  alt={post.designerName}
+                  fill
+                  className="object-cover"
+                  sizes="40px"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center font-bold text-xs text-charcoal bg-mist">
+                  {post.designerName?.charAt(0)?.toUpperCase() || "A"}
+                </div>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-1">
@@ -202,7 +213,7 @@ export function FeedPost({ post }: FeedPostProps) {
           {post.videoOnly && post.videoUrl ? (
             <video
               src={post.videoUrl}
-              poster={post.image}
+              poster={isValidImageUrl(post.image) ? post.image : undefined}
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               muted
               loop
@@ -210,7 +221,7 @@ export function FeedPost({ post }: FeedPostProps) {
               autoPlay
               preload="metadata"
             />
-          ) : (
+          ) : isValidImageUrl(post.image) ? (
             <Image
               src={post.image}
               alt={post.caption}
@@ -218,6 +229,10 @@ export function FeedPost({ post }: FeedPostProps) {
               className="object-cover pointer-events-none"
               sizes="100vw"
             />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center font-bold text-sm text-stone bg-mist">
+              No Preview Image Available
+            </div>
           )}
           {(post.videoUrl || post.videoOnly) ? (
             <span className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/65 text-white pointer-events-none">

@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/server/db";
 import { ToastProvider } from "@/components/dashboard/Toast";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { requireDashboardContext } from "@/server/auth/dashboard-session";
@@ -10,6 +13,21 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Gate: only admin can access /dashboard
+  if (isDatabaseEnabled()) {
+    const supabase = await createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+
+    if (!authUser?.email) {
+      redirect("/account/login?next=/dashboard");
+    }
+
+    const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
+    if (!dbUser || dbUser.role !== "admin") {
+      redirect("/?error=admin_required");
+    }
+  }
+
   let designerName: string | undefined;
 
   if (isDatabaseEnabled()) {
@@ -17,7 +35,7 @@ export default async function DashboardLayout({
       const ctx = await requireDashboardContext();
       designerName = ctx.designer.name;
     } catch {
-      /* guest / non-authenticated fallback handled by route protection */
+      /* No active house selected yet — DashboardShell will show placeholder */
     }
   }
 

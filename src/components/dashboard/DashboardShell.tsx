@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { AdminHouseSwitcher } from "@/components/admin/AdminHouseSwitcher";
 
 const NAV = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/products", label: "Products" },
   { href: "/dashboard/inventory", label: "Inventory Studio" },
+  { href: "/dashboard/concept-leads", label: "Concept Leads" },
   { href: "/dashboard/earnings", label: "Earnings & Settlements" },
+  { href: "/dashboard/reviews", label: "Customer Reviews" },
   { href: "/dashboard/posts", label: "Posts" },
   { href: "/dashboard/stories", label: "Stories" },
   { href: "/dashboard/orders", label: "Orders" },
@@ -34,8 +37,10 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-cloud p-5 flex flex-col justify-between shrink-0 bg-mist/30">
+    <div className="min-h-screen bg-paper flex flex-col">
+      <AdminHouseSwitcher />
+      <div className="flex-1 flex flex-col md:flex-row">
+        <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-cloud p-5 flex flex-col justify-between shrink-0 bg-mist/30">
         <div className="space-y-6">
           <div>
             <span className="text-[10px] tracking-label uppercase text-stone block">
@@ -80,6 +85,7 @@ export function DashboardShell({
       </aside>
 
       <main className="flex-1 p-6 md:p-10 max-w-6xl">{children}</main>
+      </div>
     </div>
   );
 }

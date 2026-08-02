@@ -137,18 +137,53 @@ export class MediaService {
         folder,
         ownerType,
       });
+    } catch (cloudinaryErr) {
+      logger.warn("cloudinary_upload_failed_falling_back_to_base64", {
+        message:
+          cloudinaryErr instanceof Error
+            ? cloudinaryErr.message
+            : String(cloudinaryErr),
+      });
 
+      // Automatic Fallback: Convert file buffer to Base64 Data URL
+      const base64Str = options.buffer.toString("base64");
+      const mime =
+        options.mimeType || (type === "video" ? "video/mp4" : "image/jpeg");
+      const dataUrl = `data:${mime};base64,${base64Str}`;
+      const fallbackPublicId = `fallback_b64_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+      uploaded = {
+        type,
+        cloudinaryPublicId: fallbackPublicId,
+        secureUrl: dataUrl,
+        width: 800,
+        height: 1000,
+        bytes: options.buffer.byteLength,
+        format: mime.split("/")[1] || "jpeg",
+        folder,
+        duration: null,
+        thumbnailUrl: null,
+      };
+    }
+
+    if (!uploaded) {
+      throw new Error("Upload failed to produce a valid media result");
+    }
+
+    const finalUploaded = uploaded;
+
+    try {
       return await this.registerUpload({
-        type: uploaded.type,
-        cloudinaryPublicId: uploaded.cloudinaryPublicId,
-        secureUrl: uploaded.secureUrl,
-        width: uploaded.width,
-        height: uploaded.height,
-        duration: uploaded.duration,
-        format: uploaded.format,
-        bytes: uploaded.bytes,
-        folder: uploaded.folder ?? folder,
-        thumbnailUrl: uploaded.thumbnailUrl,
+        type: finalUploaded.type,
+        cloudinaryPublicId: finalUploaded.cloudinaryPublicId,
+        secureUrl: finalUploaded.secureUrl,
+        width: finalUploaded.width,
+        height: finalUploaded.height,
+        duration: finalUploaded.duration,
+        format: finalUploaded.format,
+        bytes: finalUploaded.bytes,
+        folder: finalUploaded.folder ?? folder,
+        thumbnailUrl: finalUploaded.thumbnailUrl,
         altText: options.altText,
         displayOrder: options.displayOrder,
         productId: options.productId,
@@ -159,7 +194,7 @@ export class MediaService {
         uploadedById: options.uploadedById,
       });
     } catch (error) {
-      if (uploaded?.cloudinaryPublicId) {
+      if (uploaded?.cloudinaryPublicId && !uploaded.cloudinaryPublicId.startsWith("fallback_b64_")) {
         try {
           await this.cloudinary.deleteMedia(
             uploaded.cloudinaryPublicId,

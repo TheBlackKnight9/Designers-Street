@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { MediaViewerProvider } from "@/context/MediaViewerContext";
+import { ToastProvider } from "@/components/dashboard/Toast";
 import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
 
@@ -40,14 +41,16 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-paper text-charcoal pb-28">
-        <CartProvider>
-          <WishlistProvider>
-            <MediaViewerProvider>
-              {children}
-              <BottomNav />
-            </MediaViewerProvider>
-          </WishlistProvider>
-        </CartProvider>
+        <ToastProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <MediaViewerProvider>
+                {children}
+                <BottomNav />
+              </MediaViewerProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );

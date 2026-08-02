@@ -1,6 +1,22 @@
-import { DataProvider } from "@/context/DataContext";
+import { requireAdmin } from "@/lib/auth/admin-guard";
+import { ToastProvider } from "@/components/dashboard/Toast";
+import { AdminHouseSwitcher } from "@/components/admin/AdminHouseSwitcher";
 
-/** The legacy local catalog editor is isolated to /admin. */
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <DataProvider>{children}</DataProvider>;
+export const dynamic = "force-dynamic";
+
+/** Admin Command Center Layout — admin-only, server-side guarded */
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Server-side guard: redirects non-admins to /
+  await requireAdmin();
+
+  return (
+    <ToastProvider>
+      <AdminHouseSwitcher />
+      <div className="min-h-screen bg-[#F8F7F4]">{children}</div>
+    </ToastProvider>
+  );
 }

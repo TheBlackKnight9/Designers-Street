@@ -11,6 +11,7 @@ export type ProductCreateData = {
   name: string;
   designerName: string;
   price: number;
+  basePrice?: number | null;
   mrp?: number | null;
   bestPrice?: number | null;
   category: string;
@@ -32,6 +33,15 @@ export type ProductCreateData = {
   customizable?: boolean;
   deliveryText?: string | null;
   status?: ProductStatus;
+  listingType?: any;
+  conceptCta?: any;
+  estimatedLaunch?: string | null;
+  weightGrams?: number | null;
+  netQuantity?: string | null;
+  manufacturerName?: string | null;
+  manufacturerAddress?: string | null;
+  countryOfOrigin?: string | null;
+  sizeChart?: any;
 };
 
 const publicInclude = {
@@ -224,6 +234,7 @@ export class ProductRepository {
         name: data.name,
         designerName: data.designerName,
         price: data.price,
+        basePrice: data.basePrice ?? null,
         mrp: data.mrp ?? null,
         bestPrice: data.bestPrice ?? null,
         category: data.category,
@@ -245,6 +256,15 @@ export class ProductRepository {
         customizable: data.customizable ?? false,
         deliveryText: data.deliveryText ?? null,
         status: data.status ?? "draft",
+        listingType: data.listingType ?? "COMMERCIAL",
+        conceptCta: data.conceptCta ?? "BESPOKE_INQUIRY",
+        estimatedLaunch: data.estimatedLaunch ?? null,
+        weightGrams: data.weightGrams ?? null,
+        netQuantity: data.netQuantity ?? null,
+        manufacturerName: data.manufacturerName ?? null,
+        manufacturerAddress: data.manufacturerAddress ?? null,
+        countryOfOrigin: data.countryOfOrigin ?? "India",
+        sizeChart: data.sizeChart ?? null,
       },
     });
     return toProduct(row);

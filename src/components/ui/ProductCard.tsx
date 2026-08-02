@@ -16,6 +16,11 @@ interface ProductCardProps {
   id?: string;
 }
 
+function isValidImageUrl(url?: string | null): boolean {
+  if (!url || url === "na" || url.trim() === "") return false;
+  return url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://");
+}
+
 export function ProductCard({ product, className = "", id }: ProductCardProps) {
   const { isWished, toggle } = useWishlist();
   const { addItem } = useCart();
@@ -52,6 +57,8 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
     });
   };
 
+  const coverImg = product.images[0];
+
   return (
     <div
       id={id}
@@ -61,13 +68,19 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F0F0F0] rounded-lg">
         <Link href={`/product/${product.id}`} className="absolute inset-0 block">
           <div onClick={handleImageTap} className="w-full h-full relative">
-            <Image
-              src={product.images[0]}
-              alt={product.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            />
+            {isValidImageUrl(coverImg) ? (
+              <Image
+                src={coverImg}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center font-bold text-xs text-stone bg-mist">
+                {product.name.slice(0, 15)}
+              </div>
+            )}
           </div>
         </Link>
 
@@ -95,8 +108,15 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
           </svg>
         </button>
 
+        {/* Free Shipping Badge */}
+        {(product as any).listingType !== "CONCEPT_ART" && (
+          <span className="absolute top-2 left-2 z-10 bg-emerald-700/90 text-white font-sans text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-md backdrop-blur-xs tracking-wider shadow-xs">
+            FREE SHIPPING
+          </span>
+        )}
+
         {product.videos && product.videos.length > 0 ? (
-          <span className="absolute top-2 left-2 z-10 flex h-7 items-center gap-1 rounded-full bg-black/55 px-2 text-[9px] font-bold uppercase tracking-wider text-white pointer-events-none">
+          <span className="absolute top-2 left-16 z-10 flex h-7 items-center gap-1 rounded-full bg-black/55 px-2 text-[9px] font-bold uppercase tracking-wider text-white pointer-events-none">
             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M8 5.14v14l11-7-11-7z" />
             </svg>

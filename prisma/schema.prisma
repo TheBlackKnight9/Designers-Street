@@ -111,6 +111,7 @@ model User {
   notifications        Notification[]
   appointmentRequests  AppointmentRequest[]
   measurementProfiles  MeasurementProfile[]
+  reviews              Review[]
 
   @@map("users")
 }
@@ -164,6 +165,14 @@ model DesignerHouse {
   razorpayAccountId     String?               @map("razorpay_account_id")
   razorpayAccountStatus String?               @map("razorpay_account_status")
   listingsApproved      Boolean               @default(false) @map("listings_approved")
+  // Phase 13: Admin-managed financials
+  commissionRate        Float                 @default(10) @map("commission_rate")
+  gstin                 String?
+  pan                   String?
+  bankBeneficiary       String?               @map("bank_beneficiary")
+  bankAccount           String?               @map("bank_account")
+  bankIfsc              String?               @map("bank_ifsc")
+  bankName              String?               @map("bank_name")
   createdAt             DateTime              @default(now()) @map("created_at")
   updatedAt             DateTime              @updatedAt @map("updated_at")
 
@@ -192,6 +201,7 @@ model Product {
   name             String
   designerName     String        @map("designer_name")
   price            Int
+  basePrice        Int?          @map("base_price")
   mrp              Int?
   bestPrice        Int?          @map("best_price")
   category         String
@@ -249,6 +259,7 @@ model Product {
   editorialCollectionItems EditorialCollectionItem[]
   variants               ProductVariant[]
   conceptInterests       ConceptInterest[]
+  reviews                Review[]
 
   @@index([designerId])
   @@index([category])
@@ -451,6 +462,11 @@ model Order {
   designerId          String?       @map("designer_id")
   status              OrderStatus   @default(pending)
   subtotal            Int
+  baseGarmentPrice    Int           @default(0) @map("base_garment_price")
+  builtInShippingFee  Int           @default(0) @map("built_in_shipping_fee")
+  platformCommission  Int           @default(0) @map("platform_commission")
+  gstAmount           Int           @default(0) @map("gst_amount")
+  prepaidDiscountShare Int          @default(0) @map("prepaid_discount_share")
   shippingFee         Int           @default(0) @map("shipping_fee")
   total               Int
   currency            String        @default("INR")
@@ -458,6 +474,7 @@ model Order {
   commissionGst       Int           @default(0) @map("commission_gst")
   tcsDeducted         Int           @default(0) @map("tcs_deducted")
   designerNetEarnings Int           @default(0) @map("designer_net_earnings")
+  designerNetPayable  Int           @default(0) @map("designer_net_payable")
   payoutId            String?       @map("payout_id")
   razorpayTransferId  String?       @map("razorpay_transfer_id")
   transferOnHoldUntil DateTime?     @map("transfer_on_hold_until")
@@ -479,6 +496,7 @@ model Order {
   items    OrderItem[]
   events   OrderEvent[]
   disputes OrderDispute[]
+  reviews  Review[]
 
   @@index([userId])
   @@index([designerId])
@@ -499,6 +517,7 @@ model Payment {
   razorpayOrderId   String        @unique @map("razorpay_order_id")
   razorpayPaymentId String?       @unique @map("razorpay_payment_id")
   amount            Int
+  discountApplied   Int           @default(10000) @map("discount_applied")
   currency          String        @default("INR")
   status            PaymentStatus @default(created)
   method            String?
@@ -553,8 +572,9 @@ model Payout {
   totalTcsDeducted    Int           @map("total_tcs_deducted")
   netAmount           Int           @map("net_amount")
   status              PayoutStatus  @default(pending)
-  method              String        @default("razorpay_route")
+  method              String        @default("neft_manual")
   razorpayBatchId     String?       @map("razorpay_batch_id")
+  bankUtrNumber       String?       @map("bank_utr_number")
   paidAt              DateTime?     @map("paid_at")
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @default(now()) @updatedAt @map("updated_at")
@@ -1079,20 +1099,48 @@ model ProductVariant {
 }
 
 model ConceptInterest {
-  id        String   @id @default(cuid())
-  productId String   @map("product_id")
-  userId    String?  @map("user_id")
-  name      String
-  email     String
-  phone     String?
-  notes     String?  @db.Text
-  status    String   @default("new")
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(cuid())
+  productId   String   @map("product_id")
+  userId      String?  @map("user_id")
+  name        String
+  email       String
+  phone       String?
+  budgetRange String?  @map("budget_range")
+  notes       String?  @db.Text
+  status      String   @default("new")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@map("concept_interests")
+}
+
+model Review {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  productId    String    @map("product_id")
+  orderId      String    @map("order_id")
+  rating       Int
+  title        String?
+  body         String?   @db.Text
+  images       String[]  @default([])
+  isVerified   Boolean   @default(true) @map("is_verified")
+  isApproved   Boolean   @default(true) @map("is_approved")
+  helpfulCount Int       @default(0) @map("helpful_count")
+  designerReply String?  @map("designer_reply") @db.Text
+  repliedAt    DateTime? @map("replied_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId, orderId])
+  @@index([productId])
+  @@index([userId])
+  @@map("reviews")
 }
 
 model ShippingZone {
@@ -1115,5 +1163,28 @@ model ShippingRate {
   @@unique([designerId, zone, weightSlabMin])
   @@map("shipping_rates")
 }
+
+enum CouponType {
+  percentage
+  fixed_amount
+}
+
+model Coupon {
+  id             String     @id @default(cuid())
+  code           String     @unique
+  type           CouponType @default(fixed_amount)
+  value          Int
+  minOrderValue  Int        @default(0) @map("min_order_value")
+  maxDiscount    Int?       @map("max_discount")
+  usageLimit     Int?       @map("usage_limit")
+  usedCount      Int        @default(0) @map("used_count")
+  expiresAt      DateTime?  @map("expires_at")
+  isActive       Boolean    @default(true) @map("is_active")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@map("coupons")
+}
+
 
 

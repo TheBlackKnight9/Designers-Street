@@ -125,6 +125,7 @@ function BuyerLoginForm() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
+          suppressHydrationWarning
           className="w-full mb-5 flex items-center justify-center gap-3 py-3 px-4 rounded-full border border-cloud bg-mist/50 hover:bg-mist transition-colors text-xs font-bold uppercase tracking-wider text-charcoal disabled:opacity-60 cursor-pointer"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -155,7 +156,7 @@ function BuyerLoginForm() {
           </span>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4" suppressHydrationWarning>
           <label className="block">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
               Email Address
@@ -166,6 +167,7 @@ function BuyerLoginForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              suppressHydrationWarning
               className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
             />
           </label>
@@ -180,6 +182,7 @@ function BuyerLoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              suppressHydrationWarning
               className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
             />
           </label>
@@ -193,6 +196,7 @@ function BuyerLoginForm() {
           <button
             type="submit"
             disabled={loading}
+            suppressHydrationWarning
             className="w-full rounded-full bg-charcoal text-paper py-3 text-xs font-bold uppercase tracking-wider disabled:opacity-60 shadow-sm"
           >
             {loading ? "Signing in…" : "Sign In to Account"}
@@ -209,12 +213,6 @@ function BuyerLoginForm() {
             New to Designer&apos;s Street?{" "}
             <Link href="/account/signup" className="text-charcoal font-bold underline">
               Create a Buyer Account
-            </Link>
-          </p>
-          <p>
-            Are you a Designer?{" "}
-            <Link href="/designer-portal" className="text-charcoal font-bold underline">
-              Sell on Designer&apos;s Street →
             </Link>
           </p>
         </div>

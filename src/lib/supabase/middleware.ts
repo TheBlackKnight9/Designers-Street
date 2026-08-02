@@ -70,6 +70,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isDashboard = path.startsWith("/dashboard");
+  const isAdminRoute = path.startsWith("/admin");
   const isBuyerAuth =
     path === "/account/login" ||
     path === "/account/signup" ||
@@ -78,16 +79,27 @@ export async function updateSession(request: NextRequest) {
 
   // Check user role from metadata or default to buyer
   const userRole = (user?.user_metadata?.role as string) || (user?.app_metadata?.role as string) || "buyer";
+  const hasAdminActiveHouse = Boolean(request.cookies.get("admin_active_designer_id")?.value);
+
+  // Gating /admin routes
+  if (isAdminRoute && !user) {
+    const redirect = request.nextUrl.clone();
+    redirect.pathname = "/account/login";
+    redirect.searchParams.set("next", path);
+    redirect.searchParams.set("notice", "admin_login_required");
+    return NextResponse.redirect(redirect);
+  }
 
   // 1. Gating Designer Dashboard (/dashboard/*)
   if (isDashboard) {
     if (!user) {
       const redirect = request.nextUrl.clone();
-      redirect.pathname = "/login";
+      redirect.pathname = "/account/login";
       redirect.searchParams.set("next", path);
       return NextResponse.redirect(redirect);
     }
-    if (userRole === "buyer") {
+    // Allow access if user is admin OR has an active admin house cookie set
+    if (userRole === "buyer" && !hasAdminActiveHouse) {
       const redirect = request.nextUrl.clone();
       redirect.pathname = "/designer-portal";
       redirect.searchParams.set("notice", "designers_only");

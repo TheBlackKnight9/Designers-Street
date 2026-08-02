@@ -45,6 +45,10 @@ export class DesignerRepository {
     return prisma.designerHouse.findUnique({ where: { ownerUserId } });
   }
 
+  async findRecordById(id: string) {
+    return prisma.designerHouse.findUnique({ where: { id } });
+  }
+
   async findRecordByHandle(handle: string) {
     return prisma.designerHouse.findFirst({
       where: { handle: { equals: handle, mode: "insensitive" } },

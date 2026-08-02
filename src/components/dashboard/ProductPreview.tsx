@@ -19,9 +19,10 @@ type PreviewProduct = {
 
 export function ProductPreview({ product }: { product: PreviewProduct }) {
   const cover =
-    product.media.find((m) => m.type === "image")?.secureUrl ||
-    product.media[0]?.thumbnailUrl ||
-    product.media[0]?.secureUrl;
+    product.media?.find((m) => m.type === "image")?.secureUrl ||
+    product.media?.[0]?.thumbnailUrl ||
+    product.media?.[0]?.secureUrl ||
+    (product as any)?.images?.[0];
 
   return (
     <div className="rounded-2xl border border-cloud bg-mist/40 overflow-hidden">

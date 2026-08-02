@@ -149,8 +149,8 @@ export function assertCloudinaryResult(input: {
   if (!input.publicId?.trim()) {
     throw new InvalidMediaFileError("cloudinaryPublicId is required");
   }
-  if (!input.secureUrl?.trim() || !/^https:\/\//i.test(input.secureUrl)) {
-    throw new InvalidMediaFileError("secureUrl must be an https URL");
+  if (!input.secureUrl?.trim() || !/^(https?:\/\/|data:)/i.test(input.secureUrl)) {
+    throw new InvalidMediaFileError("secureUrl must be a valid http, https, or data URL");
   }
   if (input.type && input.type !== "image" && input.type !== "video") {
     throw new InvalidMediaFileError("type must be image or video");

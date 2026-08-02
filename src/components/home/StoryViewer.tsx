@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { StoryItem } from "@/lib/types";
+import { sanitizeImageUrl } from "@/lib/utils/image-url";
 
 interface StoryViewerProps {
   story: StoryItem;
@@ -16,16 +17,25 @@ export function StoryViewer({ story, onClose, onNext }: StoryViewerProps) {
   const [paused, setPaused] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
 
-  const slide = story.slides[currentSlide];
+  const slides = story.slides?.length
+    ? story.slides
+    : [
+        {
+          image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80",
+          caption: story.label || story.designerName,
+        },
+      ];
+
+  const slide = slides[currentSlide] || slides[0];
 
   const goNextSlide = useCallback(() => {
-    if (currentSlide < story.slides.length - 1) {
+    if (currentSlide < slides.length - 1) {
       setCurrentSlide((prev) => prev + 1);
       setProgressKey((prev) => prev + 1);
     } else {
       onNext();
     }
-  }, [currentSlide, story.slides.length, onNext]);
+  }, [currentSlide, slides.length, onNext]);
 
   const goPrevSlide = () => {
     if (currentSlide > 0) {
@@ -59,11 +69,20 @@ export function StoryViewer({ story, onClose, onNext }: StoryViewerProps) {
     }
   };
 
+  const sanitizedLogo = sanitizeImageUrl(
+    story.designerLogo,
+    "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80"
+  );
+  const sanitizedSlideImage = sanitizeImageUrl(
+    slide.image,
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"
+  );
+
   return (
     <div className="fixed inset-0 z-[80] bg-black flex flex-col">
       {/* Progress bars */}
       <div className="absolute top-0 left-0 right-0 z-10 flex gap-1 px-3 pt-3">
-        {story.slides.map((_, i) => (
+        {slides.map((_, i) => (
           <div key={i} className="flex-1 h-[2px] bg-white/30 rounded-full overflow-hidden">
             {i < currentSlide && (
               <div className="h-full w-full bg-white rounded-full" />
@@ -84,8 +103,8 @@ export function StoryViewer({ story, onClose, onNext }: StoryViewerProps) {
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full overflow-hidden border border-white/30">
             <Image
-              src={story.designerLogo}
-              alt={story.designerName}
+              src={sanitizedLogo}
+              alt={story.designerName || "Designer"}
               width={32}
               height={32}
               className="object-cover"
@@ -117,8 +136,8 @@ export function StoryViewer({ story, onClose, onNext }: StoryViewerProps) {
         onTouchEnd={() => setPaused(false)}
       >
         <Image
-          src={slide.image}
-          alt={slide.caption || story.designerName}
+          src={sanitizedSlideImage}
+          alt={slide.caption || story.designerName || "Story Slide"}
           fill
           className="object-cover"
           priority

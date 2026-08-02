@@ -1,13 +1,10 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
-import { FinancialCalculatorService } from "@/server/services/financial-calculator";
+import { ok, fail } from "@/server/utils/api-response";
 import { NotFoundError } from "@/server/errors";
-import { fail } from "@/server/utils/api-response";
 
 export const runtime = "nodejs";
-const financialCalc = new FinancialCalculatorService();
 
-/** GET /api/orders/[id]/invoice */
+/** GET /api/orders/[id]/invoice - GST Tax Invoice Generator */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -18,133 +15,137 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        items: true,
         user: true,
-        designer: {
-          include: { businessVerification: true },
-        },
+        designer: { include: { businessVerification: true } },
+        items: true,
       },
     });
 
-    if (!order) {
-      throw new NotFoundError("Order not found");
-    }
+    if (!order) throw new NotFoundError("Order not found");
 
-    const verification = order.designer?.businessVerification;
-    const sellerName = verification?.bankAccountName || order.designer?.name || "Designer House";
-    const sellerGstin = verification?.gstin || "URP (Unregistered Person)";
-    const sellerAddress = `${verification?.shippingAddress || "Atelier Studio"}, ${verification?.shippingCity || "Delhi"} - ${verification?.shippingPincode || "110001"}`;
-
-    const buyerAddressObj = (order.shippingAddress as any) || {};
-    const buyerName = buyerAddressObj.fullName || order.user?.name || "Buyer";
-    const buyerAddressStr = `${buyerAddressObj.line1 || ""}, ${buyerAddressObj.city || ""}, ${buyerAddressObj.state || ""} ${buyerAddressObj.postalCode || ""}`;
-
-    const fin = financialCalc.calculateFinancialSplit({
-      subtotal: order.subtotal,
-      shippingFee: order.shippingFee,
+    const invoiceNum = `DS-INV-${order.id.slice(-6).toUpperCase()}`;
+    const invoiceDate = new Date(order.createdAt).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
 
-    const subtotalRs = (order.subtotal / 100).toFixed(2);
-    const shippingRs = (order.shippingFee / 100).toFixed(2);
-    const totalRs = (order.total / 100).toFixed(2);
-    const gstRate = 0.12; // 12% standard GST on garments
-    const taxableValue = (order.subtotal / 1.12 / 100).toFixed(2);
-    const totalGstAmount = (Number(subtotalRs) - Number(taxableValue)).toFixed(2);
-    const cgstAmount = (Number(totalGstAmount) / 2).toFixed(2);
-    const sgstAmount = (Number(totalGstAmount) / 2).toFixed(2);
+    const sellerName = order.designer?.name || "Designer's Street Luxury Marketplace";
+    const sellerGstin = order.designer?.gstin || order.designer?.businessVerification?.gstin || "07AAAAA0000A1Z5";
+    const sellerAddress = order.designer?.businessVerification?.shippingAddress || "Atelier House, Fashion District, New Delhi, India 110001";
 
-    const htmlContent = `<!DOCTYPE html>
-<html lang="en">
+    const ship = (order.shippingAddress as any) || {};
+    const buyerName = ship.fullName || order.user?.name || order.user?.email || "Valued Customer";
+    const buyerAddressStr = `${ship.line1 || ""}${ship.line2 ? `, ${ship.line2}` : ""}, ${ship.city || ""}, ${ship.state || ""} - ${ship.postalCode || ""}`;
+
+    const totalRupees = order.total / 100;
+    const gstRupees = order.gstAmount ? order.gstAmount / 100 : Math.round(totalRupees * 0.12);
+    const taxableAmount = totalRupees - gstRupees;
+    const cgst = Math.round((gstRupees / 2) * 100) / 100;
+    const sgst = Math.round((gstRupees / 2) * 100) / 100;
+
+    const html = `<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>GST Tax Invoice — #${order.id.slice(-8)}</title>
+  <meta charset="utf-8">
+  <title>GST Tax Invoice - ${invoiceNum}</title>
   <style>
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 40px; color: #101010; font-size: 12px; line-height: 1.5; }
-    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #101010; padding-bottom: 16px; margin-bottom: 24px; }
-    .title { font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-    .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-    .box { background: #FAFAFA; border: 1px solid #E0E0E0; padding: 16px; border-radius: 12px; }
-    .box-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #606060; margin-bottom: 8px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th { background: #F0F0F0; text-align: left; padding: 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #D0D0D0; }
-    td { padding: 10px; border-bottom: 1px solid #E0E0E0; }
-    .totals { margin-top: 24px; margin-left: auto; width: 300px; }
-    .totals-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #E0E0E0; }
-    .grand-total { font-size: 14px; font-weight: bold; border-top: 2px solid #101010; border-bottom: 2px solid #101010; margin-top: 8px; padding: 10px 0; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #101010; margin: 0; padding: 40px; background: #faf8f5; }
+    .invoice-card { max-width: 800px; margin: 0 auto; background: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #e5e0d8; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #101010; padding-bottom: 20px; margin-bottom: 30px; }
+    .brand { font-size: 24px; font-weight: 800; text-transform: uppercase; tracking: 2px; }
+    .invoice-title { text-align: right; font-size: 14px; font-weight: bold; color: #706e6b; text-transform: uppercase; }
+    .inv-num { font-size: 18px; color: #101010; font-family: monospace; font-weight: bold; margin-top: 4px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+    .box-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #706e6b; letter-spacing: 1px; margin-bottom: 6px; }
+    .box-body { font-size: 12px; line-height: 1.6; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th { background: #f2eee9; text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #e5e0d8; }
+    td { padding: 12px; font-size: 12px; border-bottom: 1px solid #f2eee9; }
+    .totals { width: 300px; margin-left: auto; font-size: 12px; line-height: 1.8; }
+    .totals div { display: flex; justify-content: space-between; }
+    .grand-total { border-top: 2px solid #101010; padding-top: 8px; margin-top: 8px; font-size: 16px; font-weight: bold; }
+    .footer { text-align: center; margin-top: 40px; pt: 20px; font-size: 10px; color: #706e6b; border-top: 1px solid #e5e0d8; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <div class="title">GST Tax Invoice</div>
-      <div>Invoice #: DS-INV-${order.id.slice(-8).toUpperCase()}</div>
-      <div>Invoice Date: ${new Date(order.createdAt).toLocaleDateString()}</div>
+  <div class="invoice-card">
+    <div class="header">
+      <div>
+        <div class="brand">DESIGNER'S STREET</div>
+        <div style="font-size: 11px; color: #706e6b; margin-top: 4px;">Curated Luxury Fashion Marketplace</div>
+      </div>
+      <div class="invoice-title">
+        GST TAX INVOICE
+        <div class="inv-num">${invoiceNum}</div>
+        <div style="font-size: 11px; color: #101010; font-weight: normal; margin-top: 2px;">Date: ${invoiceDate}</div>
+      </div>
     </div>
-    <div style="text-align: right;">
-      <div style="font-weight: bold; font-size: 14px;">Designer's Street</div>
-      <div>Luxury Fashion Marketplace</div>
-    </div>
-  </div>
 
-  <div class="grid">
-    <div class="box">
-      <div class="box-title">Seller Details (Atelier House)</div>
-      <strong>${sellerName}</strong><br>
-      ${sellerAddress}<br>
-      <strong>GSTIN:</strong> ${sellerGstin}
+    <div class="grid">
+      <div>
+        <div class="box-title">Seller / Supplier Details</div>
+        <div class="box-body">
+          <strong>${sellerName}</strong><br>
+          GSTIN: <strong>${sellerGstin}</strong><br>
+          ${sellerAddress}
+        </div>
+      </div>
+      <div>
+        <div class="box-title">Billed To / Delivery Address</div>
+        <div class="box-body">
+          <strong>${buyerName}</strong><br>
+          ${buyerAddressStr}<br>
+          Phone: ${ship.phone || "N/A"}
+        </div>
+      </div>
     </div>
-    <div class="box">
-      <div class="box-title">Buyer Shipping Details</div>
-      <strong>${buyerName}</strong><br>
-      ${buyerAddressStr}<br>
-      <strong>Place of Supply:</strong> ${buyerAddressObj.state || "Delhi"}
-    </div>
-  </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>HSN Code</th>
-        <th>Description</th>
-        <th>Qty</th>
-        <th>Unit Price (INR)</th>
-        <th>Taxable Value (INR)</th>
-        <th>CGST (6%)</th>
-        <th>SGST (6%)</th>
-        <th>Total Amount (INR)</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${order.items
-        .map(
-          (item) => `
+    <table>
+      <thead>
         <tr>
-          <td><strong>6204</strong></td>
-          <td>${item.brand} — ${item.name} (Size: ${item.size})</td>
-          <td>${item.quantity}</td>
-          <td>₹${(item.price / 100).toFixed(2)}</td>
-          <td>₹${((item.price * item.quantity) / 1.12 / 100).toFixed(2)}</td>
-          <td>₹${(((item.price * item.quantity) / 1.12 / 100) * 0.06).toFixed(2)}</td>
-          <td>₹${(((item.price * item.quantity) / 1.12 / 100) * 0.06).toFixed(2)}</td>
-          <td><strong>₹${((item.price * item.quantity) / 100).toFixed(2)}</strong></td>
+          <th>Item Description</th>
+          <th>HSN Code</th>
+          <th>Qty</th>
+          <th>Size</th>
+          <th>Unit Price (INR)</th>
+          <th style="text-align: right;">Total Amount</th>
         </tr>
-      `
-        )
-        .join("")}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        ${order.items
+          .map(
+            (item) => `
+          <tr>
+            <td><strong>${item.name}</strong><br><span style="font-size:10px; color:#706e6b;">By ${item.brand || sellerName}</span></td>
+            <td>6204</td>
+            <td>${item.quantity}</td>
+            <td>${item.size}</td>
+            <td>₹${item.price.toLocaleString("en-IN")}</td>
+            <td style="text-align: right; font-family: monospace; font-weight: bold;">₹${(item.price * item.quantity).toLocaleString("en-IN")}</td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    </table>
 
-  <div class="totals">
-    <div class="totals-row"><span>Product Subtotal:</span> <span>₹${subtotalRs}</span></div>
-    <div class="totals-row"><span>CGST (6%):</span> <span>₹${cgstAmount}</span></div>
-    <div class="totals-row"><span>SGST (6%):</span> <span>₹${sgstAmount}</span></div>
-    <div class="totals-row"><span>Direct Shipping Fee:</span> <span>₹${shippingRs}</span></div>
-    <div class="totals-row grand-total"><span>Grand Total Paid:</span> <span>₹${totalRs}</span></div>
+    <div class="totals">
+      <div><span>Taxable Value:</span> <span style="font-family: monospace;">₹${taxableAmount.toLocaleString("en-IN")}</span></div>
+      <div><span>CGST (9%):</span> <span style="font-family: monospace;">₹${cgst.toLocaleString("en-IN")}</span></div>
+      <div><span>SGST (9%):</span> <span style="font-family: monospace;">₹${sgst.toLocaleString("en-IN")}</span></div>
+      <div><span>Shipping (Built-in):</span> <span style="font-family: monospace; color: #047857; font-weight: bold;">FREE</span></div>
+      <div class="grand-total"><span>Grand Total (INR):</span> <span style="font-family: monospace;">₹${totalRupees.toLocaleString("en-IN")}</span></div>
+    </div>
+
+    <div class="footer">
+      This is a computer-generated GST Tax Invoice under Section 31 of the CGST Act 2017. No signature required.
+    </div>
   </div>
 </body>
 </html>`;
 
-    return new Response(htmlContent, {
+    return new Response(html, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",
       },

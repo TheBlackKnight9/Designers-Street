@@ -15,14 +15,15 @@ import type {
   ProductGender,
   PostType,
 } from "@prisma/client";
+import { sanitizeImageUrl } from "@/lib/utils/image-url";
 
 export function toDesignerHouse(row: DbDesigner): DesignerHouse {
   return {
     id: row.id,
     name: row.name,
     handle: row.handle,
-    logo: row.logo,
-    banner: row.banner,
+    logo: sanitizeImageUrl(row.logo, "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80"),
+    banner: sanitizeImageUrl(row.banner, "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"),
     bio: row.bio,
     foundingStory: row.foundingStory,
     founded: row.founded ?? undefined,
@@ -43,7 +44,7 @@ export function toDesignerHouse(row: DbDesigner): DesignerHouse {
       ? (row.pressMentions as DesignerHouse["pressMentions"])
       : undefined,
     editorialGallery: row.editorialGallery?.length
-      ? row.editorialGallery
+      ? row.editorialGallery.map((img) => sanitizeImageUrl(img))
       : undefined,
   };
 }
@@ -62,7 +63,7 @@ export function toProduct(row: DbProduct): Product {
     category: row.category,
     subcategory: row.subcategory ?? undefined,
     gender: toGender(row.gender),
-    images: row.images,
+    images: row.images.map((img) => sanitizeImageUrl(img)),
     sizes: row.sizes,
     description: row.description,
     story: row.story ?? undefined,
@@ -106,10 +107,10 @@ export function toFeedPost(row: DbPost): FeedPostData {
     categorySlug: row.categorySlug ?? undefined,
     designerId: row.designerId ?? undefined,
     designerName: row.designerName,
-    designerLogo: row.designerLogo,
+    designerLogo: sanitizeImageUrl(row.designerLogo, "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80"),
     designerVerified: row.designerVerified,
     tag: row.tag ?? undefined,
-    image: row.image,
+    image: sanitizeImageUrl(row.image, "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"),
     videoUrl: row.videoUrl ?? undefined,
     videoOnly: row.mediaType === "video" && Boolean(row.videoUrl),
     caption: row.caption,
@@ -127,13 +128,13 @@ export function toStoryItem(
     id: story.id,
     designerId: story.designerId,
     designerName: story.designer.name,
-    designerLogo: story.designer.logo,
+    designerLogo: sanitizeImageUrl(story.designer.logo, "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80"),
     label: story.label,
     slides: story.slides
       .slice()
       .sort((a, b) => a.position - b.position)
       .map((s) => ({
-        image: s.image,
+        image: sanitizeImageUrl(s.image, "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"),
         caption: s.caption ?? undefined,
         ctaLabel: s.ctaLabel ?? undefined,
         ctaLink: s.ctaLink ?? undefined,
@@ -149,7 +150,7 @@ export function buildCategoryTree(rows: DbCategory[]): Category[] {
       _parentId: row.parentId,
       slug: row.slug,
       label: row.label,
-      image: row.image,
+      image: sanitizeImageUrl(row.image, "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80"),
       caption: row.caption ?? undefined,
       children: [],
     });

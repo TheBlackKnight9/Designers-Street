@@ -130,22 +130,22 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Designer Mode Switcher */}
-          {user && (user.role === "designer" || user.role === "admin") && (
+          {/* Admin Studio Switcher */}
+          {user && user.role === "admin" && (
             <div className="mt-3 p-4 bg-charcoal text-paper rounded-xl flex items-center justify-between shadow-sm">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-gold">
-                  Designer Studio Mode
+                  👑 Admin Studio
                 </p>
                 <p className="text-[11px] text-cloud/80 mt-0.5">
-                  Manage your House, products, and buyer orders
+                  Manage designer houses, products & orders
                 </p>
               </div>
               <Link
-                href="/dashboard"
+                href="/admin"
                 className="px-4 py-2 bg-gold text-charcoal font-sans text-xs font-bold uppercase tracking-wider rounded-full hover:bg-gold-light transition-colors"
               >
-                Go to Studio →
+                Command Center →
               </Link>
             </div>
           )}
@@ -186,6 +186,12 @@ export default function ProfilePage() {
               href: "/profile/addresses",
               title: "Address Book",
               desc: "Manage delivery addresses with PIN auto-fill.",
+              needAuth: true,
+            },
+            {
+              href: "/profile/measurements",
+              title: "Measurement Profiles",
+              desc: "Save custom fit profiles (Bust, Waist, Hips, Height) for 1-click size match.",
               needAuth: true,
             },
             {

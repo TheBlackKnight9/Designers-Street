@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db";
+import { requireAdminContext } from "@/server/auth/admin-guard";
 import { PayoutEngineService } from "@/server/services/payout-engine";
 import { ok, fail } from "@/server/utils/api-response";
+import { ValidationError } from "@/server/errors";
 
 export const runtime = "nodejs";
 const payoutEngine = new PayoutEngineService();
@@ -9,6 +11,8 @@ const payoutEngine = new PayoutEngineService();
 /** GET /api/admin/payouts */
 export async function GET() {
   try {
+    await requireAdminContext();
+
     const payouts = await prisma.payout.findMany({
       include: {
         designer: true,
@@ -46,12 +50,24 @@ export async function GET() {
 /** POST /api/admin/payouts */
 export async function POST(request: Request) {
   try {
+    await requireAdminContext();
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     const action = String(body.action || "").toLowerCase();
 
     if (action === "execute_batch") {
       const result = await payoutEngine.executeBiMonthlyPayoutBatch();
       return ok({ message: "Bi-monthly payout batch executed successfully.", ...result });
+    }
+
+    if (action === "mark_paid" || action === "finalize_utr") {
+      const payoutId = String(body.payoutId || "").trim();
+      const utrNumber = String(body.utrNumber || "").trim();
+
+      if (!payoutId) throw new ValidationError("Payout ID is required");
+      if (!utrNumber) throw new ValidationError("Bank UTR reference string is required");
+
+      const updatedPayout = await payoutEngine.finalizePayoutWithUTR(payoutId, utrNumber);
+      return ok({ message: "Payout finalized with Bank UTR reference.", payout: updatedPayout });
     }
 
     if (action === "export_neft") {

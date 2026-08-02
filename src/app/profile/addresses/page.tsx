@@ -4,6 +4,11 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
+import {
+  getIndianStates,
+  getCitiesForState,
+  lookupByPincode,
+} from "@/lib/data/india-locations";
 
 type Address = {
   id: string;
@@ -60,11 +65,22 @@ export default function ProfileAddressesPage() {
     reload();
   }, []);
 
-  // India Post PIN Code Auto-Fill
+  // Instant Offline + Online PIN Code Auto-Fill
   async function handlePostalCodeChange(code: string) {
     const clean = code.replace(/\D/g, "").slice(0, 6);
     setForm((f) => ({ ...f, postalCode: clean }));
 
+    // 1. Instant offline lookup
+    const localResult = lookupByPincode(clean);
+    if (localResult) {
+      setForm((f) => ({
+        ...f,
+        city: f.city || localResult.city,
+        state: f.state || localResult.state,
+      }));
+    }
+
+    // 2. Online India Post API fallback enhancement
     if (clean.length === 6) {
       setPinLoading(true);
       try {
@@ -366,25 +382,49 @@ export default function ProfileAddressesPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <label className="block">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-                      City *
+                      State *
                     </span>
-                    <input
+                    <select
                       required
-                      value={form.city}
-                      onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-gold/40"
-                    />
+                      value={form.state}
+                      onChange={(e) => setForm((f) => ({ ...f, state: e.target.value, city: "" }))}
+                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-3 py-2.5 text-xs outline-none focus:ring-2 focus:ring-gold/40 font-semibold"
+                    >
+                      <option value="">Select State...</option>
+                      {getIndianStates().map((st) => (
+                        <option key={st} value={st}>
+                          {st}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label className="block">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-                      State *
+                      City *
                     </span>
-                    <input
-                      required
-                      value={form.state}
-                      onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-gold/40"
-                    />
+                    {getCitiesForState(form.state).length > 0 ? (
+                      <select
+                        required
+                        value={form.city}
+                        onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-3 py-2.5 text-xs outline-none focus:ring-2 focus:ring-gold/40 font-semibold"
+                      >
+                        <option value="">Select City...</option>
+                        {getCitiesForState(form.state).map((ct) => (
+                          <option key={ct} value={ct}>
+                            {ct}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        required
+                        value={form.city}
+                        placeholder="Enter City"
+                        onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-gold/40"
+                      />
+                    )}
                   </label>
                 </div>
 

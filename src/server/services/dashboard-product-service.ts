@@ -30,6 +30,7 @@ export type DashboardProductInput = {
   category: string;
   subcategory?: string | null;
   price: number;
+  basePrice?: number | null;
   mrp?: number | null;
   bestPrice?: number | null;
   gender?: ProductGender;
@@ -47,6 +48,15 @@ export type DashboardProductInput = {
   customizable?: boolean;
   deliveryText?: string | null;
   status?: ProductStatus;
+  listingType?: any;
+  conceptCta?: any;
+  estimatedLaunch?: string | null;
+  weightGrams?: number | null;
+  netQuantity?: string | null;
+  manufacturerName?: string | null;
+  manufacturerAddress?: string | null;
+  countryOfOrigin?: string | null;
+  sizeChart?: any;
 };
 
 export type DashboardProductDetail = Product & {
@@ -55,17 +65,10 @@ export type DashboardProductDetail = Product & {
 };
 
 function parseProductInput(body: Record<string, unknown>): DashboardProductInput {
-  const name = String(body.name || "").trim();
-  const description = String(body.description || "").trim();
-  const category = String(body.category || "").trim();
-  const price = Number(body.price);
-
-  if (!name) throw new ValidationError("Product title is required");
-  if (!description) throw new ValidationError("Description is required");
-  if (!category) throw new ValidationError("Category is required");
-  if (!Number.isFinite(price) || price <= 0) {
-    throw new ValidationError("Price must be a positive number");
-  }
+  const name = String(body.name || "").trim() || "Untitled Product";
+  const description = String(body.description || "").trim() || "Description pending.";
+  const category = String(body.category || "").trim() || "Uncategorized";
+  const price = Math.max(0, Math.round(Number(body.price || 0)));
 
   const gender =
     body.gender === "men" || body.gender === "women" || body.gender === "unisex"
@@ -99,6 +102,10 @@ function parseProductInput(body: Record<string, unknown>): DashboardProductInput
     subcategory:
       typeof body.subcategory === "string" ? body.subcategory.trim() : null,
     price: Math.round(price),
+    basePrice:
+      body.basePrice === null || body.basePrice === undefined || body.basePrice === ""
+        ? null
+        : Math.round(Number(body.basePrice)),
     mrp:
       body.mrp === null || body.mrp === undefined || body.mrp === ""
         ? null
@@ -130,6 +137,18 @@ function parseProductInput(body: Record<string, unknown>): DashboardProductInput
     deliveryText:
       typeof body.deliveryText === "string" ? body.deliveryText.trim() : null,
     status,
+    listingType: body.listingType === "CONCEPT_ART" ? "CONCEPT_ART" : "COMMERCIAL",
+    conceptCta: body.conceptCta || "BESPOKE_INQUIRY",
+    estimatedLaunch: typeof body.estimatedLaunch === "string" ? body.estimatedLaunch.trim() : null,
+    weightGrams:
+      body.weightGrams === null || body.weightGrams === undefined || body.weightGrams === ""
+        ? null
+        : Math.max(0, Math.round(Number(body.weightGrams))),
+    netQuantity: typeof body.netQuantity === "string" ? body.netQuantity.trim() : null,
+    manufacturerName: typeof body.manufacturerName === "string" ? body.manufacturerName.trim() : null,
+    manufacturerAddress: typeof body.manufacturerAddress === "string" ? body.manufacturerAddress.trim() : null,
+    countryOfOrigin: typeof body.countryOfOrigin === "string" ? body.countryOfOrigin.trim() : "India",
+    sizeChart: body.sizeChart || null,
   };
 }
 
@@ -192,6 +211,7 @@ export class DashboardProductService {
       category: input.category,
       subcategory: input.subcategory,
       price: input.price,
+      basePrice: input.basePrice,
       mrp: input.mrp,
       bestPrice: input.bestPrice,
       gender: input.gender ?? "unisex",
@@ -210,6 +230,15 @@ export class DashboardProductService {
       deliveryText: input.deliveryText,
       status: input.status ?? "draft",
       images: [],
+      listingType: input.listingType,
+      conceptCta: input.conceptCta,
+      estimatedLaunch: input.estimatedLaunch,
+      weightGrams: input.weightGrams,
+      netQuantity: input.netQuantity,
+      manufacturerName: input.manufacturerName,
+      manufacturerAddress: input.manufacturerAddress,
+      countryOfOrigin: input.countryOfOrigin,
+      sizeChart: input.sizeChart,
     });
     return this.get(ctx, id);
   }
@@ -230,6 +259,7 @@ export class DashboardProductService {
       category: input.category,
       subcategory: input.subcategory,
       price: input.price,
+      basePrice: input.basePrice,
       mrp: input.mrp,
       bestPrice: input.bestPrice,
       gender: input.gender ?? raw.gender,
@@ -248,6 +278,15 @@ export class DashboardProductService {
       deliveryText: input.deliveryText,
       ...(input.status ? { status: input.status } : {}),
       designerName: ctx.designer.name,
+      listingType: input.listingType,
+      conceptCta: input.conceptCta,
+      estimatedLaunch: input.estimatedLaunch,
+      weightGrams: input.weightGrams,
+      netQuantity: input.netQuantity,
+      manufacturerName: input.manufacturerName,
+      manufacturerAddress: input.manufacturerAddress,
+      countryOfOrigin: input.countryOfOrigin,
+      sizeChart: input.sizeChart,
     });
 
     return this.get(ctx, productId);
@@ -261,7 +300,7 @@ export class DashboardProductService {
     if (!raw.name?.trim()) missing.push("Title");
     if (!raw.description?.trim()) missing.push("Description");
     if (!raw.category?.trim()) missing.push("Category");
-    if (!raw.price || raw.price <= 0) missing.push("Valid Price");
+    if (raw.listingType !== "CONCEPT_ART" && (!raw.price || raw.price <= 0)) missing.push("Valid Price");
     if (!raw.sizes || raw.sizes.length === 0) missing.push("Sizes");
     if (!media.some((m) => m.type === "image") && raw.images.length === 0) missing.push("At least 1 Product Image");
     if (raw.piecesRemaining == null && raw.editionTotal == null && !raw.madeToOrder) {
