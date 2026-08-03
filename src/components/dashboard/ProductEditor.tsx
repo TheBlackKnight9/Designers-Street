@@ -18,6 +18,11 @@ import { ProductPreview } from "./ProductPreview";
 import { SizeChartBuilder } from "./SizeChartBuilder";
 import { useToast } from "./Toast";
 import type { ProductStatus } from "@prisma/client";
+import {
+  COLLECTION_SUBCATEGORIES,
+  productCategoriesForGender,
+  STYLE_SUBCATEGORIES,
+} from "@/lib/category-tree";
 
 type FormState = {
   name: string;
@@ -517,25 +522,87 @@ export function ProductEditor({
           </label>
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-xs text-stone">Category</span>
-              <input
+              <span className="text-xs text-stone">Gender</span>
+              <select
+                className={field}
+                value={form.gender}
+                onChange={(e) => {
+                  const gender = e.target.value as FormState["gender"];
+                  const allowed = productCategoriesForGender(gender).map((c) => c.slug);
+                  const category = allowed.includes(form.category) ? form.category : "";
+                  setForm({ ...form, gender, category });
+                }}
+              >
+                <option value="women">Women</option>
+                <option value="men">Men</option>
+                <option value="unisex">Unisex</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs text-stone">Product category</span>
+              <select
                 className={field}
                 required
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                placeholder="lehengas, sarees…"
-              />
+              >
+                <option value="" disabled>Select category</option>
+                {productCategoriesForGender(form.gender).map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="block">
-              <span className="text-xs text-stone">Subcategory</span>
-              <input
+              <span className="text-xs text-stone">Sub-category</span>
+              <select
                 className={field}
                 value={form.subcategory}
+                onChange={(e) => {
+                  const subcategory = e.target.value;
+                  setForm({
+                    ...form,
+                    subcategory,
+                    limitedEdition:
+                      subcategory === "limited-design" ? true : form.limitedEdition,
+                  });
+                }}
+              >
+                <option value="">Standard collection</option>
+                <optgroup label="Shop edits">
+                  {COLLECTION_SUBCATEGORIES.map((c) => (
+                    <option key={c.slug} value={c.slug}>
+                      {c.label}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Style / occasion">
+                  {STYLE_SUBCATEGORIES.map((c) => (
+                    <option key={c.slug} value={c.slug}>
+                      {c.label}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+              <span className="text-[10px] text-stone mt-1 block">
+                Use Latest Drop or Limited Design for homepage category rails.
+              </span>
+            </label>
+            <label className="block">
+              <span className="text-xs text-stone">Stock quantity</span>
+              <input
+                className={field}
+                type="number"
+                min={0}
+                value={form.piecesRemaining}
                 onChange={(e) =>
-                  setForm({ ...form, subcategory: e.target.value })
+                  setForm({ ...form, piecesRemaining: e.target.value })
                 }
               />
             </label>
+          </div>
+
           {/* Automated Retail Pricing Calculator */}
           <div className="p-5 bg-mist/40 border border-cloud rounded-2xl space-y-4">
             <div className="flex items-center justify-between">
@@ -633,36 +700,6 @@ export function ProductEditor({
                 </div>
               </div>
             )}
-          </div>
-            <label className="block">
-              <span className="text-xs text-stone">Gender</span>
-              <select
-                className={field}
-                value={form.gender}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    gender: e.target.value as FormState["gender"],
-                  })
-                }
-              >
-                <option value="unisex">Unisex</option>
-                <option value="women">Women</option>
-                <option value="men">Men</option>
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs text-stone">Stock quantity</span>
-              <input
-                className={field}
-                type="number"
-                min={0}
-                value={form.piecesRemaining}
-                onChange={(e) =>
-                  setForm({ ...form, piecesRemaining: e.target.value })
-                }
-              />
-            </label>
           </div>
           <label className="block">
             <span className="text-xs text-stone">Sizes (comma-separated)</span>

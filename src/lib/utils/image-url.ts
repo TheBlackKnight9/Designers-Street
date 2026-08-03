@@ -1,5 +1,6 @@
-const DEFAULT_PLACEHOLDER =
-  "https://images.unsplash.com/photo-1618220179428-22790b461013?w=800&q=80";
+import { ATELIER_PLACEHOLDER } from "@/lib/fashion-images";
+
+const DEFAULT_PLACEHOLDER = ATELIER_PLACEHOLDER;
 
 /**
  * Validates and sanitizes image URLs for Next.js <Image /> and standard <img> tags.

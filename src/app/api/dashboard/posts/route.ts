@@ -3,6 +3,7 @@ import { prisma } from "@/server/db";
 import { ok, fail } from "@/server/utils/api-response";
 import { ValidationError } from "@/server/errors";
 import { enforcePublicRateLimit } from "@/server/utils/rate-limit";
+import { normalizeFeedProductTag } from "@/lib/feed-product";
 
 export const runtime = "nodejs";
 
@@ -51,8 +52,28 @@ export async function POST(request: Request) {
     const caption = String(body.caption || "").trim();
     const type = body.type === "category" ? "category" : "designer_spotlight";
     const tag = typeof body.tag === "string" ? body.tag.trim() : "Editorial";
-    const link = typeof body.link === "string" ? body.link.trim() : `/designer/${ctx.designer.handle}`;
-    const productTag = body.productTag ? body.productTag : null;
+    const rawProductTag = body.productTag
+      ? (body.productTag as Record<string, unknown>)
+      : null;
+    const normalizedProduct = normalizeFeedProductTag(
+      rawProductTag as Parameters<typeof normalizeFeedProductTag>[0]
+    );
+    const productTag = normalizedProduct
+      ? {
+          ...rawProductTag,
+          productId: normalizedProduct.productId,
+          id: normalizedProduct.productId,
+          name: normalizedProduct.name,
+          price: normalizedProduct.price,
+        }
+      : null;
+    const defaultLink = `/designer/${ctx.designer.handle}`;
+    const link =
+      normalizedProduct?.productId
+        ? `/product/${normalizedProduct.productId}`
+        : typeof body.link === "string" && body.link.trim()
+          ? body.link.trim()
+          : defaultLink;
 
     const postMediaImage = image || (mediaType === "video" ? "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80" : "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80");
 

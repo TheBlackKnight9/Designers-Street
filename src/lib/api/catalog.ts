@@ -27,6 +27,8 @@ import {
   productCardToUiProduct,
   productDetailToUiProduct,
 } from "@/lib/api/product-mappers";
+import { normalizeFeedPosts } from "@/lib/feed-product";
+import { productMatchesNavigationSlug } from "@/lib/category-tree";
 
 /**
  * When true, browser/server callers hit Next.js Route Handlers.
@@ -87,13 +89,7 @@ export async function listProductCards(options?: {
     let items = PRODUCTS;
     const f = options?.filters;
     if (f?.category) {
-      const c = f.category.toLowerCase();
-      items = items.filter(
-        (p) =>
-          p.category.toLowerCase() === c ||
-          p.subcategory?.toLowerCase() === c ||
-          p.tags?.some((t) => t.toLowerCase() === c)
-      );
+      items = items.filter((p) => productMatchesNavigationSlug(p, f.category!));
     }
     if (f?.designer) {
       const d = f.designer.toLowerCase();
@@ -348,9 +344,9 @@ export async function listFeed(options?: {
         start + limit < pool.length
           ? items[items.length - 1]?.id ?? null
           : null;
-      return { items, nextCursor };
+      return { items: normalizeFeedPosts(items), nextCursor };
     }
-    const items = pool.slice(0, limit);
+    const items = normalizeFeedPosts(pool.slice(0, limit));
     const nextCursor =
       limit < pool.length
         ? items[items.length - 1]?.id ?? null

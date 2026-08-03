@@ -1,4 +1,5 @@
 import type { Product, FeedPostData } from "@/lib/types";
+import { resolvePostProductId } from "@/lib/feed-product";
 import type { MediaItemDTO } from "@/server/dto/public";
 import type { ViewerMediaItem } from "@/lib/media/types";
 import { getProductById, getDesignerById } from "@/lib/mock-data";
@@ -111,7 +112,7 @@ export function urlsToViewerMedia(
 }
 
 export function feedPostToViewerMedia(post: FeedPostData): ViewerMediaItem[] {
-  const productId = post.productTag?.productId;
+  const productId = resolvePostProductId(post);
   const fromProduct = enrichFromProduct(productId);
   const designer = post.designerId ? getDesignerById(post.designerId) : undefined;
 

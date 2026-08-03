@@ -69,19 +69,19 @@ export default function StorePage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-16 bg-[#FAFAFA]">
-        {/* Title / Header section */}
+      <main className="min-h-screen pb-4 bg-paper">
+        {/* Title */}
         <div className="px-4 pt-5 pb-3">
-          <h1 className="font-display text-2xl font-bold text-[#2B2B2B] uppercase tracking-wide">
+          <h1 className="ds-section-title text-2xl">
             Shop All
           </h1>
-          <p className="font-sans text-xs text-[#7A7A7A] mt-1">
+          <p className="font-sans text-xs text-stone mt-1">
             Exclusive ready-to-wear, handloom sarees, and couture drops
           </p>
         </div>
 
-        {/* Sort, Size, and Filter Strip matching image */}
-        <div className="sticky top-[var(--top-bar-height)] z-30 bg-white border-b border-[#EBEBEB]">
+        {/* Sort / filter strip */}
+        <div className="sticky top-[var(--top-bar-height)] z-30 bg-paper border-b border-[var(--border-subtle)]">
           <div className="flex items-center justify-between text-center divide-x divide-[#EBEBEB] py-3.5">
             {/* SORT */}
             <div className="flex-1 relative">
@@ -193,12 +193,12 @@ export default function StorePage() {
         </div>
 
         {/* Scrollable Quick-Filter pills exactly like image */}
-        <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#F0F0F0] overflow-x-auto hide-scrollbar flex items-center gap-2">
+        <div className="px-4 py-3 bg-paper border-b border-[var(--border-subtle)] overflow-x-auto hide-scrollbar flex items-center gap-2">
           <Link
             href="/designers"
-            className="flex-shrink-0 px-3.5 py-1.5 rounded-full font-sans text-xs font-bold border border-charcoal bg-charcoal text-paper shadow-xs hover:bg-black transition-colors"
+            className="flex-shrink-0 ds-filter-pill ds-filter-pill--active"
           >
-            🏬 Browse Houses
+            Browse Houses
           </Link>
           {[
             { id: "all", label: "✨ Shop All" },
@@ -213,10 +213,8 @@ export default function StorePage() {
                 key={item.id}
                 type="button"
                 onClick={() => setQuickFilter(item.id as QuickFilterOption)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold border transition-all ${
-                  active
-                    ? "bg-[#2B2B2B] border-[#2B2B2B] text-white"
-                    : "bg-white border-[#E0E0E0] text-[#4A4A4A]"
+                className={`flex-shrink-0 ds-filter-pill ${
+                  active ? "ds-filter-pill--active" : "ds-filter-pill--idle"
                 }`}
               >
                 {item.label}
@@ -240,7 +238,7 @@ export default function StorePage() {
             onRetry={catalog.reload}
           />
         ) : processedProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-5 p-4 bg-[#FAFAFA]">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-5 p-4 bg-paper">
             {processedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

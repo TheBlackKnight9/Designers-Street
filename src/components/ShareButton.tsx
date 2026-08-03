@@ -1,6 +1,7 @@
 "use client";
 
-import { useShare } from "@/hooks/useShare";
+import { useState } from "react";
+import { ShareSheet } from "@/components/ShareSheet";
 
 type ShareButtonProps = {
   title: string;
@@ -17,18 +18,25 @@ export function ShareButton({
   className = "",
   label = "Share",
 }: ShareButtonProps) {
-  const { share, copied } = useShare();
+  const [open, setOpen] = useState(false);
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        void share({ title, text, url: path });
-      }}
-      className={className}
-      aria-label={copied ? "Link copied" : label}
-    >
-      {copied ? "Copied" : label}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={className}
+        aria-label={label}
+      >
+        {label}
+      </button>
+      <ShareSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={title}
+        text={text}
+        url={path}
+      />
+    </>
   );
 }

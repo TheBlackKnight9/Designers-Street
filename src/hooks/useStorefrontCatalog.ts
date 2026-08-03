@@ -10,6 +10,7 @@ import {
   getProduct,
 } from "@/lib/api/catalog";
 import type { Product, Category, DesignerHouse, FeedPostData } from "@/lib/types";
+import { normalizeFeedPosts } from "@/lib/feed-product";
 import type { PublicProductFilters } from "@/server/dto/public";
 
 export type CatalogLoadState = {
@@ -212,7 +213,7 @@ export function useStorefrontFeed(
     listFeed({ limit: pageSize, sort })
       .then((page) => {
         if (!cancelled) {
-          setPosts(page.items);
+          setPosts(normalizeFeedPosts(page.items));
           setNextCursor(page.nextCursor);
         }
       })
@@ -239,7 +240,9 @@ export function useStorefrontFeed(
       .then((page) => {
         setPosts((prev) => {
           const seen = new Set(prev.map((p) => p.id));
-          const add = (page.items || []).filter((p) => p.id && !seen.has(p.id));
+          const add = normalizeFeedPosts(
+            (page.items || []).filter((p) => p.id && !seen.has(p.id))
+          );
           return add.length ? [...prev, ...add] : prev;
         });
         setNextCursor(page.nextCursor);

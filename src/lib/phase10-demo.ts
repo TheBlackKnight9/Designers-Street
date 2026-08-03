@@ -4,6 +4,7 @@ import type {
   AppointmentRequestData,
   BespokeRequestData,
 } from "./types";
+import { getProductImagesForCategory } from "./fashion-images";
 
 export const DEMO_MEASUREMENT_PROFILES: MeasurementProfileData[] = [
   {
@@ -116,14 +117,12 @@ export const DEMO_BESPOKE_REQUESTS: BespokeRequestData[] = [
       hip: 39,
       shoulder: 15.5,
     },
-    referenceImages: [
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&q=80",
-    ],
+    referenceImages: [getProductImagesForCategory("lehengas")[0]],
     attachments: [
       {
         id: "att-1",
         requestId: "bespoke-1",
-        url: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&q=80",
+        url: getProductImagesForCategory("lehengas")[0],
         title: "Moodboard Reference",
         type: "inspiration_image",
         createdAt: "2026-07-29T11:00:00.000Z",
@@ -131,7 +130,7 @@ export const DEMO_BESPOKE_REQUESTS: BespokeRequestData[] = [
       {
         id: "att-2",
         requestId: "bespoke-1",
-        url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
+        url: getProductImagesForCategory("lehengas")[1],
         title: "Embroidery Swatch Sketch",
         type: "sketch",
         createdAt: "2026-07-29T11:05:00.000Z",

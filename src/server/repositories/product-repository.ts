@@ -4,6 +4,7 @@ import { publicProductWhere } from "@/server/services/public-visibility";
 import type { Product } from "@/lib/types";
 import type { ProductGender, ProductStatus, Prisma } from "@prisma/client";
 import type { PublicProductFilters } from "@/server/dto/public";
+import { parseNavigationSlug } from "@/lib/category-tree";
 
 export type ProductCreateData = {
   id: string;
@@ -86,13 +87,52 @@ function buildFilterWhere(
   const and: Prisma.ProductWhereInput[] = [];
 
   if (filters.category) {
-    and.push({
-      OR: [
-        { category: { equals: filters.category, mode: "insensitive" } },
-        { subcategory: { equals: filters.category, mode: "insensitive" } },
-        { tags: { has: filters.category } },
-      ],
-    });
+    const parsed = parseNavigationSlug(filters.category);
+
+    if (parsed.gender) {
+      and.push({
+        OR: [
+          { gender: parsed.gender },
+          { gender: "unisex" },
+        ],
+      });
+    }
+
+    if (parsed.productCategory) {
+      and.push({
+        OR: [
+          { category: { equals: parsed.productCategory, mode: "insensitive" } },
+          { subcategory: { equals: parsed.productCategory, mode: "insensitive" } },
+          { tags: { has: parsed.productCategory } },
+        ],
+      });
+    }
+
+    if (parsed.collectionLine === "latest-drop") {
+      and.push({
+        subcategory: { equals: "latest-drop", mode: "insensitive" },
+      });
+    }
+
+    if (parsed.collectionLine === "limited-design") {
+      and.push({
+        OR: [
+          { subcategory: { equals: "limited-design", mode: "insensitive" } },
+          { limitedEdition: true },
+          { tags: { has: "limited-design" } },
+        ],
+      });
+    }
+
+    if (parsed.legacyOnly && parsed.productCategory && !parsed.gender && !parsed.collectionLine) {
+      and.push({
+        OR: [
+          { category: { equals: parsed.productCategory, mode: "insensitive" } },
+          { subcategory: { equals: parsed.productCategory, mode: "insensitive" } },
+          { tags: { has: parsed.productCategory } },
+        ],
+      });
+    }
   }
   if (filters.designer) {
     and.push({

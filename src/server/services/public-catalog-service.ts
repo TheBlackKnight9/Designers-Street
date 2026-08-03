@@ -23,8 +23,13 @@ import {
   getProductById,
   getDesignerById,
 } from "@/lib/mock-data";
-import type { Product } from "@/lib/types";
+import { productMatchesNavigationSlug } from "@/lib/category-tree";
+import type { Product, FeedPostData } from "@/lib/types";
 import { trackPublicEvent } from "@/server/utils/public-analytics";
+import {
+  normalizeFeedProductTag,
+  resolvePostProductId,
+} from "@/lib/feed-product";
 
 function mockCardFromProduct(p: Product): ProductCardDTO {
   const designer = getDesignerById(p.designerId);
@@ -74,12 +79,7 @@ function applyMockFilters(
 ): Product[] {
   return products.filter((p) => {
     if (filters.category) {
-      const c = filters.category.toLowerCase();
-      const hit =
-        p.category.toLowerCase() === c ||
-        p.subcategory?.toLowerCase() === c ||
-        p.tags?.some((t) => t.toLowerCase() === c);
-      if (!hit) return false;
+      if (!productMatchesNavigationSlug(p, filters.category)) return false;
     }
     if (filters.designer) {
       const d = filters.designer.toLowerCase();
@@ -211,7 +211,8 @@ export class PublicCatalogService {
         );
       }
       const page = mockCursorPage(filtered, limit, options.cursor);
-      return { items: page.items, nextCursor: page.nextCursor };
+      const items = await this.enrichFeedProductTags(page.items);
+      return { items, nextCursor: page.nextCursor };
     }
 
     let followingDesignerIds: string[] | undefined;
@@ -233,10 +234,11 @@ export class PublicCatalogService {
     });
 
     if (postPage.items.length > 0 || options.cursor) {
-      const items = await this.hydrateFeedEngagement(
+      const hydrated = await this.hydrateFeedEngagement(
         postPage.items,
         options.viewerUserId
       );
+      const items = await this.enrichFeedProductTags(hydrated);
       return { items, nextCursor: postPage.nextCursor };
     }
 
@@ -246,11 +248,105 @@ export class PublicCatalogService {
       filters: { sort: "newest" },
     });
 
-    const items = await this.hydrateFeedEngagement(
+    const hydrated = await this.hydrateFeedEngagement(
       rows.map(toFeedPostDTO),
       options.viewerUserId
     );
+    const items = await this.enrichFeedProductTags(hydrated);
     return { items, nextCursor };
+  }
+
+  /**
+   * Ensure every designer post can link to commerce (wishlist / bag / reel buy).
+   * Fixes dashboard posts saved without productId and legacy productTag.id fields.
+   */
+  private async enrichFeedProductTags(
+    items: FeedPostDTO[]
+  ): Promise<FeedPostDTO[]> {
+    if (items.length === 0) return items;
+
+    const normalized = items.map((item) => ({
+      ...item,
+      productTag:
+        normalizeFeedProductTag(
+          item.productTag as FeedPostData["productTag"] & { id?: string }
+        ) ?? undefined,
+    }));
+
+    const designerIds = [
+      ...new Set(
+        normalized
+          .filter((p) => !resolvePostProductId(p) && p.designerId)
+          .map((p) => p.designerId as string)
+      ),
+    ];
+
+    const fallbackByDesigner = new Map<
+      string,
+      { id: string; name: string; price: number }
+    >();
+
+    if (designerIds.length > 0) {
+      if (isDatabaseEnabled()) {
+        for (const designerId of designerIds) {
+          const products = await this.products.findByDesignerId(designerId);
+          const first = products[0];
+          if (first) {
+            fallbackByDesigner.set(designerId, {
+              id: first.id,
+              name: first.name,
+              price: first.price,
+            });
+          }
+        }
+      } else {
+        for (const designerId of designerIds) {
+          const p = PRODUCTS.find((x) => x.designerId === designerId);
+          if (p) {
+            fallbackByDesigner.set(designerId, {
+              id: p.id,
+              name: p.name,
+              price: p.price,
+            });
+          }
+        }
+      }
+    }
+
+    return normalized.map((item) => {
+      const productId = resolvePostProductId(item);
+      if (productId) {
+        const tag = item.productTag ?? {
+          name: "Featured piece",
+          price: 0,
+          productId,
+        };
+        return {
+          ...item,
+          productTag: { ...tag, productId },
+          link: item.link?.includes("/product/")
+            ? item.link
+            : `/product/${productId}`,
+        };
+      }
+
+      const fallback = item.designerId
+        ? fallbackByDesigner.get(item.designerId)
+        : undefined;
+      if (!fallback) return item;
+
+      return {
+        ...item,
+        productTag: {
+          name: fallback.name,
+          price: fallback.price,
+          productId: fallback.id,
+        },
+        link: item.link?.includes("/product/")
+          ? item.link
+          : `/product/${fallback.id}`,
+      };
+    });
   }
 
   private async hydrateFeedEngagement(

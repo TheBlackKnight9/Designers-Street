@@ -46,7 +46,7 @@ export default function FeedPage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-16 bg-[#FDFCF8]">
+      <main className="min-h-screen pb-[calc(var(--bottom-nav-height)+var(--safe-area-bottom)+12px)] bg-[#FDFCF8]">
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-bold text-[#2B2B2B] uppercase tracking-wide">

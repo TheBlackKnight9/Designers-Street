@@ -26,12 +26,12 @@ export function Button({
 
   const variants = {
     primary:
-      "curvy-btn-dark text-[#E0E5EC] hover:opacity-95",
+      "bg-charcoal text-paper border-none hover:bg-graphite",
     inverted:
-      "curvy-btn text-[#2B2B2B] hover:opacity-95",
+      "bg-paper text-charcoal border border-charcoal hover:bg-mist",
   };
 
-  const classes = `${base} ${variants[variant]} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} ${className}`;
+  const classes = `${base} rounded-full border ${variants[variant]} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} ${className}`;
 
   if (href) {
     return (

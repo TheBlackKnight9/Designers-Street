@@ -74,10 +74,10 @@ export function FeaturedSectionRenderer({
         <section className="py-6 px-4">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <span className="font-sans text-[10px] font-extrabold uppercase tracking-widest text-[#C5A059]">
+              <span className="ds-section-label">
                 {section.subtitle || "Residencies & Features"}
               </span>
-              <h2 className="font-display text-xl font-bold uppercase text-[#2B2B2B] tracking-tight">
+              <h2 className="ds-section-title mt-0.5">
                 {section.title || "Editorial Stories"}
               </h2>
             </div>
@@ -94,13 +94,13 @@ export function FeaturedSectionRenderer({
     case "lookbook_rail": {
       if (!lookbooks.length) return null;
       return (
-        <section className="py-6 px-4 bg-[#F9F7F2] border-y border-[#E8E4DC]">
+        <section className="py-6 px-4 bg-mist border-y border-[var(--border-subtle)]">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <span className="font-sans text-[10px] font-extrabold uppercase tracking-widest text-[#C5A059]">
+              <span className="ds-section-label">
                 {section.subtitle || "Runway & Lookbooks"}
               </span>
-              <h2 className="font-display text-xl font-bold uppercase text-[#2B2B2B] tracking-tight">
+              <h2 className="ds-section-title mt-0.5">
                 {section.title || "Campaign Lookbooks"}
               </h2>
             </div>
@@ -128,15 +128,15 @@ export function FeaturedSectionRenderer({
         <section className="py-6 px-4">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <span className="font-sans text-[10px] font-extrabold uppercase tracking-widest text-[#C5A059]">
+              <span className="ds-section-label">
                 {section.subtitle || "Serialized Releases"}
               </span>
-              <h2 className="font-display text-xl font-bold uppercase text-[#2B2B2B] tracking-tight">
+              <h2 className="ds-section-title mt-0.5">
                 {section.title || "Limited Atelier Pieces"}
               </h2>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-5">
             {limitedProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -149,18 +149,18 @@ export function FeaturedSectionRenderer({
       const editorsPicks = products.filter((p) => p.editorsPick).slice(0, 4);
       if (!editorsPicks.length) return null;
       return (
-        <section className="py-6 px-4 bg-white border-b border-[#E8E4DC]">
+        <section className="py-6 px-4 bg-paper border-b border-[var(--border-subtle)]">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <span className="font-sans text-[10px] font-extrabold uppercase tracking-widest text-[#C5A059]">
+              <span className="ds-section-label">
                 {section.subtitle || "Handpicked Curation"}
               </span>
-              <h2 className="font-display text-xl font-bold uppercase text-[#2B2B2B] tracking-tight">
+              <h2 className="ds-section-title mt-0.5">
                 {section.title || "Editor's Pick"}
               </h2>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-5">
             {editorsPicks.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

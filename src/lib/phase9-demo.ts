@@ -4,6 +4,8 @@ import type {
   EditorialArticleData,
   FeaturedSectionData,
 } from "./types";
+import { getCategoryHero, getCategoryPrimary } from "./fashion-images";
+import { pickFashionVideo } from "./fashion-videos";
 
 export const DEMO_CAMPAIGNS: EditorialCampaignData[] = [
   {
@@ -11,10 +13,8 @@ export const DEMO_CAMPAIGNS: EditorialCampaignData[] = [
     title: "Atelier Residencies: The Spring '26 Prelude",
     slug: "spring-26-prelude",
     subtitle: "A Haute Couture Residency",
-    heroImage:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80",
-    heroVideoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    heroImage: getCategoryHero("luxury-couture"),
+    heroVideoUrl: pickFashionVideo(0),
     headline: "Architectural Lehengas & Fluid Silk Drapes",
     body: "Inside the Mumbai and Jaipur ateliers where silk yarn is hand-spun and zardozi needlework is executed with microscopic precision.",
     badge: "Cover Story",
@@ -32,8 +32,7 @@ export const DEMO_COLLECTIONS: EditorialCollectionData[] = [
     title: "Royal Heritage Lehengas",
     slug: "royal-heritage-lehengas",
     tagline: "Heirloom weight Kanchipuram & Banarasi weaves",
-    coverImage:
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200&q=80",
+    coverImage: getCategoryHero("lehengas"),
     description:
       "Curated bridal and ceremonial ensembles featuring 24k gold zari wire work.",
     curatorNotes:
@@ -59,8 +58,7 @@ export const DEMO_COLLECTIONS: EditorialCollectionData[] = [
     title: "Cocktail Drapes & Modern Sari Edit",
     slug: "cocktail-drapes-modern-sari",
     tagline: "Fluid silhouettes for evening galas",
-    coverImage:
-      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=1200&q=80",
+    coverImage: getCategoryHero("sarees"),
     description: "Pre-stitched silk chiffon sarees and draped cocktail gowns.",
     curatorNotes: "Modern movement meets traditional drape aesthetics.",
     sortOrder: 2,
@@ -89,8 +87,7 @@ export const DEMO_ARTICLES: EditorialArticleData[] = [
     category: "Craft & Origin",
     excerpt:
       "How master artisan Sunder Lal preserves 300-year-old natural dye baths in Rajasthan.",
-    coverImage:
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200&q=80",
+    coverImage: getCategoryPrimary("sarees"),
     contentJson: [
       {
         type: "paragraph",
@@ -127,8 +124,7 @@ export const DEMO_ARTICLES: EditorialArticleData[] = [
     category: "Atelier Visit",
     excerpt:
       "Sculptural evening coats engineered from 100% hand-loomed Kashmir pashmina.",
-    coverImage:
-      "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=1200&q=80",
+    coverImage: getCategoryHero("luxury-couture"),
     contentJson: [
       {
         type: "paragraph",

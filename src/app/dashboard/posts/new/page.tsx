@@ -61,6 +61,7 @@ export default function NewPostPage() {
       const selectedProduct = products.find((p) => p.id === selectedProductId);
       const productTag = selectedProduct
         ? {
+            productId: selectedProduct.id,
             id: selectedProduct.id,
             name: selectedProduct.name,
             price: selectedProduct.price,

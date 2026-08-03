@@ -2,20 +2,28 @@
 
 /* ──────────────────────────────────────
    DESIGNER'S STREET — Mobile-First Design System
-   Off-White Quiet Luxury Palette & Neumorphism
+   Bold Fashion Commerce (NEWME-inspired layout, luxury palette)
    ────────────────────────────────────── */
 
 :root {
-  /* Core Off-White Luxury Palette */
-  --charcoal: #101010;      /* Obsidian Black for absolute high contrast */
-  --graphite: #2E2B27;      /* Warm Espresso Graphite */
-  --stone: #787268;         /* Muted Warm Slate */
-  --silver: #A8A196;        /* Soft Taupe / Silver */
-  --cloud: #E3DBCC;         /* Soft Nude Border & Accent */
-  --mist: #F3F0E9;          /* Warm Ivory Surface */
-  --paper: #FDFCF8;         /* Off-White Primary Canvas Surface */
+  /* Core palette — high contrast, image-first */
+  --charcoal: #0A0A0A;
+  --graphite: #1A1A1A;
+  --stone: #6B6B6B;
+  --silver: #9A9A9A;
+  --cloud: #E8E8E8;
+  --mist: #F5F5F5;
+  --paper: #FFFFFF;
   --pure-white: #FFFFFF;
-  --gold-zari: #C5A059;      /* Royal Champagne Gold Zari Accent */
+  --gold-zari: #C5A059;
+  --accent-hot: #E63946;
+  --accent-sale: #16A34A;
+
+  /* NEWME-inspired accent palette */
+  --newme-green: #7EE081;
+  --newme-green-dark: #16A34A;
+  --newme-pink: #FF4D9A;
+  --newme-yellow: #FFE500;
 
   /* Functional Tokens */
   --text-primary: var(--charcoal);
@@ -25,15 +33,15 @@
   --bg-canvas: var(--paper);
   --bg-surface: var(--mist);
   --bg-elevated: var(--paper);
-  --border-default: transparent;
-  --border-subtle: transparent;
+  --border-default: var(--cloud);
+  --border-subtle: #F0F0F0;
 
-  /* Neumorphism Shadow Colors (Warm Off-White & Soft Ivory) */
-  --neu-dark: #e5ded2;
-  --neu-light: #ffffff;
+  /* Legacy neumorphism tokens — kept for compat, mapped to flat shadows */
+  --neu-dark: rgba(0, 0, 0, 0.08);
+  --neu-light: rgba(255, 255, 255, 0.9);
 
   /* Navigation */
-  --bottom-nav-height: 64px;
+  --bottom-nav-height: 68px;
   --top-bar-height: 52px;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -48,8 +56,8 @@
   --color-paper: var(--paper);
   --color-gold: var(--gold-zari);
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Compact Text", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
-  --font-display: -apple-system-ui-serif, ui-serif, "New York", "SF Pro Rounded", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
 
   --tracking-nav: 0.1em;
   --tracking-label: 0.16em;
@@ -193,35 +201,35 @@ body {
 
 .curvy-card {
   background-color: var(--bg-canvas) !important;
-  border: none !important;
-  border-radius: 20px !important;
-  box-shadow: 6px 6px 12px var(--neu-dark), -6px -6px 12px var(--neu-light) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px var(--neu-dark) !important;
 }
 
 .curvy-btn {
   background-color: var(--bg-canvas) !important;
-  border: none !important;
+  border: 1.5px solid var(--charcoal) !important;
   border-radius: 9999px !important;
-  box-shadow: 4px 4px 8px var(--neu-dark), -4px -4px 8px var(--neu-light) !important;
+  box-shadow: none !important;
   color: var(--charcoal) !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.15s ease !important;
 }
 .curvy-btn:active, .curvy-btn.active {
-  box-shadow: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light) !important;
+  background-color: var(--mist) !important;
   transform: scale(0.97) !important;
 }
 
-/* Dark Obsidian Primary Button */
+/* Dark primary button */
 .curvy-btn-dark {
   background-color: var(--charcoal) !important;
   border: none !important;
   border-radius: 9999px !important;
-  box-shadow: 4px 4px 8px rgba(16, 16, 16, 0.25), -4px -4px 8px rgba(255, 255, 255, 0.6) !important;
+  box-shadow: none !important;
   color: var(--paper) !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.15s ease !important;
 }
 .curvy-btn-dark:active {
-  box-shadow: inset 4px 4px 8px rgba(16, 16, 16, 0.35), inset -4px -4px 8px rgba(255, 255, 255, 0.2) !important;
+  background-color: var(--graphite) !important;
   transform: scale(0.97) !important;
 }
 
@@ -230,33 +238,34 @@ body {
 }
 
 .curvy-input {
-  background-color: var(--bg-canvas) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  box-shadow: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light) !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
   color: var(--charcoal) !important;
   outline: none !important;
   padding: 10px 14px !important;
-  transition: box-shadow 0.2s ease !important;
+  transition: border-color 0.15s ease !important;
 }
 .curvy-input:focus {
-  box-shadow: inset 5px 5px 10px var(--neu-dark), inset -5px -5px 10px var(--neu-light) !important;
+  border-color: var(--charcoal) !important;
 }
 
-/* General Neumorphic utility classes */
+/* Flat utility classes */
 .neu-inset {
-  background-color: var(--bg-canvas) !important;
-  box-shadow: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light) !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
 }
 
 .neu-raised-sm {
   background-color: var(--bg-canvas) !important;
-  box-shadow: 3px 3px 6px var(--neu-dark), -3px -3px 6px var(--neu-light) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: 0 1px 2px var(--neu-dark) !important;
 }
 
 .neu-pressed {
-  background-color: var(--bg-canvas) !important;
-  box-shadow: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light) !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
 }
 
 /* ──────────────────────────────────────
@@ -329,15 +338,14 @@ body {
    ────────────────────────────────────── */
 
 .product-card {
-  background-color: var(--bg-canvas);
-  border-radius: 18px;
-  padding: 8px;
-  box-shadow: 5px 5px 10px var(--neu-dark), -5px -5px 10px var(--neu-light);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  transition: transform 0.15s ease;
 }
 .product-card:active {
   transform: scale(0.98);
-  box-shadow: inset 3px 3px 6px var(--neu-dark), inset -3px -3px 6px var(--neu-light);
 }
 
 /* Limited pieces badge */
@@ -364,10 +372,74 @@ body {
    ────────────────────────────────────── */
 
 .bottom-nav-glass {
-  background-color: rgba(253, 252, 248, 0.92) !important;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 -4px 10px rgba(16, 16, 16, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background-color: var(--paper) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 -1px 0 var(--border-subtle);
+}
+
+/* ──────────────────────────────────────
+   Fashion Commerce Section Utilities
+   ────────────────────────────────────── */
+
+.ds-promo-strip {
+  background-color: var(--charcoal);
+  color: var(--paper);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  text-align: center;
+}
+
+.ds-section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-zari);
+}
+
+.ds-section-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+  line-height: 1.2;
+}
+
+.ds-filter-pill {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ds-filter-pill--active {
+  background-color: var(--charcoal);
+  color: var(--paper);
+  border: 1.5px solid var(--charcoal);
+}
+
+.ds-filter-pill--idle {
+  background-color: var(--paper);
+  color: var(--graphite);
+  border: 1.5px solid var(--cloud);
+}
+
+.ds-link-action {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ──────────────────────────────────────
