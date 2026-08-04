@@ -20,6 +20,7 @@ import {
   withSocialCounts,
 } from "./demo-expand";
 import { applyPhase8DemoEnrichment } from "./phase8-demo";
+import { applyFashionMedia } from "./fashion-media";
 
 // ── Designer Houses ──────────────────────
 
@@ -814,6 +815,7 @@ export const FEED_POSTS: FeedPostData[] = [
     id: "feed-1",
     type: "category",
     categorySlug: "lehengas",
+    designerId: "dh-1",
     designerName: "MAISON RIVIÈRE",
     designerLogo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
     designerVerified: true,
@@ -821,7 +823,12 @@ export const FEED_POSTS: FeedPostData[] = [
     image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
     videoUrl: V.runwayScored,
     caption: "The Lehenga Edit — hand-finished, limited to 12 pieces.",
-    link: "/category/lehengas",
+    link: "/product/prod-1",
+    productTag: {
+      name: "Rivière Bridal Lehenga — Midnight Garden",
+      price: 285000,
+      productId: "prod-1",
+    },
   },
   {
     id: "feed-2",
@@ -834,7 +841,12 @@ export const FEED_POSTS: FeedPostData[] = [
     image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
     videoUrl: V.minimal,
     caption: "Genderless occasion wear. Zero decoration, total impact.",
-    link: "/designer/studio-cipher",
+    link: "/product/prod-10",
+    productTag: {
+      name: "Zero-Waste Gown — Obsidian",
+      price: 92000,
+      productId: "prod-10",
+    },
   },
   {
     id: "feed-noir-drop",
@@ -1057,29 +1069,19 @@ export function getProductsByDesigner(designerId: string): Product[] {
   return PRODUCTS.filter((p) => p.designerId === designerId);
 }
 
+export function findCategoryBySlug(slug: string, cats: Category[] = CATEGORIES): Category | undefined {
+  return findCategoryInTree(slug, cats);
+}
+
 export function getProductsByCategory(category: string): Product[] {
-  return PRODUCTS.filter(
-    (p) =>
-      p.category === category ||
-      p.subcategory === category ||
-      Boolean(p.tags?.includes(category))
-  );
+  return PRODUCTS.filter((p) => productMatchesNavigationSlug(p, category));
 }
 
 export function getProductById(id: string): Product | undefined {
   return PRODUCTS.find((p) => p.id === id);
 }
 
-export function findCategoryBySlug(slug: string, cats: Category[] = CATEGORIES): Category | undefined {
-  for (const cat of cats) {
-    if (cat.slug === slug) return cat;
-    if (cat.children) {
-      const found = findCategoryBySlug(slug, cat.children);
-      if (found) return found;
-    }
-  }
-  return undefined;
-}
+import { findCategoryInTree, productMatchesNavigationSlug } from "./category-tree";
 
 // ── Merge demo expansion (single catalog source for mock + seed) ──
 (() => {
@@ -1091,4 +1093,11 @@ export function findCategoryBySlug(slug: string, cats: Category[] = CATEGORIES):
   FEED_POSTS.push(...EXPANDED_FEED_POSTS);
   STORIES.push(...EXPANDED_STORIES);
   applyPhase8DemoEnrichment(PRODUCTS, DESIGNERS);
+  applyFashionMedia({
+    products: PRODUCTS,
+    categories: CATEGORIES,
+    designers: DESIGNERS,
+    feedPosts: FEED_POSTS,
+    stories: STORIES,
+  });
 })();

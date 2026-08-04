@@ -10,9 +10,10 @@ import type { FeedPostData } from "@/lib/types";
 import { feedPostToViewerMedia } from "@/lib/media";
 import { formatPrice } from "@/lib/mock-data";
 import { useFollow, useLike } from "@/hooks/useSocial";
-import { ShareButton } from "@/components/ShareButton";
-import { CommentPanel } from "@/components/comments/CommentPanel";
+import { ThumbUpIcon } from "@/components/icons/ThumbUpIcon";
+import { ShareSheet } from "@/components/ShareSheet";
 import { getDesignerUrl } from "@/lib/routes";
+import { resolvePostProductId } from "@/lib/feed-product";
 
 interface FeedPostProps {
   post: FeedPostData;
@@ -36,25 +37,24 @@ export function FeedPost({ post }: FeedPostProps) {
     targetId: post.id,
     initialLiked: post.likedByMe,
     initialCount: post.likesCount ?? 0,
+    mode: "post",
   });
   const { following: isFollowing, toggle: toggleFollow } = useFollow({
     designerId: post.designerId,
     initialFollowing: post.followingDesigner,
   });
-
-  const [commentsCount, setCommentsCount] = useState(post.commentsCount ?? 0);
-  const [showComments, setShowComments] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
-  const [showTagPopover, setShowTagPopover] = useState(true);
+  const [showTagPopover, setShowTagPopover] = useState(false);
   const [authHint, setAuthHint] = useState<string | null>(null);
   const lastTapRef = useRef(0);
   const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const saveProductId = post.productTag?.productId;
-  const wished = saveProductId ? isWished(saveProductId) : false;
-  const bagProductId = post.productTag?.productId;
-  const inBag = bagProductId ? isInCart(bagProductId) : false;
-  const bagQty = bagProductId ? quantityFor(bagProductId) : 0;
+  const commerceProductId = resolvePostProductId(post);
+  const wished = commerceProductId ? isWished(commerceProductId) : false;
+  const inBag = commerceProductId ? isInCart(commerceProductId) : false;
+  const bagQty = commerceProductId ? quantityFor(commerceProductId) : 0;
+  const designerHref = getDesignerUrl(post.designerId) ?? post.link;
 
   const handleLikeToggle = async () => {
     try {
@@ -112,7 +112,7 @@ export function FeedPost({ post }: FeedPostProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    const pId = post.productTag?.productId;
+    const pId = commerceProductId;
     if (!pId) return;
     const name = post.productTag?.name || post.caption.slice(0, 30);
     const price = post.productTag?.price || 78000;
@@ -197,7 +197,7 @@ export function FeedPost({ post }: FeedPostProps) {
       {/* Full-bleed Editorial Image / Vertical video */}
       <div
         className={`relative w-full bg-[#D5DBE5] group ${
-          post.videoOnly ? "aspect-[9/16] max-h-[78vh] mx-auto" : "aspect-[4/5]"
+          post.videoOnly ? "aspect-[9/16] max-h-[min(58vh,520px)] mx-auto" : "aspect-[4/5] max-h-[min(72vh,640px)]"
         }`}
       >
         <button
@@ -245,9 +245,9 @@ export function FeedPost({ post }: FeedPostProps) {
 
         {/* Product Tag Overlay (Interactive Pill on Image) */}
         {post.productTag && showTagPopover && (
-          <div className="absolute bottom-4 left-4 z-20 animate-fade-in">
+          <div className="absolute bottom-14 left-4 z-20 animate-fade-in">
             <Link
-              href={post.productTag.productId ? `/product/${post.productTag.productId}` : post.link}
+              href={commerceProductId ? `/product/${commerceProductId}` : post.link}
               className="flex items-center gap-2 px-3 py-1.5 bg-black/80 backdrop-blur-md text-white rounded-full shadow-lg border border-white/30 hover:bg-black transition-all group/tag"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -270,7 +270,8 @@ export function FeedPost({ post }: FeedPostProps) {
             type="button"
             onClick={() => setShowTagPopover(!showTagPopover)}
             className="absolute top-3 right-3 z-20 p-2 bg-black/60 backdrop-blur-md rounded-full text-white cursor-pointer active:scale-95 transition-transform"
-            aria-label="Toggle product tag"
+            aria-label={showTagPopover ? "Hide product tag" : "Show product tag"}
+            aria-pressed={showTagPopover}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
@@ -282,96 +283,89 @@ export function FeedPost({ post }: FeedPostProps) {
         {/* Double-tap heart animation overlay */}
         {showHeartAnim && (
           <div className="heart-overlay" style={{ animation: "heart-pop 0.8s cubic-bezier(0.17,0.89,0.32,1.28) forwards" }}>
-            <svg className="w-20 h-20 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-            </svg>
+            <ThumbUpIcon className="w-20 h-20 text-white drop-shadow-lg" filled />
           </div>
         )}
-      </div>
 
-      {/* Interactive Engagement Bar: Like, Comment, Wishlist, Share, Add to Cart */}
-      <div className="px-4 py-3 flex items-center justify-between border-b border-white/40 bg-[#FDFCF8]">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => void handleLikeToggle()}
-            className="flex items-center gap-1.5 cursor-pointer active:scale-90 transition-transform"
-            aria-label="Like post"
-            aria-pressed={isLiked}
-          >
-            <svg
-              className={`w-6 h-6 transition-colors ${
-                isLiked ? "fill-red-500 text-red-500" : "fill-none text-[#2B2B2B]"
-              }`}
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.8}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-            </svg>
-            <span className="font-sans text-xs font-bold text-[#2B2B2B]">
-              {likesCount}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowComments((v) => !v)}
-            className="flex items-center gap-1.5 cursor-pointer"
-            aria-label="Comments"
-          >
-            <svg className="w-6 h-6 text-[#2B2B2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span className="font-sans text-xs font-bold text-[#2B2B2B]">
-              {commentsCount}
-            </span>
-          </button>
-
-          {saveProductId && (
+        {/* Actions overlay — always visible on media (tall videos won't hide controls) */}
+        <div className="absolute inset-x-0 bottom-0 z-20 flex items-center gap-3 px-3 py-2.5 bg-gradient-to-t from-black/80 via-black/45 to-transparent pointer-events-none">
+          <div className="flex items-center gap-3 pointer-events-auto">
             <button
               type="button"
-              onClick={() => toggleWishlist(saveProductId)}
-              className="cursor-pointer active:scale-90 transition-transform p-1"
-              aria-label={wished ? "Remove from Wishlist" : "Save to Wishlist"}
-              aria-pressed={wished}
+              onClick={() => void handleLikeToggle()}
+              className="flex items-center gap-1 cursor-pointer active:scale-90 transition-transform"
+              aria-label="Like post"
+              aria-pressed={isLiked}
             >
-              <svg
-                className={`w-6 h-6 transition-colors ${
-                  wished ? "fill-[#2B2B2B] text-[#2B2B2B]" : "fill-none text-[#2B2B2B]"
-                }`}
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.8}
+              <ThumbUpIcon
+                className="w-6 h-6 text-white"
+                filled={isLiked}
+                strokeWidth={2}
+              />
+              <span className="font-sans text-xs font-bold text-white tabular-nums">
+                {likesCount}
+              </span>
+            </button>
+
+            {commerceProductId && (
+              <button
+                type="button"
+                onClick={() => toggleWishlist(commerceProductId)}
+                className="cursor-pointer active:scale-90 transition-transform"
+                aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+                aria-pressed={wished}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                <svg
+                  className={`w-6 h-6 transition-colors ${
+                    wished ? "fill-red-400 text-red-400" : "fill-none text-white"
+                  }`}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShareOpen(true)}
+              className="cursor-pointer active:scale-90 transition-transform"
+              aria-label="Share post"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
               </svg>
             </button>
-          )}
+          </div>
 
-          <ShareButton
-            title={post.designerName}
-            text={post.caption}
-            path={post.link || `/feed`}
-            className="font-sans text-[10px] font-bold uppercase tracking-wider text-[#2B2B2B]"
-          />
+          <div className="flex-1" />
+
+          {commerceProductId ? (
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#2B2B2B] rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md active:scale-95 transition-all cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <span>
+                {inBag
+                  ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
+                  : "Add to Bag"}
+              </span>
+            </button>
+          ) : designerHref ? (
+            <Link
+              href={designerHref}
+              className="pointer-events-auto px-3 py-1.5 bg-white/15 border border-white/40 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-sm active:scale-95 transition-all"
+            >
+              View House
+            </Link>
+          ) : null}
         </div>
-
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#2B2B2B] text-white rounded-full text-xs font-extrabold uppercase tracking-wider shadow-md active:scale-95 transition-all cursor-pointer"
-        >
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-          </svg>
-          <span>
-            {inBag
-              ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
-              : "Add to Bag"}
-          </span>
-        </button>
       </div>
 
       {authHint && (
@@ -381,10 +375,6 @@ export function FeedPost({ post }: FeedPostProps) {
             Sign in
           </Link>
         </p>
-      )}
-
-      {showComments && (
-        <CommentPanel postId={post.id} onCountChange={setCommentsCount} />
       )}
 
       {/* Caption & Designer handle */}
@@ -399,6 +389,14 @@ export function FeedPost({ post }: FeedPostProps) {
           <span className="text-[#4A4A4A] font-medium">{post.caption}</span>
         </p>
       </div>
+
+      <ShareSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        title={post.designerName}
+        text={post.caption}
+        url={post.link || "/feed"}
+      />
     </article>
   );
 }

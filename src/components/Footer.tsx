@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-[#2B2B2B] text-[#FAFAFA] px-4 pt-8 pb-24">
+    <footer className="bg-charcoal text-paper px-4 pt-8 pb-24">
       {/* Wordmark */}
       <div className="mb-6">
         <span className="font-display text-lg font-bold tracking-tight">

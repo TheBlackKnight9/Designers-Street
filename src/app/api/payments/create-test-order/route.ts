@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       amount: amount * 100, // convert rupees to paise
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
-      payment_capture: 1,
+      payment_capture: true,
     });
 
     return NextResponse.json({ order });

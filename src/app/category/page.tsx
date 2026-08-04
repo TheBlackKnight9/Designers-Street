@@ -8,6 +8,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { CATEGORIES } from "@/lib/mock-data";
 import { useStorefrontCategories } from "@/hooks/useStorefrontCatalog";
+import { resolveCategoryImageUrl } from "@/lib/fashion-images";
+import { sanitizeImageUrl } from "@/lib/utils/image-url";
 
 export default function CategoryIndexPage() {
   // Track expanded state for each main category slug (hidden by default)
@@ -54,6 +56,9 @@ export default function CategoryIndexPage() {
           {categories.map((cat) => {
             const isExpanded = !!expandedMap[cat.slug];
             const hasChildren = cat.children && cat.children.length > 0;
+            const bannerImage = sanitizeImageUrl(
+              resolveCategoryImageUrl(cat.slug, cat.image)
+            );
 
             return (
               <div key={cat.slug} className="flex flex-col gap-2.5">
@@ -62,7 +67,7 @@ export default function CategoryIndexPage() {
                   {/* Category Image link to full category page */}
                   <Link href={`/category/${cat.slug}`} className="absolute inset-0 block">
                     <Image
-                      src={cat.image}
+                      src={bannerImage}
                       alt={cat.label}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"

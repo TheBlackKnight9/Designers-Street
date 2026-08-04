@@ -62,10 +62,10 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
   return (
     <div
       id={id}
-      className={`product-card relative flex flex-col bg-[#FAFAFA] ${className}`}
+      className={`product-card relative flex flex-col ${className}`}
     >
-      {/* Image with exact rating badge & bag overlay */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F0F0F0] rounded-lg">
+      {/* Image-first card — bold fashion grid */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-mist rounded-lg">
         <Link href={`/product/${product.id}`} className="absolute inset-0 block">
           <div onClick={handleImageTap} className="w-full h-full relative">
             {isValidImageUrl(coverImg) ? (
@@ -109,9 +109,9 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
         </button>
 
         {/* Free Shipping Badge */}
-        {(product as any).listingType !== "CONCEPT_ART" && (
-          <span className="absolute top-2 left-2 z-10 bg-emerald-700/90 text-white font-sans text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-md backdrop-blur-xs tracking-wider shadow-xs">
-            FREE SHIPPING
+        {(product as { listingType?: string }).listingType !== "CONCEPT_ART" && (
+          <span className="absolute top-2 left-2 z-10 bg-[var(--accent-sale)] text-white font-sans text-[8px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wider">
+            FREE SHIP
           </span>
         )}
 
@@ -124,22 +124,22 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
           </span>
         ) : null}
 
-        {/* Rating badge: bottom-left (★ 5.0 style) */}
-        <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1 px-2 py-0.5 bg-white/95 backdrop-blur-xs rounded-full shadow-xs border border-gray-100">
+        {/* Rating badge */}
+        <div className="absolute bottom-2 left-2 z-10 flex items-center gap-0.5 px-1.5 py-0.5 bg-paper/95 rounded-md shadow-sm">
           <span className="text-[10px] text-amber-500">★</span>
-          <span className="font-sans text-[10px] font-bold text-[#2B2B2B]">
+          <span className="font-sans text-[10px] font-extrabold text-charcoal">
             {(product.rating ?? 4.8).toFixed(1)}
           </span>
         </div>
 
-        {/* Add-to-bag icon: bottom-right (white circular bag button) */}
+        {/* Quick add bag */}
         <button
           type="button"
           onClick={handleQuickAdd}
-          className="absolute bottom-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center bg-white/95 backdrop-blur-xs rounded-full shadow-md border border-[#F0F0F0] active:scale-90 transition-transform cursor-pointer"
+          className="absolute bottom-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-charcoal rounded-full text-paper active:scale-90 transition-transform cursor-pointer shadow-md"
           aria-label="Quick Add to Bag"
         >
-          <svg className="w-4 h-4 text-[#2B2B2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
           </svg>
         </button>
@@ -154,18 +154,16 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
         )}
       </div>
 
-      {/* Product Details matching image layout */}
-      <div className="mt-2 flex flex-col gap-0.5 px-0.5">
-        {/* Designer / Maker brand tag */}
-        <p className="font-sans text-[9px] font-bold uppercase tracking-widest text-[#A0A0A0]">
+      {/* Product details */}
+      <div className="mt-2 flex flex-col gap-0.5">
+        <p className="font-sans text-[9px] font-extrabold uppercase tracking-widest text-silver">
           {product.designerName}
         </p>
 
-        {/* Product title & Wishlist icon row */}
         <div className="flex items-start justify-between gap-2">
           <Link
             href={`/product/${product.id}`}
-            className="font-sans text-xs font-medium text-[#2B2B2B] leading-tight line-clamp-2 hover:text-[#7A7A7A] transition-colors"
+            className="font-sans text-xs font-semibold text-charcoal leading-tight line-clamp-2 hover:text-stone transition-colors"
           >
             {product.name}
           </Link>
@@ -176,12 +174,12 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
               e.stopPropagation();
               toggle(product.id);
             }}
-            className="flex-shrink-0 pt-0.5 text-[#2B2B2B] active:scale-95 transition-transform cursor-pointer"
+            className="flex-shrink-0 pt-0.5 text-charcoal active:scale-95 transition-transform cursor-pointer"
             aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
           >
             <svg
-              className={`h-4.5 w-4.5 transition-colors duration-200 ${
-                wished ? "fill-[#2B2B2B] text-[#2B2B2B]" : "fill-none text-[#2B2B2B]"
+              className={`h-4 w-4 transition-colors duration-200 ${
+                wished ? "fill-charcoal text-charcoal" : "fill-none text-charcoal"
               }`}
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -192,28 +190,25 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Price + crossed out MRP */}
-        <div className="flex items-baseline gap-2 mt-1">
-          <span className="font-sans text-sm font-bold text-[#2B2B2B]">
+        <div className="flex items-baseline gap-2 mt-0.5">
+          <span className="font-sans text-sm font-extrabold text-charcoal">
             {formatPrice(product.price)}
           </span>
           {product.mrp && product.mrp > product.price && (
-            <span className="font-sans text-[10px] text-[#A0A0A0] line-through">
-              MRP: {formatPrice(product.mrp)}
+            <span className="font-sans text-[10px] text-silver line-through">
+              {formatPrice(product.mrp)}
             </span>
           )}
         </div>
 
-        {/* Best Price badge */}
         {product.bestPrice && (
-          <div className="mt-1.5 self-start border border-green-700 bg-green-50/50 px-1.5 py-0.5 rounded text-[9px] font-bold text-green-800 tracking-wide uppercase">
-            Best Price: {formatPrice(product.bestPrice)}*
+          <div className="mt-1 self-start bg-mist px-1.5 py-0.5 rounded text-[9px] font-extrabold text-charcoal tracking-wide uppercase">
+            Best: {formatPrice(product.bestPrice)}*
           </div>
         )}
 
-        {/* Delivery / Status metadata */}
         {product.deliveryText && (
-          <p className="text-[10px] text-green-700 font-medium mt-1 flex items-center gap-1">
+          <p className="text-[10px] text-[var(--accent-sale)] font-bold mt-1 flex items-center gap-1">
             <span>⚡</span> {product.deliveryText}
           </p>
         )}

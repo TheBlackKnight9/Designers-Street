@@ -1,4 +1,5 @@
 import type { LookbookData, Product, DesignerHouse } from "@/lib/types";
+import { getCategoryMedia, getProductImagesForCategory } from "./fashion-images";
 
 /** Demo lookbooks for Phase 8 (mock / seed baseline). */
 export const DEMO_LOOKBOOKS: LookbookData[] = [
@@ -9,23 +10,20 @@ export const DEMO_LOOKBOOKS: LookbookData[] = [
     slug: "riviera-couture-ss26",
     kind: "seasonal",
     season: "SS26",
-    coverImage:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80",
+    coverImage: getCategoryMedia("lehengas").hero,
     description:
       "Architectural lehengas and cocktail drapes from the Mumbai atelier.",
     items: [
       {
         id: "lbi-1",
-        mediaUrl:
-          "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=900&q=80",
+        mediaUrl: getProductImagesForCategory("lehengas")[0],
         mediaKind: "image",
         caption: "Structured lehenga in rose dust",
         productId: "prod-1",
       },
       {
         id: "lbi-2",
-        mediaUrl:
-          "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=900&q=80",
+        mediaUrl: getProductImagesForCategory("lehengas")[1],
         mediaKind: "image",
         caption: "Atelier fittings",
         productId: "prod-2",
@@ -39,14 +37,12 @@ export const DEMO_LOOKBOOKS: LookbookData[] = [
     slug: "kishangarh-miniatures",
     kind: "editorial",
     season: "AW25",
-    coverImage:
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200&q=80",
+    coverImage: getCategoryMedia("kurtas").hero,
     description: "Heritage indigo and lac dye campaign from Jaipur.",
     items: [
       {
         id: "lbi-3",
-        mediaUrl:
-          "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=900&q=80",
+        mediaUrl: getProductImagesForCategory("kurtas")[0],
         mediaKind: "image",
         productId: "prod-5",
       },
@@ -58,14 +54,12 @@ export const DEMO_LOOKBOOKS: LookbookData[] = [
     title: "Pashmina Opera",
     slug: "pashmina-opera",
     kind: "campaign",
-    coverImage:
-      "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=1200&q=80",
+    coverImage: getCategoryMedia("luxury-couture").hero,
     description: "Opera coats and evening layers in cashmere.",
     items: [
       {
         id: "lbi-4",
-        mediaUrl:
-          "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=900&q=80",
+        mediaUrl: getProductImagesForCategory("luxury-couture")[0],
         mediaKind: "image",
         productId: "prod-7",
       },

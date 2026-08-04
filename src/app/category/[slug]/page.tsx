@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { findCategoryBySlug, PRODUCTS } from "@/lib/mock-data";
+import { productMatchesNavigationSlug } from "@/lib/category-tree";
 import { useCart } from "@/context/CartContext";
 import {
   useStorefrontProducts,
@@ -50,36 +51,9 @@ export default function CategoryPage({ params }: PageProps) {
   // Filter products matching this category or subcategory
   const baseProducts = useMemo(() => {
     if (catalog.enabled) {
-      // API already filtered by category param; keep client extras for special slugs
-      const s = slug.toLowerCase();
-      if (s === "traditional" || s === "limited-edition") {
-        return allProducts.filter((p) => {
-          if (s === "traditional") {
-            return p.tags?.includes("traditional") || !!p.craftOrigin || !!p.technique;
-          }
-          return !!p.limitedEdition || (p.piecesRemaining !== undefined && p.piecesRemaining > 0);
-        });
-      }
       return allProducts;
     }
-    const s = slug.toLowerCase();
-    return allProducts.filter((p) => {
-      if (s === "traditional") {
-        return p.tags?.includes("traditional") || !!p.craftOrigin || !!p.technique;
-      }
-      if (s === "limited-edition") {
-        return !!p.limitedEdition || (p.piecesRemaining !== undefined && p.piecesRemaining > 0);
-      }
-      return (
-        p.category === s ||
-        p.subcategory === s ||
-        s.includes(p.category) ||
-        (p.gender === "women" && s.startsWith("women")) ||
-        (p.gender === "men" && s.startsWith("men")) ||
-        (s.includes("bridal") && p.occasion === "Bridal") ||
-        (s.includes("cocktail") && p.occasion === "Cocktail")
-      );
-    });
+    return allProducts.filter((p) => productMatchesNavigationSlug(p, slug));
   }, [slug, allProducts, catalog.enabled]);
 
   // Apply filters and sort

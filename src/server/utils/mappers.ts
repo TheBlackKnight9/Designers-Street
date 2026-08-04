@@ -16,6 +16,8 @@ import type {
   PostType,
 } from "@prisma/client";
 import { sanitizeImageUrl } from "@/lib/utils/image-url";
+import { resolveCategoryImageUrl } from "@/lib/fashion-images";
+import { normalizeFeedProductTag } from "@/lib/feed-product";
 
 export function toDesignerHouse(row: DbDesigner): DesignerHouse {
   return {
@@ -100,7 +102,9 @@ function mapPostType(type: PostType): FeedPostData["type"] {
 }
 
 export function toFeedPost(row: DbPost): FeedPostData {
-  const productTag = row.productTag as FeedPostData["productTag"] | null;
+  const productTag = normalizeFeedProductTag(
+    row.productTag as FeedPostData["productTag"] & { id?: string } | null
+  );
   return {
     id: row.id,
     type: mapPostType(row.type),
@@ -150,7 +154,10 @@ export function buildCategoryTree(rows: DbCategory[]): Category[] {
       _parentId: row.parentId,
       slug: row.slug,
       label: row.label,
-      image: sanitizeImageUrl(row.image, "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80"),
+      image: sanitizeImageUrl(
+        resolveCategoryImageUrl(row.slug, row.image),
+        resolveCategoryImageUrl(row.slug, null)
+      ),
       caption: row.caption ?? undefined,
       children: [],
     });

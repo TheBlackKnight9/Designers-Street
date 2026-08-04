@@ -10,29 +10,31 @@ import type {
   StoryItem,
   FeedPostData,
 } from "./types";
-import { FASHION_VIDEOS as V, ALL_FASHION_VIDEO_URLS } from "./fashion-videos";
+import { ALL_FASHION_VIDEO_URLS, pickFashionVideos } from "./fashion-videos";
+import { buildBrowseCategoryTree } from "./category-tree";
+import { getCategoryHero, getCategoryPrimary, getDesignerLogo, getProductImagesForCategory } from "./fashion-images";
 import { getDesignerUrl } from "./routes";
 
 const IMG = {
-  bridal: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-  gown: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
-  saree: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80",
-  textile: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=80",
-  mens: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&q=80",
-  jacket: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80",
-  street: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
-  coat: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&q=80",
-  minimal: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",
-  atelier: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80",
-  jewelry: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80",
-  bag: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&q=80",
-  shoes: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=800&q=80",
-  kids: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800&q=80",
-  logo: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=200&q=80",
-  logo2: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=200&q=80",
-  logo3: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&q=80",
-  logo4: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&q=80",
-  logo5: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&q=80",
+  bridal: getCategoryPrimary("bridal"),
+  gown: getCategoryPrimary("gowns"),
+  saree: getCategoryPrimary("sarees"),
+  textile: getCategoryPrimary("kurtas"),
+  mens: getCategoryPrimary("mens-wear"),
+  jacket: getCategoryPrimary("indo-western"),
+  street: getCategoryPrimary("streetwear"),
+  coat: getCategoryPrimary("mens-wear"),
+  minimal: getCategoryPrimary("indo-western"),
+  atelier: getCategoryHero("luxury-couture"),
+  jewelry: getCategoryPrimary("jewellery"),
+  bag: getCategoryPrimary("bags"),
+  shoes: getCategoryPrimary("footwear"),
+  kids: getCategoryPrimary("kids"),
+  logo: getDesignerLogo(0),
+  logo2: getDesignerLogo(1),
+  logo3: getDesignerLogo(2),
+  logo4: getDesignerLogo(3),
+  logo5: getDesignerLogo(4),
 };
 
 const VIDEO_CYCLE = ALL_FASHION_VIDEO_URLS;
@@ -42,31 +44,12 @@ function vid(i: number) {
 }
 
 function vids(i: number): string[] {
-  return [vid(i), vid(i + 3), vid(i + 7)];
+  return pickFashionVideos(3, i);
 }
 
 /** Flat browse categories — unique slugs, no empty product states after seed. */
-export const BROWSE_CATEGORIES: Category[] = [
-  { slug: "sarees", label: "Sarees", image: IMG.saree, caption: "Temple silks to contemporary drapes." },
-  { slug: "lehengas", label: "Lehengas", image: IMG.bridal, caption: "Bridal and celebration lehengas." },
-  { slug: "kurtas", label: "Kurtas", image: IMG.textile, caption: "Heritage prints, modern cuts." },
-  { slug: "sherwanis", label: "Sherwanis", image: IMG.mens, caption: "Ceremony armour for the modern groom." },
-  { slug: "dresses", label: "Dresses", image: IMG.gown, caption: "Day-to-evening silhouette edits." },
-  { slug: "gowns", label: "Gowns", image: IMG.gown, caption: "Occasion dressing without costume." },
-  { slug: "indo-western", label: "Indo-Western", image: IMG.minimal, caption: "Fusion cuts for city ceremonies." },
-  { slug: "bridal", label: "Bridal", image: IMG.bridal, caption: "Trousseau-ready couture." },
-  { slug: "mens-wear", label: "Men's Wear", image: IMG.mens, caption: "Bandhgalas, kurtas, and tailored forms." },
-  { slug: "womens-wear", label: "Women's Wear", image: IMG.gown, caption: "Everyday luxury to occasion." },
-  { slug: "kids", label: "Kids", image: IMG.kids, caption: "Festive wear scaled with care." },
-  { slug: "jewellery", label: "Jewellery", image: IMG.jewelry, caption: "Statement pieces for the house edit." },
-  { slug: "bags", label: "Bags", image: IMG.bag, caption: "Clutches and structured carries." },
-  { slug: "footwear", label: "Footwear", image: IMG.shoes, caption: "Handcrafted juttis and evening flats." },
-  { slug: "accessories", label: "Accessories", image: IMG.jewelry, caption: "Dupattas, belts, and finishing layers." },
-  { slug: "sustainable", label: "Sustainable Fashion", image: IMG.textile, caption: "Natural dyes and zero-waste cuts." },
-  { slug: "luxury-couture", label: "Luxury Couture", image: IMG.atelier, caption: "Limited atelier pieces." },
-  { slug: "streetwear", label: "Streetwear", image: IMG.street, caption: "Technical urban drops." },
-  { slug: "occasion-wear", label: "Occasion Wear", image: IMG.gown, caption: "Reception, cocktail, festive." },
-];
+/** Flat browse categories — gender roots with sub-edits (Men / Women). */
+export const BROWSE_CATEGORIES: Category[] = buildBrowseCategoryTree();
 
 type HouseDef = {
   id: string;
@@ -203,7 +186,7 @@ export const EXPANDED_PRODUCTS: Product[] = PROD_SPECS.map((p, idx) => ({
   category: p.category,
   subcategory: p.subcategory,
   gender: p.gender,
-  images: [p.image, IMG.atelier],
+  images: getProductImagesForCategory(p.category),
   videos: vids(idx),
   sizes:
     p.category === "jewellery" || p.category === "bags" || p.category === "footwear"
@@ -298,7 +281,7 @@ export const EXPANDED_STORIES: StoryItem[] = HOUSE_DEFS.slice(0, 16).map((h, i) 
     ...(i % 3 === 0
       ? [
           {
-            image: IMG.bridal,
+            image: getCategoryPrimary("bridal"),
             caption: "Behind the fittings",
           },
         ]

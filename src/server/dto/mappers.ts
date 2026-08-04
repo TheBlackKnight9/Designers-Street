@@ -12,6 +12,8 @@ import type {
   Product as DbProduct,
 } from "@prisma/client";
 import type { Category } from "@/lib/types";
+import { resolveCategoryImageUrl } from "@/lib/fashion-images";
+import { sanitizeImageUrl } from "@/lib/utils/image-url";
 
 type ProductWithDesigner = DbProduct & {
   designer: DbDesigner;
@@ -169,10 +171,14 @@ export function toFeedPostDTO(row: ProductWithDesigner): FeedPostDTO {
 }
 
 export function toCategoryDTO(c: Category): CategoryDTO {
+  const image = sanitizeImageUrl(
+    resolveCategoryImageUrl(c.slug, c.image),
+    resolveCategoryImageUrl(c.slug, null)
+  );
   return {
     slug: c.slug,
     label: c.label,
-    image: c.image,
+    image,
     caption: c.caption,
     children: c.children?.map(toCategoryDTO),
   };
