@@ -191,6 +191,34 @@ export function ProductEditor({
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const standardCategorySlugs = useMemo(() => {
+    return productCategoriesForGender(form.gender).map((c) => c.slug);
+  }, [form.gender]);
+
+  const standardSubcategorySlugs = useMemo(() => {
+    return [
+      ...COLLECTION_SUBCATEGORIES.map((c) => c.slug),
+      ...STYLE_SUBCATEGORIES.map((c) => c.slug),
+    ];
+  }, []);
+
+  const [isCustomCategory, setIsCustomCategory] = useState<boolean>(() => {
+    if (!form.category) return false;
+    return !standardCategorySlugs.includes(form.category);
+  });
+  const [customCategoryText, setCustomCategoryText] = useState<string>(() => {
+    if (!form.category) return "";
+    return standardCategorySlugs.includes(form.category) ? "" : form.category;
+  });
+
+  const [isCustomSubcategory, setIsCustomSubcategory] = useState<boolean>(() => {
+    if (!form.subcategory) return false;
+    return !standardSubcategorySlugs.includes(form.subcategory);
+  });
+  const [customSubcategoryText, setCustomSubcategoryText] = useState<string>(() => {
+    if (!form.subcategory) return "";
+    return standardSubcategorySlugs.includes(form.subcategory) ? "" : form.subcategory;
+  });
 
   const media = product?.media ?? [];
 
@@ -529,7 +557,7 @@ export function ProductEditor({
                 onChange={(e) => {
                   const gender = e.target.value as FormState["gender"];
                   const allowed = productCategoriesForGender(gender).map((c) => c.slug);
-                  const category = allowed.includes(form.category) ? form.category : "";
+                  const category = isCustomCategory ? form.category : allowed.includes(form.category) ? form.category : "";
                   setForm({ ...form, gender, category });
                 }}
               >
@@ -543,8 +571,18 @@ export function ProductEditor({
               <select
                 className={field}
                 required
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                value={isCustomCategory ? "other" : form.category}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "other") {
+                    setIsCustomCategory(true);
+                    const slug = customCategoryText.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-");
+                    setForm({ ...form, category: slug || "" });
+                  } else {
+                    setIsCustomCategory(false);
+                    setForm({ ...form, category: val });
+                  }
+                }}
               >
                 <option value="" disabled>Select category</option>
                 {productCategoriesForGender(form.gender).map((c) => (
@@ -552,21 +590,43 @@ export function ProductEditor({
                     {c.label}
                   </option>
                 ))}
+                <option value="other">✨ Other (Custom Category)...</option>
               </select>
+              {isCustomCategory && (
+                <input
+                  type="text"
+                  required
+                  placeholder="Type custom category name (e.g. Waistcoats, Jackets, Kimonos)..."
+                  className={`${field} mt-2 font-bold text-charcoal border-[#F6D746]`}
+                  value={customCategoryText}
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setCustomCategoryText(text);
+                    const slug = text.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-");
+                    setForm({ ...form, category: slug });
+                  }}
+                />
+              )}
             </label>
             <label className="block">
               <span className="text-xs text-stone">Sub-category</span>
               <select
                 className={field}
-                value={form.subcategory}
+                value={isCustomSubcategory ? "other" : form.subcategory}
                 onChange={(e) => {
-                  const subcategory = e.target.value;
-                  setForm({
-                    ...form,
-                    subcategory,
-                    limitedEdition:
-                      subcategory === "limited-design" ? true : form.limitedEdition,
-                  });
+                  const val = e.target.value;
+                  if (val === "other") {
+                    setIsCustomSubcategory(true);
+                    const slug = customSubcategoryText.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-");
+                    setForm({ ...form, subcategory: slug || "" });
+                  } else {
+                    setIsCustomSubcategory(false);
+                    setForm({
+                      ...form,
+                      subcategory: val,
+                      limitedEdition: val === "limited-design" ? true : form.limitedEdition,
+                    });
+                  }
                 }}
               >
                 <option value="">Standard collection</option>
@@ -584,7 +644,22 @@ export function ProductEditor({
                     </option>
                   ))}
                 </optgroup>
+                <option value="other">✨ Other (Custom Sub-category)...</option>
               </select>
+              {isCustomSubcategory && (
+                <input
+                  type="text"
+                  placeholder="Type custom sub-category name (e.g. Winter Edit, Resortwear)..."
+                  className={`${field} mt-2 font-bold text-charcoal border-[#F6D746]`}
+                  value={customSubcategoryText}
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setCustomSubcategoryText(text);
+                    const slug = text.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-");
+                    setForm({ ...form, subcategory: slug });
+                  }}
+                />
+              )}
               <span className="text-[10px] text-stone mt-1 block">
                 Use Latest Drop or Limited Design for homepage category rails.
               </span>

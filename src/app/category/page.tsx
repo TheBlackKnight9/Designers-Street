@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { CatalogStatus } from "@/components/ui/CatalogStatus";
-import { CATEGORIES } from "@/lib/mock-data";
-import { useStorefrontCategories } from "@/hooks/useStorefrontCatalog";
+import { CATEGORIES, PRODUCTS } from "@/lib/mock-data";
+import { useStorefrontCategories, useStorefrontProducts } from "@/hooks/useStorefrontCatalog";
 import { resolveCategoryImageUrl } from "@/lib/fashion-images";
 import { sanitizeImageUrl } from "@/lib/utils/image-url";
 import {
@@ -42,6 +42,11 @@ function SubcategoryChip({ item }: { item: Category }) {
 export default function CategoryIndexPage() {
   const [activeTab, setActiveTab] = useState<PrimaryTab>("women");
   const catalog = useStorefrontCategories();
+  const productCatalog = useStorefrontProducts({ limit: 100 });
+  const allProducts = productCatalog.enabled && productCatalog.products.length > 0
+    ? productCatalog.products
+    : PRODUCTS;
+
   const categories =
     catalog.enabled && catalog.categories.length > 0
       ? catalog.categories
@@ -56,9 +61,9 @@ export default function CategoryIndexPage() {
   const sections = useMemo(
     () =>
       activeTab === "women" || activeTab === "men"
-        ? groupGenderSubcategories(activeBranch, activeGender)
+        ? groupGenderSubcategories(activeBranch, activeGender, allProducts)
         : [],
-    [activeTab, activeBranch, activeGender]
+    [activeTab, activeBranch, activeGender, allProducts]
   );
 
   const bannerImage = sanitizeImageUrl(

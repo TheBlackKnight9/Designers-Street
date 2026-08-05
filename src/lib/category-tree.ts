@@ -205,23 +205,23 @@ function branchForGender(
     gender === "women" ? "womens-wear" : "mens-wear";
 
   const children: Category[] = [
-  ...COLLECTION_SUBCATEGORIES.map((c) => ({
-    slug: `${gender}-${c.slug}`,
-    label: c.label,
-    image: getCategoryHero(
-      c.slug === "latest-drop" ? "occasion-wear" : "luxury-couture"
-    ),
-    caption:
-      c.slug === "latest-drop"
-        ? "New arrivals from the atelier"
-        : "Small-batch limited runs",
-  })),
-  ...productCats.map((c) => ({
-    slug: `${gender}-${c.slug}`,
-    label: c.label,
-    image: getCategoryHero(c.slug),
-    caption: `${label} — ${c.label}`,
-  })),
+    ...COLLECTION_SUBCATEGORIES.map((c) => ({
+      slug: `${gender}-${c.slug}`,
+      label: c.label,
+      image: getCategoryHero(
+        c.slug === "latest-drop" ? "occasion-wear" : "luxury-couture"
+      ),
+      caption:
+        c.slug === "latest-drop"
+          ? "New arrivals from the atelier"
+          : "Small-batch limited runs",
+    })),
+    ...productCats.map((c) => ({
+      slug: `${gender}-${c.slug}`,
+      label: c.label,
+      image: getCategoryHero(c.slug),
+      caption: `${label} — ${c.label}`,
+    })),
   ];
 
   return {
@@ -324,12 +324,60 @@ function childSuffix(slug: string, gender: "women" | "men"): string {
   return slug.startsWith(prefix) ? slug.slice(prefix.length) : slug;
 }
 
-/** Group a gender branch's children into Collections / Apparel / Accessories. */
+/** Group a gender branch's children into Collections / Apparel / Accessories, including dynamic custom categories. */
 export function groupGenderSubcategories(
   branch: Category | undefined,
-  gender: "women" | "men"
+  gender: "women" | "men",
+  products?: Array<{ category: string; subcategory?: string | null; gender: string }>
 ): CategoryBrowseSection[] {
-  const children = branch?.children ?? [];
+  const children: Category[] = [...(branch?.children ?? [])];
+
+  // Dynamically include any custom category or subcategory present in catalog products
+  if (products && products.length > 0) {
+    const existingSlugs = new Set(children.map((c) => c.slug));
+
+    for (const p of products) {
+      if (p.gender === gender || p.gender === "unisex") {
+        if (p.category) {
+          const rawCat = p.category.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-");
+          const catSlug = `${gender}-${rawCat}`;
+          if (!existingSlugs.has(catSlug)) {
+            existingSlugs.add(catSlug);
+            const label = p.category
+              .replace(/-/g, " ")
+              .split(" ")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+            children.push({
+              slug: catSlug,
+              label,
+              image: getCategoryHero(rawCat),
+              caption: `${gender === "women" ? "Women's" : "Men's"} ${label}`,
+            });
+          }
+        }
+        if (p.subcategory && p.subcategory !== "latest-drop" && p.subcategory !== "limited-design") {
+          const rawSub = p.subcategory.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-");
+          const subSlug = `${gender}-${rawSub}`;
+          if (!existingSlugs.has(subSlug)) {
+            existingSlugs.add(subSlug);
+            const label = p.subcategory
+              .replace(/-/g, " ")
+              .split(" ")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+            children.push({
+              slug: subSlug,
+              label,
+              image: getCategoryHero(rawSub),
+              caption: `${gender === "women" ? "Women's" : "Men's"} ${label}`,
+            });
+          }
+        }
+      }
+    }
+  }
+
   if (children.length === 0) return [];
 
   const collections: Category[] = [];

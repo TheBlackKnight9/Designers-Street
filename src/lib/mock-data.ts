@@ -21,6 +21,8 @@ import {
 } from "./demo-expand";
 import { applyPhase8DemoEnrichment } from "./phase8-demo";
 import { applyFashionMedia } from "./fashion-media";
+import { findCategoryInTree, productMatchesNavigationSlug, parseNavigationSlug } from "./category-tree";
+import { getCategoryHero } from "./fashion-images";
 
 // ── Designer Houses ──────────────────────
 
@@ -1070,7 +1072,22 @@ export function getProductsByDesigner(designerId: string): Product[] {
 }
 
 export function findCategoryBySlug(slug: string, cats: Category[] = CATEGORIES): Category | undefined {
-  return findCategoryInTree(slug, cats);
+  const found = findCategoryInTree(slug, cats);
+  if (found) return found;
+
+  const parsed = parseNavigationSlug(slug);
+  const raw = parsed.productCategory || slug.replace(/^(women-|men-)/, "").replace(/-/g, " ");
+  const label = raw
+    .split(" ")
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
+  return {
+    slug,
+    label,
+    image: getCategoryHero(raw),
+    caption: `${parsed.gender === "women" ? "Women's" : parsed.gender === "men" ? "Men's" : "Designer"} ${label} Edit`,
+  };
 }
 
 export function getProductsByCategory(category: string): Product[] {
@@ -1080,8 +1097,6 @@ export function getProductsByCategory(category: string): Product[] {
 export function getProductById(id: string): Product | undefined {
   return PRODUCTS.find((p) => p.id === id);
 }
-
-import { findCategoryInTree, productMatchesNavigationSlug } from "./category-tree";
 
 // ── Merge demo expansion (single catalog source for mock + seed) ──
 (() => {
