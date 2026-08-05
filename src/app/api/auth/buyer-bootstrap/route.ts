@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { UserService } from "@/server/services/user-service";
 import { ok, fail } from "@/server/utils/api-response";
-import { UnauthorizedError } from "@/server/errors";
 import { isDatabaseEnabled } from "@/server/utils/env";
 
 export const runtime = "nodejs";
@@ -23,8 +22,9 @@ export async function POST(request: Request) {
       data: { user: authUser },
     } = await supabase.auth.getUser();
 
+    // Guest users are not signed in — return clean 200 unbootstrapped response instead of throwing HTTP 500
     if (!authUser?.email) {
-      throw new UnauthorizedError("Not signed in");
+      return ok({ bootstrapped: false, user: null, message: "Not signed in" });
     }
 
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     if (!user) {
       const byEmail = await users.findByEmail(authUser.email);
       if (byEmail && byEmail.id !== authUser.id) {
-        throw new Error("An account with this email already exists with a different identity.");
+        return ok({ bootstrapped: false, user: null, message: "Account email collision" });
       }
       user = await users.createWithId({
         id: authUser.id,

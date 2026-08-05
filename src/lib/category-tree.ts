@@ -131,6 +131,26 @@ export function productMatchesNavigationSlug(
   product: ProductLike,
   slug: string
 ): boolean {
+  if (slug === "latest-drops") {
+    return true;
+  }
+  if (slug === "jewellery-accessories") {
+    const cat = product.category.toLowerCase();
+    const sub = product.subcategory?.toLowerCase();
+    return (
+      cat === "jewellery" ||
+      cat === "bags" ||
+      cat === "footwear" ||
+      cat === "accessories" ||
+      sub === "jewellery" ||
+      sub === "bags" ||
+      sub === "footwear" ||
+      sub === "accessories" ||
+      product.tags?.some((t) => ["jewellery", "bags", "footwear", "accessories", "potli", "juttis"].includes(t.toLowerCase())) ||
+      false
+    );
+  }
+
   const parsed = parseNavigationSlug(slug);
 
   if (parsed.gender) {
@@ -213,11 +233,40 @@ function branchForGender(
   };
 }
 
-/** Top-level Men / Women browse tree for storefront + seed. */
+/** Top-level main categories browse tree for storefront + seed. */
 export function buildBrowseCategoryTree(): Category[] {
+  const latestDropsCat: Category = {
+    slug: "latest-drops",
+    label: "Latest Drops",
+    image: getCategoryHero("latest-drops"),
+    caption: "Fresh runway releases, weekly capsule drops & pre-orders",
+    children: [
+      { slug: "latest-drop", label: "Just Landed (This Week)", image: getCategoryHero("latest-drops"), caption: "Fresh couture pieces added in the last 7 days" },
+      { slug: "pre-order", label: "Pre-Order Atelier Drops", image: getCategoryHero("luxury-couture"), caption: "Reserve upcoming runway pieces before launch" },
+      { slug: "celebrity-edit", label: "Celebrity & Red Carpet", image: getCategoryHero("gowns"), caption: "Featured in editorial magazines & worn by icons" },
+      { slug: "limited-design", label: "Limited Run Capsules", image: getCategoryHero("streetwear"), caption: "Ultra-rare drops in limited quantities" },
+    ],
+  };
+
+  const jewelleryCat: Category = {
+    slug: "jewellery-accessories",
+    label: "Jewellery & Fine Accessories",
+    image: getCategoryHero("jewellery-accessories"),
+    caption: "Heritage Kundan & Polki sets, potlis & handcrafted footwear",
+    children: [
+      { slug: "polki-kundan", label: "Polki & Kundan Sets", image: getCategoryHero("jewellery"), caption: "Uncut Diamond & Meenakari Necklaces" },
+      { slug: "temple-jewellery", label: "Heritage Temple Jewels", image: getCategoryHero("jewellery"), caption: "24K Gold Plated Antique Chokers & Jhumkas" },
+      { slug: "potlis-bags", label: "Couture Potlis & Clutches", image: getCategoryHero("bags"), caption: "Hand-embroidered Velvet & Zardozi Clutches" },
+      { slug: "handcrafted-footwear", label: "Handcrafted Juttis & Loafers", image: getCategoryHero("footwear"), caption: "Leather-soled Embroidered Footwear" },
+      { slug: "stoles-dupattas", label: "Fine Silk Dupattas & Stoles", image: getCategoryHero("accessories"), caption: "Pashmina & Real Zari Wraps" },
+    ],
+  };
+
   return [
-    branchForGender("women", "Women", WOMEN_PRODUCT_CATEGORIES),
-    branchForGender("men", "Men", MEN_PRODUCT_CATEGORIES),
+    latestDropsCat,
+    jewelleryCat,
+    branchForGender("women", "Women's Couture", WOMEN_PRODUCT_CATEGORIES),
+    branchForGender("men", "Men's Ceremony Wear", MEN_PRODUCT_CATEGORIES),
   ];
 }
 

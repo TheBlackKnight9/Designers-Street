@@ -1,5 +1,5 @@
 import { WishlistService } from "@/server/services/wishlist-service";
-import { requireBuyerContext } from "@/server/auth/buyer-session";
+import { getOptionalAuthUser, requireBuyerContext } from "@/server/auth/buyer-session";
 import { ok, fail } from "@/server/utils/api-response";
 import { enforcePublicRateLimit } from "@/server/utils/rate-limit";
 import { requireString } from "@/server/utils/validation";
@@ -12,9 +12,12 @@ const wishlists = new WishlistService();
 export async function GET(request: Request) {
   try {
     enforcePublicRateLimit(request, "wishlist:get");
-    const user = await requireBuyerContext();
+    const user = await getOptionalAuthUser();
+    if (!user) {
+      return ok({ ids: [], authenticated: false });
+    }
     const ids = await wishlists.listIds(user.id);
-    return ok({ ids });
+    return ok({ ids, authenticated: true });
   } catch (error) {
     return fail(error);
   }

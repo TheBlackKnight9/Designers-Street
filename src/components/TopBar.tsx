@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useEffect, useState } from "react";
 import { SearchOverlay } from "./SearchOverlay";
+import { MapPin, ChevronDown, Store, ShoppingBag, Search, User, X } from "lucide-react";
 
 type AddressPin = {
   postalCode: string;
@@ -62,7 +63,7 @@ export function TopBar() {
             className="flex-shrink-0 p-1"
             aria-label="Close"
           >
-            ×
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
@@ -79,7 +80,7 @@ export function TopBar() {
               ⚡ EXPRESS ATELIER DELIVERY · BESPOKE CONSULTATIONS AVAILABLE
             </Link>
             <button type="button" onClick={() => setPromoOpen(false)} aria-label="Close promo">
-              ×
+              <X className="w-3 h-3" />
             </button>
           </div>
         )}
@@ -99,15 +100,11 @@ export function TopBar() {
             className="flex-1 min-w-0 max-w-[200px] mx-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-[var(--border-default)] bg-mist text-left active:scale-[0.98] transition-transform"
             aria-label="Manage delivery addresses"
           >
-            <svg className="w-3.5 h-3.5 text-[var(--newme-green-dark)] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
-            </svg>
+            <MapPin className="w-3.5 h-3.5 text-[var(--newme-green-dark)] flex-shrink-0" />
             <span className="text-[10px] font-semibold text-charcoal truncate">
               {locationLabel}
             </span>
-            <svg className="w-3 h-3 text-stone flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <ChevronDown className="w-3 h-3 text-stone flex-shrink-0" />
           </Link>
 
           <div className="flex items-center gap-0.5 flex-shrink-0" suppressHydrationWarning>
@@ -117,15 +114,11 @@ export function TopBar() {
               aria-label="Designer Houses"
               title="Browse Designer Houses"
             >
-              <svg className="w-5 h-5 text-charcoal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25a.75.75 0 01-.75-.75V10.5a.75.75 0 01.225-.53l7.5-7.5a.75.75 0 011.05 0l7.5 7.5a.75.75 0 01.225.53v9.75a.75.75 0 01-.75.75H13.5z" />
-              </svg>
+              <Store className="w-5 h-5 text-charcoal stroke-[1.8]" />
             </Link>
 
             <Link href="/cart" className="touch-target relative p-2" aria-label="Bag">
-              <svg className="w-5 h-5 text-charcoal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-              </svg>
+              <ShoppingBag className="w-5 h-5 text-charcoal stroke-[1.8]" />
               {badgesReady && itemCount > 0 && (
                 <span className="absolute top-0.5 right-0.5 min-w-[14px] h-3.5 px-1 bg-[var(--newme-pink)] text-paper text-[8px] font-bold rounded-full flex items-center justify-center">
                   {itemCount > 9 ? "9+" : itemCount}
@@ -139,16 +132,12 @@ export function TopBar() {
               className="touch-target p-2"
               aria-label="Search"
             >
-              <svg className="w-5 h-5 text-charcoal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
+              <Search className="w-5 h-5 text-charcoal stroke-[1.8]" />
             </button>
 
             <Link href="/profile" className="touch-target p-2" aria-label="Profile">
               <div className="w-7 h-7 rounded-full bg-mist border border-[var(--border-default)] flex items-center justify-center">
-                <svg className="w-4 h-4 text-charcoal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
+                <User className="w-4 h-4 text-charcoal stroke-[1.8]" />
               </div>
             </Link>
           </div>

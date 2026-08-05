@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/dashboard/Toast";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import {
   getIndianStates,
   getCitiesForState,
 } from "@/lib/data/india-locations";
+import { Search, Plus, ExternalLink, ShieldCheck, AlertCircle, X } from "lucide-react";
 
 type House = {
   id: string;
@@ -28,30 +31,23 @@ type House = {
 };
 
 const EMPTY_FORM = {
-  // Basic
   name: "",
   handle: "",
   bio: "",
-  // Media
   logo: "",
   banner: "",
-  // Location
   state: "",
   city: "",
-  // Bank
   bankBeneficiary: "",
   bankAccount: "",
   bankIfsc: "",
   bankName: "",
-  // Tax
   gstin: "",
   pan: "",
-  // Shipping origin
   shippingPincode: "",
   shippingCity: "",
   shippingState: "",
   shippingAddress: "",
-  // Financial
   commissionRate: "10",
 };
 
@@ -167,40 +163,43 @@ export default function AdminDesignersPage() {
     );
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-stone">Admin</p>
-          <h1 className="font-display text-2xl font-bold uppercase text-charcoal">
-            Designer Houses
-          </h1>
-          <p className="text-xs text-stone">{houses.filter(h => h.accountStatus === "active").length} active houses</p>
-        </div>
-        <button
-          onClick={() => { setForm(EMPTY_FORM); setShowModal(true); }}
-          className="px-5 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full hover:bg-black shadow-sm transition-colors"
-        >
-          + Create New House
-        </button>
-      </div>
+    <div className="space-y-6">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Designer Houses"
+        subtitle={`${houses.filter((h) => h.accountStatus === "active").length} registered atelier fashion houses`}
+        actionButton={{
+          label: "New House",
+          href: "",
+          onClick: () => {
+            setForm(EMPTY_FORM);
+            setShowModal(true);
+          },
+        }}
+      />
 
-      {/* Search + Tabs */}
-      <div className="flex gap-3 items-center">
-        <input
-          type="search"
-          placeholder="Search by name or @handle…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 rounded-xl border border-cloud bg-white px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-gold/40"
-        />
-        <div className="flex border border-cloud rounded-xl overflow-hidden">
+      {/* Search + Filter Tabs */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="relative flex-1 min-w-[240px] max-w-md">
+          <Search className="w-4 h-4 text-[#8A8A8A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="search"
+            placeholder="Search by house name or @handle…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-full border border-[#ECE8DC] bg-white pl-10 pr-4 py-2 text-xs outline-none focus:border-[#17181D] font-medium shadow-2xs"
+          />
+        </div>
+
+        <div className="flex bg-white p-1 rounded-full border border-[#ECE8DC] shadow-2xs">
           {(["active", "suspended"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-2 text-xs font-bold uppercase transition-colors ${
-                activeTab === t ? "bg-charcoal text-paper" : "bg-white text-stone"
+              className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
+                activeTab === t
+                  ? "bg-[#17181D] text-white shadow-xs"
+                  : "text-[#8A8A8A] hover:text-[#1A1A1A]"
               }`}
             >
               {t}
@@ -211,101 +210,107 @@ export default function AdminDesignersPage() {
 
       {/* Houses Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-40 rounded-2xl bg-mist animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-48 rounded-2xl bg-white/70 animate-pulse border border-[#ECE8DC]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-20 text-center border border-dashed border-cloud rounded-3xl">
-          <p className="text-sm font-bold text-charcoal">No houses found</p>
-          <p className="text-xs text-stone mt-1">
-            {activeTab === "active" ? "Create your first designer house." : "No suspended houses."}
+        <div className="py-16 text-center border border-dashed border-[#ECE8DC] rounded-2xl bg-white">
+          <p className="text-sm font-bold text-[#1A1A1A]">No designer houses found</p>
+          <p className="text-xs text-[#8A8A8A] mt-1 font-medium">
+            {activeTab === "active" ? "Click '+ New House' to register your first designer house." : "No suspended designer houses."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((h) => (
             <div
               key={h.id}
-              className="bg-white border border-cloud rounded-2xl p-5 space-y-3 shadow-xs hover:shadow-sm transition-shadow"
+              className="bg-white border border-[#ECE8DC] rounded-2xl p-5 space-y-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
             >
-              {/* House Header */}
-              <div className="flex items-center gap-3">
-                {h.logo && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={h.logo}
-                    alt={h.name}
-                    className="w-10 h-10 rounded-full object-cover border border-cloud"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-charcoal truncate">{h.name}</p>
-                  <p className="text-[11px] text-stone">@{h.handle}</p>
+              <div>
+                {/* House Header */}
+                <div className="flex items-center gap-3">
+                  {h.logo ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={h.logo}
+                      alt={h.name}
+                      className="w-12 h-12 rounded-full object-cover border border-[#ECE8DC] shadow-2xs flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-[#17181D] text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                      {h.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-bold text-sm text-[#1A1A1A] truncate">{h.name}</p>
+                      {h.verified && (
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#8A8A8A] font-mono">@{h.handle}</p>
+                  </div>
+
+                  <AdminStatusBadge status={h.accountStatus} />
                 </div>
-                <div className="flex items-center gap-1">
-                  {h.verified && (
-                    <span className="text-[10px] bg-gold/20 text-gold-dark font-bold px-2 py-0.5 rounded-md border border-gold/30">
-                      ✓ Verified
+
+                {/* Metrics Bar */}
+                <div className="grid grid-cols-3 gap-2 text-center bg-[#F4F0E5]/60 rounded-xl p-2.5 text-xs mt-4 border border-[#ECE8DC]">
+                  <div>
+                    <p className="font-bold font-mono text-[#1A1A1A]">{h._count.products}</p>
+                    <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Products</p>
+                  </div>
+                  <div>
+                    <p className="font-bold font-mono text-[#1A1A1A]">{h._count.orders}</p>
+                    <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Orders</p>
+                  </div>
+                  <div>
+                    <p className="font-bold font-mono text-[#1A1A1A]">{h.commissionRate ?? 10}%</p>
+                    <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Commission</p>
+                  </div>
+                </div>
+
+                {/* Finance Chips */}
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {h.gstin && (
+                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-full font-mono text-[#1A1A1A]">
+                      GST: {h.gstin}
                     </span>
                   )}
-                  {h.accountStatus === "suspended" && (
-                    <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-md border border-red-200">
-                      Suspended
+                  {h.bankAccount && (
+                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-full font-mono text-[#1A1A1A]">
+                      A/C: ****{h.bankAccount.slice(-4)}
+                    </span>
+                  )}
+                  {h.returnPincode && (
+                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-full font-mono text-[#1A1A1A]">
+                      PIN: {h.returnPincode}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Stats Row */}
-              <div className="grid grid-cols-3 gap-2 text-center bg-mist/40 rounded-xl p-2 text-[11px]">
-                <div>
-                  <p className="font-bold text-charcoal">{h._count.products}</p>
-                  <p className="text-stone">Products</p>
-                </div>
-                <div>
-                  <p className="font-bold text-charcoal">{h._count.orders}</p>
-                  <p className="text-stone">Orders</p>
-                </div>
-                <div>
-                  <p className="font-bold text-charcoal">{h.commissionRate ?? 10}%</p>
-                  <p className="text-stone">Commission</p>
-                </div>
-              </div>
-
-              {/* Finance Chips */}
-              <div className="flex flex-wrap gap-1.5">
-                {h.gstin && (
-                  <span className="text-[10px] bg-mist border border-cloud px-2 py-0.5 rounded font-mono">
-                    GST: {h.gstin}
-                  </span>
-                )}
-                {h.bankAccount && (
-                  <span className="text-[10px] bg-mist border border-cloud px-2 py-0.5 rounded font-mono">
-                    A/C: ****{h.bankAccount.slice(-4)}
-                  </span>
-                )}
-                {h.returnPincode && (
-                  <span className="text-[10px] bg-mist border border-cloud px-2 py-0.5 rounded">
-                    📦 PIN: {h.returnPincode}
-                  </span>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-1">
+              {/* Actions Footer */}
+              <div className="flex items-center gap-2 pt-2 border-t border-[#ECE8DC]">
                 <button
+                  type="button"
                   onClick={() => handleSelectHouse(h.id)}
-                  className="flex-1 py-2 bg-charcoal text-paper text-xs font-bold uppercase rounded-xl hover:bg-black transition-colors"
+                  className="flex-1 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#F6D746]/90 transition-all shadow-2xs text-center flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
                 >
-                  Switch & Open Studio →
+                  Studio
+                  <ExternalLink className="w-3.5 h-3.5 stroke-[2]" />
                 </button>
+
                 <button
+                  type="button"
                   onClick={() => handleSuspend(h.id, h.accountStatus === "active")}
-                  className="px-3 py-2 border border-cloud text-xs font-bold uppercase rounded-xl text-stone hover:border-red-300 hover:text-red-700 transition-colors"
+                  className="px-3 py-2.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-full text-[#8A8A8A] hover:bg-[#F2A6A6]/20 hover:text-red-700 transition-colors"
                 >
-                  {h.accountStatus === "active" ? "Suspend" : "Reactivate"}
+                  {h.accountStatus === "active" ? "Suspend" : "Activate"}
                 </button>
               </div>
             </div>
@@ -315,108 +320,102 @@ export default function AdminDesignersPage() {
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl border border-cloud">
-            {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b border-cloud px-6 py-4 flex items-center justify-between rounded-t-3xl">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[#ECE8DC]">
+            <div className="sticky top-0 bg-white border-b border-[#ECE8DC] px-6 py-4 flex items-center justify-between rounded-t-3xl">
               <div>
-                <h2 className="font-display text-lg font-bold uppercase text-charcoal">
-                  Create Designer House
+                <h2 className="font-display text-lg font-bold uppercase text-[#1A1A1A]">
+                  Register Designer House
                 </h2>
-                <p className="text-[11px] text-stone">All fields marked * are required</p>
+                <p className="text-[11px] text-[#8A8A8A]">Fields marked * are required for payouts & onboarding</p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
-                className="text-stone hover:text-charcoal font-bold text-xl"
+                className="w-8 h-8 rounded-full bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-6 space-y-6 text-xs">
-              {/* ── SECTION: Brand Identity ── */}
+            <form onSubmit={handleCreate} className="p-6 space-y-6 text-xs font-sans">
+              {/* Brand Identity */}
               <section className="space-y-3">
-                <h3 className="font-bold text-[11px] uppercase tracking-widest text-stone border-b border-cloud pb-1">
+                <h3 className="font-bold text-[11px] uppercase tracking-widest text-[#8A8A8A] border-b border-[#ECE8DC] pb-1">
                   Brand Identity
                 </h3>
 
                 <label className="block">
-                  <span className="font-bold uppercase text-stone">Brand Name *</span>
+                  <span className="font-bold uppercase text-[#8A8A8A]">Brand Name *</span>
                   <input
                     required
                     value={form.name}
                     onChange={(e) => {
                       f("name", e.target.value);
                       if (!form.handle) {
-                        f(
-                          "handle",
-                          e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")
-                        );
+                        f("handle", e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
                       }
                     }}
                     placeholder="Noir Structure"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-semibold"
+                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-bold"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="font-bold uppercase text-stone">Handle (URL slug) *</span>
+                  <span className="font-bold uppercase text-[#8A8A8A]">Handle (URL slug) *</span>
                   <div className="mt-1 flex items-center gap-1">
-                    <span className="px-3 py-2.5 bg-cloud/50 border border-cloud rounded-xl font-bold text-stone">@</span>
+                    <span className="px-3 py-2.5 bg-[#ECE8DC] rounded-xl font-bold text-[#8A8A8A]">@</span>
                     <input
                       required
                       value={form.handle}
-                      onChange={(e) =>
-                        f("handle", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ""))
-                      }
+                      onChange={(e) => f("handle", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ""))}
                       placeholder="noir-structure"
-                      className="flex-1 rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-mono"
+                      className="flex-1 rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-mono"
                     />
                   </div>
                 </label>
 
                 <label className="block">
-                  <span className="font-bold uppercase text-stone">Bio / Brand Description</span>
+                  <span className="font-bold uppercase text-[#8A8A8A]">Bio / Description</span>
                   <textarea
                     rows={3}
                     value={form.bio}
                     onChange={(e) => f("bio", e.target.value)}
                     placeholder="Luxury Indian couture redefining contemporary bridal fashion…"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 resize-none"
+                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none resize-none"
                   />
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="font-bold uppercase text-stone">Logo URL</span>
+                    <span className="font-bold uppercase text-[#8A8A8A]">Logo URL</span>
                     <input
                       type="url"
                       value={form.logo}
                       onChange={(e) => f("logo", e.target.value)}
                       placeholder="https://…/logo.jpg"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
+                      className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
                     />
                   </label>
                   <label className="block">
-                    <span className="font-bold uppercase text-stone">Banner URL</span>
+                    <span className="font-bold uppercase text-[#8A8A8A]">Banner URL</span>
                     <input
                       type="url"
                       value={form.banner}
                       onChange={(e) => f("banner", e.target.value)}
                       placeholder="https://…/banner.jpg"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
+                      className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
                     />
                   </label>
                 </div>
 
-                {/* State + City */}
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="font-bold uppercase text-stone">State</span>
+                    <span className="font-bold uppercase text-[#8A8A8A]">State</span>
                     <select
                       value={form.state}
                       onChange={(e) => { f("state", e.target.value); f("city", ""); }}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-3 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
+                      className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
                     >
                       <option value="">Select State…</option>
                       {getIndianStates().map((s) => (
@@ -425,12 +424,12 @@ export default function AdminDesignersPage() {
                     </select>
                   </label>
                   <label className="block">
-                    <span className="font-bold uppercase text-stone">City</span>
+                    <span className="font-bold uppercase text-[#8A8A8A]">City</span>
                     {getCitiesForState(form.state).length > 0 ? (
                       <select
                         value={form.city}
                         onChange={(e) => f("city", e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-3 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
+                        className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
                       >
                         <option value="">Select City…</option>
                         {getCitiesForState(form.state).map((c) => (
@@ -442,173 +441,55 @@ export default function AdminDesignersPage() {
                         value={form.city}
                         onChange={(e) => f("city", e.target.value)}
                         placeholder="City / District"
-                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
+                        className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
                       />
                     )}
                   </label>
                 </div>
               </section>
 
-              {/* ── SECTION: Shipping Origin ── */}
+              {/* Commission Rate */}
               <section className="space-y-3">
-                <h3 className="font-bold text-[11px] uppercase tracking-widest text-stone border-b border-cloud pb-1">
-                  Shipping Origin (Pickup Address)
+                <h3 className="font-bold text-[11px] uppercase tracking-widest text-[#8A8A8A] border-b border-[#ECE8DC] pb-1">
+                  Commission Rate (%)
                 </h3>
-                <label className="block">
-                  <span className="font-bold uppercase text-stone">Street Address</span>
+                <div className="flex items-center gap-3">
                   <input
-                    value={form.shippingAddress}
-                    onChange={(e) => f("shippingAddress", e.target.value)}
-                    placeholder="Studio 4B, Sanganer Industrial Area"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
+                    type="range"
+                    min="5"
+                    max="40"
+                    step="0.5"
+                    value={form.commissionRate}
+                    onChange={(e) => f("commissionRate", e.target.value)}
+                    className="flex-1 accent-[#17181D]"
                   />
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">PIN Code</span>
-                    <input
-                      maxLength={6}
-                      value={form.shippingPincode}
-                      onChange={(e) => f("shippingPincode", e.target.value.replace(/\D/g, ""))}
-                      placeholder="302021"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-mono tracking-wider"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">City</span>
-                    <input
-                      value={form.shippingCity}
-                      onChange={(e) => f("shippingCity", e.target.value)}
-                      placeholder="Jaipur"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">State</span>
-                    <input
-                      value={form.shippingState}
-                      onChange={(e) => f("shippingState", e.target.value)}
-                      placeholder="Rajasthan"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
-                    />
-                  </label>
-                </div>
-              </section>
-
-              {/* ── SECTION: Bank Details ── */}
-              <section className="space-y-3">
-                <h3 className="font-bold text-[11px] uppercase tracking-widest text-stone border-b border-cloud pb-1">
-                  Bank Details (for Payouts)
-                </h3>
-                <label className="block">
-                  <span className="font-bold uppercase text-stone">Beneficiary Name</span>
-                  <input
-                    value={form.bankBeneficiary}
-                    onChange={(e) => f("bankBeneficiary", e.target.value)}
-                    placeholder="NOIR STRUCTURE DESIGNS LLP"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
-                  />
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">Account Number</span>
-                    <input
-                      value={form.bankAccount}
-                      onChange={(e) => f("bankAccount", e.target.value.replace(/\D/g, ""))}
-                      placeholder="000901234567890"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-mono"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">IFSC Code</span>
-                    <input
-                      value={form.bankIfsc}
-                      onChange={(e) => f("bankIfsc", e.target.value.toUpperCase())}
-                      placeholder="HDFC0001234"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-mono tracking-wider"
-                    />
-                  </label>
-                </div>
-                <label className="block">
-                  <span className="font-bold uppercase text-stone">Bank Name</span>
-                  <input
-                    value={form.bankName}
-                    onChange={(e) => f("bankName", e.target.value)}
-                    placeholder="HDFC Bank"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40"
-                  />
-                </label>
-              </section>
-
-              {/* ── SECTION: Tax & Commission ── */}
-              <section className="space-y-3">
-                <h3 className="font-bold text-[11px] uppercase tracking-widest text-stone border-b border-cloud pb-1">
-                  Tax Details & Commission
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">GSTIN</span>
-                    <input
-                      value={form.gstin}
-                      onChange={(e) => f("gstin", e.target.value.toUpperCase())}
-                      placeholder="27AABCU9603R1ZX"
-                      maxLength={15}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-mono tracking-wider"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="font-bold uppercase text-stone">PAN</span>
-                    <input
-                      value={form.pan}
-                      onChange={(e) => f("pan", e.target.value.toUpperCase())}
-                      placeholder="AABCU9603R"
-                      maxLength={10}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-2.5 outline-none focus:ring-2 focus:ring-gold/40 font-mono tracking-wider"
-                    />
-                  </label>
-                </div>
-                <label className="block">
-                  <span className="font-bold uppercase text-stone">
-                    Platform Commission Rate (%) *
+                  <span className="w-14 text-center font-bold font-mono text-[#1A1A1A] bg-[#F4F0E5] border border-[#ECE8DC] rounded-xl px-2 py-1">
+                    {form.commissionRate}%
                   </span>
-                  <div className="flex items-center gap-3 mt-1">
-                    <input
-                      type="range"
-                      min="5"
-                      max="40"
-                      step="0.5"
-                      value={form.commissionRate}
-                      onChange={(e) => f("commissionRate", e.target.value)}
-                      className="flex-1 accent-charcoal"
-                    />
-                    <span className="w-14 text-center font-bold font-mono text-charcoal bg-mist border border-cloud rounded-xl px-2 py-1">
-                      {form.commissionRate}%
-                    </span>
-                  </div>
-                </label>
+                </div>
               </section>
 
-              {/* Submit */}
+              {/* Submit Buttons */}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 border border-cloud text-stone font-bold uppercase rounded-full"
+                  className="flex-1 py-3 border border-[#ECE8DC] text-[#8A8A8A] font-bold uppercase rounded-full"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-3 bg-charcoal text-paper font-bold uppercase rounded-full shadow-sm disabled:opacity-60 hover:bg-black transition-colors"
+                  className="flex-1 py-3 bg-[#F6D746] text-[#1A1A1A] font-bold uppercase rounded-full shadow-sm hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
                 >
-                  {saving ? "Creating House…" : "🏛️ Create Designer House"}
+                  {saving ? "Registering…" : "Register House →"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

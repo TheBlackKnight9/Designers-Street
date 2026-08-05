@@ -2,23 +2,36 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
+import { AdminActionHubCard } from "@/components/admin/AdminActionHubCard";
+import {
+  Store,
+  ShoppingBag,
+  Package,
+  Clapperboard,
+  CreditCard,
+  FileText,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 
 type Stat = {
   label: string;
   value: string;
   sub?: string;
-  icon: string;
+  icon: React.ReactNode;
   href: string;
-  color: string;
+  badgeBg: string;
 };
 
 const QUICK_ACTIONS = [
-  { label: "Designer Houses", icon: "🏛️", href: "/admin/designers", desc: "Create & manage all houses" },
-  { label: "Products Catalog", icon: "👗", href: "/admin/products", desc: "All products across houses" },
-  { label: "Orders", icon: "📦", href: "/admin/orders", desc: "Track all platform orders" },
-  { label: "Content Studio", icon: "🎬", href: "/dashboard/posts", desc: "Posts, stories & lookbooks" },
-  { label: "Payouts", icon: "💳", href: "/admin/payouts", desc: "Manage designer earnings" },
-  { label: "Applications", icon: "📋", href: "/admin/applications", desc: "Designer applications" },
+  { label: "Designer Houses", icon: <Store className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/designers", desc: "Create & manage all registered designer houses" },
+  { label: "Products Catalog", icon: <ShoppingBag className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/products", desc: "Global product verification, prices & stock" },
+  { label: "Orders & Shipping", icon: <Package className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/orders", desc: "Track platform orders, dispatch & delivery" },
+  { label: "Content Studio", icon: <Clapperboard className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/dashboard/posts", desc: "Reels, stories, lookbooks & social posts" },
+  { label: "Payouts & Earnings", icon: <CreditCard className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/payouts", desc: "Manage house revenue splits & payouts" },
+  { label: "Applications", icon: <FileText className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/applications", desc: "Review incoming designer house applications" },
 ];
 
 function fmt(n: number) {
@@ -30,13 +43,8 @@ function fmt(n: number) {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeHouse, setActiveHouse] = useState<string>("");
 
   useEffect(() => {
-    // Get active house name from cookie for display
-    const cookieMatch = document.cookie.match(/admin_active_designer_id=([^;]+)/);
-    if (cookieMatch) setActiveHouse(cookieMatch[1]);
-
     fetch("/api/admin/stats")
       .then((r) => r.json())
       .then((body) => {
@@ -46,32 +54,32 @@ export default function AdminDashboardPage() {
             {
               label: "Active Houses",
               value: String(s.totalHouses),
-              icon: "🏛️",
+              icon: <Store className="w-5 h-5 stroke-[1.8]" />,
               href: "/admin/designers",
-              color: "bg-charcoal text-paper",
+              badgeBg: "bg-[#F6D746] text-[#1A1A1A]",
             },
             {
               label: "Published Products",
               value: String(s.totalProducts),
-              icon: "👗",
+              icon: <ShoppingBag className="w-5 h-5 stroke-[1.8]" />,
               href: "/admin/products",
-              color: "bg-white border border-cloud text-charcoal",
+              badgeBg: "bg-[#F4F0E5] text-[#1A1A1A]",
             },
             {
               label: "Orders This Month",
               value: fmt(s.ordersThisMonth.amount),
               sub: `${s.ordersThisMonth.count} orders`,
-              icon: "📦",
+              icon: <Package className="w-5 h-5 stroke-[1.8]" />,
               href: "/admin/orders",
-              color: "bg-white border border-cloud text-charcoal",
+              badgeBg: "bg-[#F3B383] text-[#1A1A1A]",
             },
             {
               label: "Pending Payouts",
               value: fmt(s.pendingPayouts.amount),
               sub: `${s.pendingPayouts.count} pending`,
-              icon: "💳",
+              icon: <CreditCard className="w-5 h-5 stroke-[1.8]" />,
               href: "/admin/payouts",
-              color: "bg-gold/10 border border-gold/30 text-charcoal",
+              badgeBg: "bg-[#A9E4B0] text-[#1A1A1A]",
             },
           ]);
         }
@@ -81,97 +89,81 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8 space-y-10">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-stone mb-1">
-            Admin Command Center
-          </p>
-          <h1 className="font-display text-3xl font-bold text-charcoal">
-            Designer&apos;s Street Platform
-          </h1>
-          {activeHouse && (
-            <p className="text-xs text-stone mt-1">
-              Active house cookie:{" "}
-              <span className="font-mono text-charcoal font-bold">{activeHouse.slice(0, 20)}…</span>
-            </p>
-          )}
+    <div className="space-y-8">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Admin Command Center"
+        subtitle="Platform-wide control panel for Designer's Street"
+      />
+
+      {/* Metric Stat Cards */}
+      <section>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-32 rounded-2xl bg-white/60 animate-pulse border border-[#ECE8DC]" />
+              ))
+            : stats.map((s) => (
+                <AdminStatCard
+                  key={s.label}
+                  label={s.label}
+                  value={s.value}
+                  sub={s.sub}
+                  icon={s.icon}
+                  href={s.href}
+                  badgeBg={s.badgeBg}
+                />
+              ))}
         </div>
-        <Link
-          href="/admin/designers"
-          className="px-5 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full hover:bg-black transition-colors shadow-sm"
-        >
-          + New Designer House
-        </Link>
-      </div>
+      </section>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-2xl bg-mist animate-pulse" />
-            ))
-          : stats.map((s) => (
-              <Link
-                key={s.label}
-                href={s.href}
-                className={`${s.color} rounded-2xl p-5 flex flex-col gap-1 hover:scale-[1.02] transition-transform shadow-xs`}
-              >
-                <span className="text-2xl">{s.icon}</span>
-                <span className="font-display text-2xl font-bold leading-tight">
-                  {s.value}
-                </span>
-                {s.sub && (
-                  <span className="text-[10px] font-semibold opacity-60 uppercase tracking-wider">
-                    {s.sub}
-                  </span>
-                )}
-                <span className="text-[11px] font-bold uppercase tracking-wider opacity-70 mt-auto">
-                  {s.label}
-                </span>
-              </Link>
-            ))}
-      </div>
+      {/* Quick Actions Grid */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-lg font-bold uppercase tracking-tight text-[#1A1A1A]">
+            Quick Action Hubs
+          </h2>
+          <span className="text-xs text-[#8A8A8A] font-medium">6 Management Modules</span>
+        </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="font-display text-lg font-bold uppercase text-charcoal mb-4 tracking-tight">
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {QUICK_ACTIONS.map((a) => (
-            <Link
+            <AdminActionHubCard
               key={a.label}
+              label={a.label}
+              desc={a.desc}
+              icon={a.icon}
               href={a.href}
-              className="p-5 bg-white border border-cloud rounded-2xl hover:border-charcoal hover:shadow-sm transition-all group"
-            >
-              <span className="text-2xl block mb-2">{a.icon}</span>
-              <p className="font-bold text-sm text-charcoal group-hover:underline">{a.label}</p>
-              <p className="text-xs text-stone mt-0.5">{a.desc}</p>
-            </Link>
+            />
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Studio Shortcut */}
-      <div className="bg-charcoal rounded-3xl p-6 flex items-center justify-between">
-        <div>
-          <p className="text-gold font-bold text-xs uppercase tracking-widest mb-1">Designer Studio</p>
-          <p className="text-paper text-lg font-display font-bold">
-            Manage the active house
-          </p>
-          <p className="text-cloud/70 text-xs mt-1">
-            Switch house from the 👑 bar above, then go to the studio
+      {/* Studio Banner Shortcut */}
+      <section className="bg-[#17181D] text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md border border-black">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#F6D746]" />
+            <span className="text-[#F6D746] font-bold text-xs uppercase tracking-widest">
+              Designer Studio Launcher
+            </span>
+          </div>
+          <h3 className="font-display text-xl font-bold text-white">
+            Manage Active Designer House
+          </h3>
+          <p className="text-xs text-[#A0A5B5]">
+            Switch house from the top bar dropdown chip to view or edit inventory, orders, and lookbooks.
           </p>
         </div>
+
         <Link
           href="/dashboard"
-          className="px-5 py-3 bg-gold text-charcoal text-xs font-bold uppercase tracking-wider rounded-full hover:bg-gold/90 transition-colors whitespace-nowrap"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#F6D746]/90 transition-all shadow-sm whitespace-nowrap active:scale-95"
         >
-          Open Studio →
+          Open Studio
+          <ArrowRight className="w-4 h-4 stroke-[2]" />
         </Link>
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }

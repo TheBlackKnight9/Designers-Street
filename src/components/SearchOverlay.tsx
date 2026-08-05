@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/catalog";
 import type { Product, DesignerHouse } from "@/lib/types";
 import { getDesignerUrl } from "@/lib/routes";
+import { Search, X, Sparkles, TrendingUp, ArrowRight } from "lucide-react";
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -55,8 +56,8 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
       })
       .catch(() => {
         if (!cancelled) {
-          setCatalogProducts([]);
-          setCatalogDesigners([]);
+          setCatalogProducts(PRODUCTS);
+          setCatalogDesigners(DESIGNERS);
         }
       });
     return () => {
@@ -103,19 +104,7 @@ export function SearchOverlay({ onClose }: SearchOverlayProps) {
         }}
         className="flex items-center gap-3 px-4 h-[var(--top-bar-height)] border-b border-white/40 shadow-xs"
       >
-        <svg
-          className="w-5 h-5 text-[#A0A0A0] flex-shrink-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={1.8}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-          />
-        </svg>
+        <Search className="w-5 h-5 text-stone flex-shrink-0 stroke-[1.8]" />
         <input
           ref={inputRef}
           type="text"

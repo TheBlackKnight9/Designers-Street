@@ -1,10 +1,29 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { MediaViewerProvider } from "@/context/MediaViewerContext";
 import { ToastProvider } from "@/components/dashboard/Toast";
 import { BottomNav } from "@/components/BottomNav";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Designer's Street — Exclusive Designer Collections",
@@ -39,8 +58,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-paper text-charcoal pb-24" suppressHydrationWarning>
+    <html lang="en" className={`h-full antialiased ${inter.variable} ${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <body className={`min-h-full flex flex-col bg-paper text-charcoal pb-24 font-sans ${geistSans.className}`} suppressHydrationWarning>
         <ToastProvider>
           <CartProvider>
             <WishlistProvider>

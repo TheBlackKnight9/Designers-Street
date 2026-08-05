@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/mock-data";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
+import { Download, Zap, X, CreditCard } from "lucide-react";
 
 type Payout = {
   id: string;
@@ -149,128 +153,143 @@ export default function AdminPayoutsPage() {
   }
 
   if (loading) {
-    return <div className="py-12 text-center text-sm text-stone animate-pulse">Loading payout management...</div>;
+    return <div className="py-12 text-center text-xs text-[#8A8A8A] font-bold animate-pulse">Loading payout ledger...</div>;
   }
 
   return (
-    <main className="min-h-screen bg-paper pb-24 px-4 pt-6 max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <Link href="/admin" className="text-xs font-bold text-stone hover:text-charcoal">
-            ← Admin Console
-          </Link>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal mt-1">
-            Bi-Monthly Payout Ledger &amp; GST TCS Manager
-          </h1>
-          <p className="text-xs text-stone mt-0.5">
-            Automated 1st &amp; 15th cycle payout ledger, 1% Section 52 TCS, GSTR-8 exports &amp; NEFT Bank transfers
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Payout Ledger & GST TCS"
+        subtitle="Automated 1st & 15th cycle payouts, Sec 52 TCS, GSTR-8 exports & NEFT Bank transfers"
+      />
 
-        <div className="flex flex-wrap gap-2">
+      {/* Action Controls Row */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleExportNeft}
-            className="px-4 py-2.5 bg-white text-stone border border-cloud font-sans text-xs font-bold uppercase rounded-full shadow-xs hover:bg-mist"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-full shadow-2xs hover:bg-white/80"
           >
-            📥 Export NEFT CSV
+            <Download className="w-3.5 h-3.5" />
+            <span>NEFT Bank CSV</span>
           </button>
+
           <button
             type="button"
             onClick={handleExportGstr8}
-            className="px-4 py-2.5 bg-white text-stone border border-cloud font-sans text-xs font-bold uppercase rounded-full shadow-xs hover:bg-mist"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-full shadow-2xs hover:bg-white/80"
           >
-            📊 Export GSTR-8 Report
-          </button>
-          <button
-            type="button"
-            disabled={executing}
-            onClick={executeBatch}
-            className="px-5 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full shadow-xs disabled:opacity-60 hover:bg-black"
-          >
-            {executing ? "Processing Batch…" : "⚡ Execute 1st / 15th Payout Ledger"}
+            <Download className="w-3.5 h-3.5 text-emerald-600" />
+            <span>GSTR-8 Report</span>
           </button>
         </div>
+
+        <button
+          type="button"
+          disabled={executing}
+          onClick={executeBatch}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-2xs disabled:opacity-60 hover:bg-[#F6D746]/90 active:scale-95 cursor-pointer"
+        >
+          <Zap className="w-4 h-4 stroke-[2]" />
+          {executing ? "Processing Batch…" : "Execute Payout Ledger"}
+        </button>
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Total Platform Gross Sales</span>
-          <p className="font-mono text-xl font-bold text-charcoal">{formatPrice((metrics?.totalGrossSales || 0) / 100)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">10% Platform Commission</span>
-          <p className="font-mono text-xl font-bold text-emerald-800">{formatPrice((metrics?.totalCommission || 0) / 100)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">1% GST TCS (Sec 52)</span>
-          <p className="font-mono text-xl font-bold text-amber-700">{formatPrice((metrics?.totalTcs || 0) / 100)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Total Net Paid to Designers</span>
-          <p className="font-mono text-xl font-bold text-charcoal">{formatPrice((metrics?.totalNetPaid || 0) / 100)}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AdminStatCard
+          label="Total Gross Sales"
+          value={formatPrice((metrics?.totalGrossSales || 0) / 100)}
+          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
+          badgeBg="bg-[#F4F0E5] text-[#1A1A1A]"
+        />
+        <AdminStatCard
+          label="10% Platform Comm."
+          value={formatPrice((metrics?.totalCommission || 0) / 100)}
+          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
+          badgeBg="bg-[#F6D746] text-[#1A1A1A]"
+        />
+        <AdminStatCard
+          label="1% GST TCS (Sec 52)"
+          value={formatPrice((metrics?.totalTcs || 0) / 100)}
+          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
+          badgeBg="bg-[#F3B383] text-[#1A1A1A]"
+        />
+        <AdminStatCard
+          label="Net Paid to Designers"
+          value={formatPrice((metrics?.totalNetPaid || 0) / 100)}
+          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
+          badgeBg="bg-[#A9E4B0] text-[#1A1A1A]"
+        />
       </div>
 
       {/* Executed Payout Batches Table */}
-      <div className="bg-white rounded-3xl border border-cloud shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-cloud flex justify-between items-center">
-          <h2 className="font-display text-sm font-bold uppercase text-charcoal">Bi-Monthly Payout Ledger Batches</h2>
-          <span className="text-xs font-mono font-bold text-stone">Total Batches: {payouts.length}</span>
+      <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-[#ECE8DC] flex justify-between items-center bg-[#FAF8F5]">
+          <h2 className="font-display text-sm font-bold uppercase text-[#1A1A1A]">
+            Payout Ledger Batches
+          </h2>
+          <span className="text-xs font-mono font-bold text-[#8A8A8A]">
+            Total Batches: {payouts.length}
+          </span>
         </div>
 
         {payouts.length === 0 ? (
-          <div className="p-8 text-center text-xs text-stone">No payout ledger batches generated yet. Click &quot;Execute Payout Ledger&quot; to run cycle.</div>
+          <div className="p-12 text-center text-xs font-bold text-[#8A8A8A]">
+            No payout ledger batches generated yet. Click &quot;Execute Payout Ledger&quot; to run cycle.
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-mist text-[10px] font-bold uppercase tracking-wider text-stone border-b border-cloud">
-                <tr>
-                  <th className="p-3.5">Batch ID</th>
-                  <th className="p-3.5">Designer House</th>
-                  <th className="p-3.5">Gross Sales</th>
-                  <th className="p-3.5">10% Comm.</th>
-                  <th className="p-3.5">18% GST (Comm)</th>
-                  <th className="p-3.5">1% TCS</th>
-                  <th className="p-3.5">Net Payout</th>
-                  <th className="p-3.5">Bank UTR</th>
-                  <th className="p-3.5">Status</th>
-                  <th className="p-3.5 text-right">Action</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#ECE8DC] text-[11px] font-bold uppercase tracking-wider text-[#8A8A8A] bg-[#FAF8F5]">
+                  <th className="py-3 px-4">Batch ID</th>
+                  <th className="py-3 px-4">Designer House</th>
+                  <th className="py-3 px-4">Gross Sales</th>
+                  <th className="py-3 px-4">10% Comm.</th>
+                  <th className="py-3 px-4">18% GST</th>
+                  <th className="py-3 px-4">1% TCS</th>
+                  <th className="py-3 px-4">Net Payout</th>
+                  <th className="py-3 px-4">Bank UTR</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cloud text-charcoal">
+              <tbody className="divide-y divide-[#ECE8DC]">
                 {payouts.map((p) => (
-                  <tr key={p.id} className="hover:bg-mist/30">
-                    <td className="p-3.5 font-mono font-bold text-stone">#{p.id.slice(-6)}</td>
-                    <td className="p-3.5 font-bold">
-                      <Link href={`/admin/designers/${p.designerId}/analytics`} className="underline hover:text-black">
+                  <tr key={p.id} className="hover:bg-[#FAF8F5] transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
+                      #{p.id.slice(-6)}
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-xs">
+                      <Link href={`/admin/designers/${p.designerId}/analytics`} className="hover:underline text-[#1A1A1A]">
                         {p.designer?.name || "Designer House"}
                       </Link>
                     </td>
-                    <td className="p-3.5 font-mono">{formatPrice(p.grossSales / 100)}</td>
-                    <td className="p-3.5 font-mono text-red-700">-{formatPrice(p.totalCommission / 100)}</td>
-                    <td className="p-3.5 font-mono text-red-600">-{formatPrice(p.totalCommissionGst / 100)}</td>
-                    <td className="p-3.5 font-mono text-amber-700">-{formatPrice(p.totalTcsDeducted / 100)}</td>
-                    <td className="p-3.5 font-mono font-bold text-emerald-800">{formatPrice(p.netAmount / 100)}</td>
-                    <td className="p-3.5 font-mono text-[11px] text-stone">
-                      {p.bankUtrNumber || "Pending Transfer"}
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
+                      {formatPrice(p.grossSales / 100)}
                     </td>
-                    <td className="p-3.5">
-                      <span
-                        className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md ${
-                          p.status === "completed"
-                            ? "bg-emerald-100 text-emerald-900"
-                            : "bg-amber-100 text-amber-900"
-                        }`}
-                      >
-                        {p.status}
-                      </span>
+                    <td className="py-3.5 px-4 font-mono text-xs text-red-600 font-medium">
+                      -{formatPrice(p.totalCommission / 100)}
                     </td>
-                    <td className="p-3.5 text-right">
+                    <td className="py-3.5 px-4 font-mono text-xs text-red-600 font-medium">
+                      -{formatPrice(p.totalCommissionGst / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs text-amber-700 font-medium">
+                      -{formatPrice(p.totalTcsDeducted / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-700">
+                      {formatPrice(p.netAmount / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-[#8A8A8A]">
+                      {p.bankUtrNumber || "Pending"}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <AdminStatusBadge status={p.status} />
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
                       {p.status !== "completed" && (
                         <button
                           type="button"
@@ -278,9 +297,9 @@ export default function AdminPayoutsPage() {
                             setSelectedPayout(p);
                             setUtrNumber(p.bankUtrNumber || "");
                           }}
-                          className="px-3 py-1.5 bg-charcoal text-paper font-sans text-[10px] font-bold uppercase rounded-full shadow-xs hover:bg-black"
+                          className="px-3.5 py-1.5 bg-[#F6D746] text-[#1A1A1A] text-[11px] font-bold uppercase rounded-full shadow-2xs hover:bg-[#F6D746]/90 cursor-pointer"
                         >
-                          Enter UTR / Mark Paid
+                          Mark Paid
                         </button>
                       )}
                     </td>
@@ -295,44 +314,46 @@ export default function AdminPayoutsPage() {
       {/* Enter UTR Modal */}
       {selectedPayout && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-xl">
-            <div className="flex justify-between items-center border-b border-cloud pb-3">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
+            <div className="flex justify-between items-center border-b border-[#ECE8DC] pb-3">
               <div>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-stone block">NEFT / RTGS Corporate Net Banking</span>
-                <h3 className="font-display text-base font-bold uppercase text-charcoal">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#8A8A8A] block">
+                  NEFT / Corporate Net Banking
+                </span>
+                <h3 className="font-display text-base font-bold uppercase text-[#1A1A1A]">
                   Finalize Payout #{selectedPayout.id.slice(-6)}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedPayout(null)}
-                className="text-xs font-bold text-stone hover:text-charcoal"
+                className="w-7 h-7 rounded-full bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-mist/50 p-4 rounded-2xl border border-cloud text-xs space-y-1">
+            <div className="bg-[#F4F0E5]/60 p-4 rounded-xl border border-[#ECE8DC] text-xs space-y-1">
               <p><strong>Beneficiary:</strong> {selectedPayout.designer?.name}</p>
-              <p><strong>Net Amount:</strong> <span className="font-mono font-bold text-emerald-800">{formatPrice(selectedPayout.netAmount / 100)}</span></p>
+              <p><strong>Net Amount:</strong> <span className="font-mono font-bold text-emerald-700">{formatPrice(selectedPayout.netAmount / 100)}</span></p>
             </div>
 
             <form onSubmit={handleMarkPaidWithUTR} className="space-y-3">
               <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Bank Transaction Reference / UTR Number *</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A8A]">Bank UTR Reference Number *</span>
                 <input
                   required
                   value={utrNumber}
                   onChange={(e) => setUtrNumber(e.target.value)}
                   placeholder="e.g. N214260018472"
-                  className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs font-mono font-bold outline-none"
+                  className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
                 />
               </label>
 
               <button
                 type="submit"
                 disabled={submittingUtr}
-                className="w-full py-3.5 bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-emerald-800 disabled:opacity-60"
+                className="w-full py-3.5 bg-[#A9E4B0] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-[#A9E4B0]/90 disabled:opacity-60 cursor-pointer"
               >
                 {submittingUtr ? "Finalizing Payout…" : "Confirm & Complete Payout →"}
               </button>
@@ -340,6 +361,6 @@ export default function AdminPayoutsPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

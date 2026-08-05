@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { formatPrice } from "@/lib/mock-data";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { Sparkles, Mail, Phone, ChevronDown } from "lucide-react";
 
 type ConceptLead = {
   id: string;
@@ -61,110 +63,106 @@ export default function AdminConceptLeadsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
-            Concept Art &amp; Bespoke Lead Capture Desk
-          </h1>
-          <p className="text-xs text-stone mt-1">
-            Manage high-value bespoke inquiries, custom size quotes &amp; concept art prototype interest leads
-          </p>
-        </div>
-
-        <Link
-          href="/admin"
-          className="px-5 py-2.5 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-xs hover:bg-black"
-        >
-          ← Admin Console
-        </Link>
-      </div>
+    <div className="space-y-6 font-sans">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Concept Art & Bespoke Leads"
+        subtitle="Manage high-value bespoke inquiries, custom quotes & prototype concept interest leads"
+      />
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-28 bg-mist rounded-3xl animate-pulse" />
-          <div className="h-28 bg-mist rounded-3xl animate-pulse" />
+          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
+          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
         </div>
       ) : leads.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl border border-cloud bg-white">
-          <p className="text-sm font-semibold text-charcoal">🎨 No concept art leads received yet.</p>
-          <p className="text-xs text-stone mt-1">Inquiries submitted on prototype concept listings will appear here.</p>
+        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white space-y-1">
+          <Sparkles className="w-8 h-8 text-[#F6D746] mx-auto mb-2" />
+          <p className="text-sm font-bold text-[#1A1A1A]">No concept art leads received yet</p>
+          <p className="text-xs text-[#8A8A8A] font-medium">Inquiries submitted on prototype concept listings will appear here.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-cloud shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-cloud flex justify-between items-center">
-            <h2 className="font-display text-sm font-bold uppercase text-charcoal">Inquiry Leads Desk</h2>
-            <span className="text-xs font-mono font-bold text-stone">Total Leads: {leads.length}</span>
+        <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
+          <div className="p-4 border-b border-[#ECE8DC] flex justify-between items-center bg-[#FAF8F5]">
+            <h2 className="font-display text-sm font-bold uppercase text-[#1A1A1A]">
+              Inquiry Leads Queue
+            </h2>
+            <span className="text-xs font-mono font-bold text-[#8A8A8A]">
+              Total Leads: {leads.length}
+            </span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-mist text-[10px] font-bold uppercase tracking-wider text-stone border-b border-cloud">
-                <tr>
-                  <th className="p-3.5">Date</th>
-                  <th className="p-3.5">Designer / Prototype Item</th>
-                  <th className="p-3.5">Customer Contact</th>
-                  <th className="p-3.5">Budget Range</th>
-                  <th className="p-3.5">Sizing &amp; Notes</th>
-                  <th className="p-3.5">Status</th>
-                  <th className="p-3.5 text-right">Action</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#ECE8DC] text-[11px] font-bold uppercase tracking-wider text-[#8A8A8A] bg-[#FAF8F5]">
+                  <th className="py-3 px-4">Concept Piece</th>
+                  <th className="py-3 px-4">Client Name</th>
+                  <th className="py-3 px-4">Contact</th>
+                  <th className="py-3 px-4">Budget Segment</th>
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Update Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cloud text-charcoal">
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-mist/30">
-                    <td className="p-3.5 font-mono text-[11px] text-stone">
-                      {new Date(lead.createdAt).toLocaleDateString("en-IN")}
+              <tbody className="divide-y divide-[#ECE8DC]">
+                {leads.map((l) => (
+                  <tr key={l.id} className="hover:bg-[#FAF8F5] transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        {l.product?.images?.[0] && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={l.product.images[0]} alt="" className="w-10 h-12 object-cover rounded-lg flex-shrink-0" />
+                        )}
+                        <div>
+                          <p className="text-xs font-bold text-[#1A1A1A] truncate max-w-[160px]">{l.product?.name || "Concept Item"}</p>
+                          <p className="text-[10px] text-[#8A8A8A]">{l.product?.designerName}</p>
+                        </div>
+                      </div>
                     </td>
-                    <td className="p-3.5">
-                      <p className="font-bold text-charcoal">{lead.product?.name}</p>
-                      <span className="text-[10px] uppercase font-bold text-stone">House: {lead.product?.designerName}</span>
+                    <td className="py-3.5 px-4 font-bold text-xs text-[#1A1A1A]">
+                      {l.name}
                     </td>
-                    <td className="p-3.5">
-                      <p className="font-bold text-charcoal">{lead.name}</p>
-                      <p className="text-[10px] font-mono text-stone">{lead.email}</p>
-                      {lead.phone && <p className="text-[10px] font-mono text-stone">{lead.phone}</p>}
+                    <td className="py-3.5 px-4 text-xs font-medium text-[#1A1A1A]">
+                      <div className="flex flex-col gap-0.5">
+                        <a href={`mailto:${l.email}`} className="hover:underline flex items-center gap-1">
+                          <Mail className="w-3 h-3 text-[#8A8A8A]" />
+                          {l.email}
+                        </a>
+                        {l.phone && (
+                          <a href={`tel:${l.phone}`} className="hover:underline flex items-center gap-1 text-[#8A8A8A]">
+                            <Phone className="w-3 h-3" />
+                            {l.phone}
+                          </a>
+                        )}
+                      </div>
                     </td>
-                    <td className="p-3.5 font-mono font-bold text-emerald-800">
-                      {lead.budgetRange || "Flexible"}
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-700">
+                      {l.budgetRange || "Standard Quote"}
                     </td>
-                    <td className="p-3.5 max-w-xs truncate text-[11px] text-stone">
-                      {lead.notes || "No extra notes"}
+                    <td className="py-3.5 px-4 text-xs text-[#8A8A8A] font-medium">
+                      {new Date(l.createdAt).toLocaleDateString("en-IN")}
                     </td>
-                    <td className="p-3.5">
-                      <span
-                        className={`px-2.5 py-1 text-[9px] font-extrabold uppercase rounded-full ${
-                          lead.status === "converted"
-                            ? "bg-emerald-100 text-emerald-900"
-                            : lead.status === "contacted"
-                            ? "bg-blue-100 text-blue-900"
-                            : "bg-amber-100 text-amber-900"
-                        }`}
-                      >
-                        {lead.status}
-                      </span>
+                    <td className="py-3.5 px-4">
+                      <AdminStatusBadge status={l.status} />
                     </td>
-                    <td className="p-3.5 text-right space-x-1">
-                      {lead.status === "new" && (
-                        <button
-                          type="button"
-                          disabled={updatingId === lead.id}
-                          onClick={() => handleStatusChange(lead.id, "contacted")}
-                          className="px-3 py-1 bg-blue-900 text-white text-[10px] font-bold uppercase rounded-full"
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="relative inline-block">
+                        <select
+                          disabled={updatingId === l.id}
+                          value={l.status}
+                          aria-label="Update lead status"
+                          onChange={(e) => handleStatusChange(l.id, e.target.value)}
+                          className="appearance-none bg-[#F4F0E5] border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-3 py-1.5 pr-7 rounded-full outline-none cursor-pointer hover:border-[#17181D]"
                         >
-                          Mark Contacted
-                        </button>
-                      )}
-                      {lead.status !== "converted" && (
-                        <button
-                          type="button"
-                          disabled={updatingId === lead.id}
-                          onClick={() => handleStatusChange(lead.id, "converted")}
-                          className="px-3 py-1 bg-emerald-800 text-white text-[10px] font-bold uppercase rounded-full"
-                        >
-                          Mark Converted
-                        </button>
-                      )}
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="quoted">Quoted</option>
+                          <option value="converted">Converted</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                        <ChevronDown className="w-3 h-3 text-[#8A8A8A] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,7 +1,7 @@
 import type { LookbookData } from "@/lib/types";
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "";
+  const base = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_APP_URL || "");
   const res = await fetch(`${base}${path}`, {
     cache: "no-store",
     credentials: "include",

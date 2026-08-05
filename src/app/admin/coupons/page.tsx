@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/mock-data";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { Plus, X, Tag } from "lucide-react";
 
 type Coupon = {
   id: string;
@@ -26,8 +29,8 @@ export default function AdminCouponsPage() {
   const [showModal, setShowModal] = useState(false);
   const [code, setCode] = useState("");
   const [type, setType] = useState<"percentage" | "fixed_amount">("fixed_amount");
-  const [value, setValue] = useState(1000); // ₹1,000 or 10%
-  const [minOrderValue, setMinOrderValue] = useState(10000); // ₹10,000
+  const [value, setValue] = useState(1000);
+  const [minOrderValue, setMinOrderValue] = useState(10000);
   const [maxDiscount, setMaxDiscount] = useState("");
   const [usageLimit, setUsageLimit] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -87,87 +90,72 @@ export default function AdminCouponsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
-            Promotional Coupon &amp; Discount Manager
-          </h1>
-          <p className="text-xs text-stone mt-1">
-            Create percentage &amp; fixed-amount promo codes with cart subtotal minimums, usage caps &amp; expiry dates
-          </p>
-        </div>
+    <div className="space-y-6 font-sans">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Promotional Coupons & Discounts"
+        subtitle="Create percentage & fixed-amount promo codes with cart minimums, usage caps & expiry dates"
+        actionButton={{
+          label: "New Coupon",
+          href: "",
+          onClick: () => setShowModal(true),
+        }}
+      />
 
-        <div className="flex gap-2">
-          <Link
-            href="/admin"
-            className="px-4 py-2.5 bg-white text-stone border border-cloud font-sans text-xs font-bold uppercase rounded-full shadow-xs hover:bg-mist"
-          >
-            ← Admin Console
-          </Link>
-          <button
-            type="button"
-            onClick={() => setShowModal(true)}
-            className="px-5 py-2.5 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-xs hover:bg-black"
-          >
-            + Create New Coupon
-          </button>
-        </div>
-      </div>
-
+      {/* Coupons Table */}
       {loading ? (
-        <div className="space-y-3">
-          <div className="h-28 bg-mist rounded-3xl animate-pulse" />
-          <div className="h-28 bg-mist rounded-3xl animate-pulse" />
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 rounded-2xl bg-white/70 animate-pulse border border-[#ECE8DC]" />
+          ))}
         </div>
       ) : coupons.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl border border-cloud bg-white">
-          <p className="text-sm font-semibold text-charcoal">🎟️ No promotional coupons created yet.</p>
-          <p className="text-xs text-stone mt-1">Click &quot;Create New Coupon&quot; to add discount codes for festive campaigns.</p>
+        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+          <p className="text-sm font-bold text-[#1A1A1A]">No promotional coupons active</p>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-cloud shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-cloud flex justify-between items-center">
-            <h2 className="font-display text-sm font-bold uppercase text-charcoal">Active &amp; Expired Promo Codes</h2>
-            <span className="text-xs font-mono font-bold text-stone">Total Codes: {coupons.length}</span>
-          </div>
-
+        <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-mist text-[10px] font-bold uppercase tracking-wider text-stone border-b border-cloud">
-                <tr>
-                  <th className="p-3.5">Promo Code</th>
-                  <th className="p-3.5">Discount Type</th>
-                  <th className="p-3.5">Value</th>
-                  <th className="p-3.5">Min Order Value</th>
-                  <th className="p-3.5">Usage Count / Limit</th>
-                  <th className="p-3.5">Expiry Date</th>
-                  <th className="p-3.5 text-right">Status</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#ECE8DC] text-[11px] font-bold uppercase tracking-wider text-[#8A8A8A] bg-[#FAF8F5]">
+                  <th className="py-3 px-4">Coupon Code</th>
+                  <th className="py-3 px-4">Discount Type</th>
+                  <th className="py-3 px-4">Value</th>
+                  <th className="py-3 px-4">Min Order</th>
+                  <th className="py-3 px-4">Usage (Used/Limit)</th>
+                  <th className="py-3 px-4">Expiry Date</th>
+                  <th className="py-3 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cloud text-charcoal">
+              <tbody className="divide-y divide-[#ECE8DC]">
                 {coupons.map((c) => (
-                  <tr key={c.id} className="hover:bg-mist/30">
-                    <td className="p-3.5 font-mono font-extrabold text-charcoal text-sm">{c.code}</td>
-                    <td className="p-3.5 uppercase font-mono text-[10px]">{c.type}</td>
-                    <td className="p-3.5 font-mono font-bold text-emerald-800">
-                      {c.type === "percentage" ? `${c.value}% OFF` : formatPrice(c.value / 100)}
+                  <tr key={c.id} className="hover:bg-[#FAF8F5] transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-[#F6D746] fill-[#F6D746]" />
+                        <span className="bg-[#F4F0E5] px-2.5 py-1 rounded-md border border-[#ECE8DC]">
+                          {c.code}
+                        </span>
+                      </div>
                     </td>
-                    <td className="p-3.5 font-mono">{formatPrice(c.minOrderValue / 100)}</td>
-                    <td className="p-3.5 font-mono">
-                      {c.usedCount} / {c.usageLimit ?? "∞"}
+                    <td className="py-3.5 px-4 text-xs font-bold text-[#1A1A1A] capitalize">
+                      {c.type.replace("_", " ")}
                     </td>
-                    <td className="p-3.5 font-mono text-stone">
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-700">
+                      {c.type === "fixed_amount" ? formatPrice(c.value) : `${c.value}% OFF`}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
+                      {formatPrice(c.minOrderValue)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs text-[#8A8A8A]">
+                      {c.usedCount} / {c.usageLimit ? c.usageLimit : "∞"}
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-[#8A8A8A] font-medium">
                       {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString("en-IN") : "Never"}
                     </td>
-                    <td className="p-3.5 text-right">
-                      <span
-                        className={`px-2.5 py-1 text-[9px] font-extrabold uppercase rounded-full ${
-                          c.isActive ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900"
-                        }`}
-                      >
-                        {c.isActive ? "Active" : "Expired / Inactive"}
-                      </span>
+                    <td className="py-3.5 px-4">
+                      <AdminStatusBadge status={c.isActive ? "active" : "inactive"} />
                     </td>
                   </tr>
                 ))}
@@ -177,105 +165,81 @@ export default function AdminCouponsPage() {
         </div>
       )}
 
-      {/* Create Coupon Modal */}
+      {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-xl">
-            <div className="flex justify-between items-center border-b border-cloud pb-3">
-              <h3 className="font-display text-base font-bold uppercase text-charcoal">Create Promotional Coupon</h3>
-              <button type="button" onClick={() => setShowModal(false)} className="text-xs font-bold text-stone hover:text-charcoal">
-                ✕
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
+            <div className="flex justify-between items-center border-b border-[#ECE8DC] pb-3">
+              <div>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-[#8A8A8A] block">
+                  Promotions Engine
+                </span>
+                <h3 className="font-display text-base font-bold uppercase text-[#1A1A1A]">
+                  Create Promo Code
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="w-7 h-7 rounded-full bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCoupon} className="space-y-3">
+            <form onSubmit={handleCreateCoupon} className="space-y-3 text-xs font-sans">
               <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Promo Code *</span>
+                <span className="font-bold uppercase text-[#8A8A8A]">Coupon Code *</span>
                 <input
                   required
                   value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. FESTIVE1000 or WELCOME10"
-                  className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs font-mono font-bold uppercase outline-none"
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                  placeholder="e.g. WELCOME15"
+                  className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none tracking-wider"
                 />
               </label>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Type *</span>
+                  <span className="font-bold uppercase text-[#8A8A8A]">Discount Type</span>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as any)}
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs font-medium outline-none"
+                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-bold outline-none"
                   >
                     <option value="fixed_amount">Fixed Amount (₹)</option>
                     <option value="percentage">Percentage (%)</option>
                   </select>
                 </label>
+
                 <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-                    {type === "percentage" ? "Percentage (%) *" : "Discount Amount (₹) *"}
-                  </span>
+                  <span className="font-bold uppercase text-[#8A8A8A]">Value *</span>
                   <input
                     type="number"
                     required
                     value={value}
                     onChange={(e) => setValue(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs font-mono font-bold outline-none"
+                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
                   />
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Min Order (₹)</span>
-                  <input
-                    type="number"
-                    value={minOrderValue}
-                    onChange={(e) => setMinOrderValue(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs font-mono outline-none"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Max Discount (₹)</span>
-                  <input
-                    type="number"
-                    value={maxDiscount}
-                    onChange={(e) => setMaxDiscount(e.target.value)}
-                    placeholder="Optional cap"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs font-mono outline-none"
-                  />
-                </label>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Usage Limit</span>
-                  <input
-                    type="number"
-                    value={usageLimit}
-                    onChange={(e) => setUsageLimit(e.target.value)}
-                    placeholder="Unlimited"
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs outline-none"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Expiry Date</span>
-                  <input
-                    type="date"
-                    value={expiresAt}
-                    onChange={(e) => setExpiresAt(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist p-3 text-xs outline-none"
-                  />
-                </label>
-              </div>
+              <label className="block">
+                <span className="font-bold uppercase text-[#8A8A8A]">Min Cart Subtotal (₹)</span>
+                <input
+                  type="number"
+                  value={minOrderValue}
+                  onChange={(e) => setMinOrderValue(Number(e.target.value))}
+                  className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
+                />
+              </label>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black disabled:opacity-60"
+                className="w-full py-3.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
               >
-                {submitting ? "Creating Coupon..." : "Publish Promo Coupon →"}
+                {submitting ? "Creating Promo…" : "Create Coupon Code →"}
               </button>
             </form>
           </div>

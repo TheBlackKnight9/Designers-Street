@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth/admin-guard";
 import { ToastProvider } from "@/components/dashboard/Toast";
-import { AdminHouseSwitcher } from "@/components/admin/AdminHouseSwitcher";
+import { AdminLayoutShell } from "@/components/admin/AdminLayoutShell";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +15,7 @@ export default async function AdminLayout({
 
   return (
     <ToastProvider>
-      <AdminHouseSwitcher />
-      <div className="min-h-screen bg-[#F8F7F4]">{children}</div>
+      <AdminLayoutShell>{children}</AdminLayoutShell>
     </ToastProvider>
   );
 }

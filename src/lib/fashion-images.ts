@@ -110,6 +110,16 @@ export const CATEGORY_MEDIA: Record<string, CategoryMedia> = {
     alt: u("1595777457583-95e059d581b8", 800),
     hero: u("1566174053879-31528523f8ae", 1600),
   },
+  "latest-drops": {
+    primary: u("1509631179647-0177331693ae", 1200),
+    alt: u("1490481651871-ab68de25d43d", 800),
+    hero: u("1509631179647-0177331693ae", 1600),
+  },
+  "jewellery-accessories": {
+    primary: u("1515562141207-7a88fb7ce338", 1200),
+    alt: u("1611652022419-a9419f74343d", 800),
+    hero: u("1515562141207-7a88fb7ce338", 1600),
+  },
 };
 
 export const DEFAULT_CATEGORY = "luxury-couture";

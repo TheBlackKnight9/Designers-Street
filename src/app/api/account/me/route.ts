@@ -14,10 +14,7 @@ export async function GET(request: Request) {
     enforcePublicRateLimit(request, "account:me");
     const user = await getOptionalAuthUser();
     if (!user) {
-      return NextResponse.json(
-        { ok: false, error: { code: "UNAUTHORIZED", message: "Not signed in" } },
-        { status: 401 }
-      );
+      return ok({ user: null });
     }
     return ok(await users.getAccountSummary(user));
   } catch (error) {

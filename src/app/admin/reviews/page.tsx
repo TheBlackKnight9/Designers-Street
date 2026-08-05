@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { Star, MessageSquare } from "lucide-react";
 
 type Review = {
   id: string;
@@ -83,98 +86,85 @@ export default function AdminReviewsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
-            Verified Customer Reviews Moderation Desk
-          </h1>
-          <p className="text-xs text-stone mt-1">
-            Monitor buyer reviews, verify purchase authenticity, hide inappropriate reviews &amp; publish brand responses
-          </p>
-        </div>
-
-        <Link
-          href="/admin"
-          className="px-5 py-2.5 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-xs hover:bg-black"
-        >
-          ← Admin Console
-        </Link>
-      </div>
+    <div className="space-y-6 font-sans">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Customer Reviews Moderation"
+        subtitle="Monitor buyer reviews, verify purchase authenticity, hide policy violations & publish responses"
+      />
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-28 bg-mist rounded-3xl animate-pulse" />
-          <div className="h-28 bg-mist rounded-3xl animate-pulse" />
+          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
+          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
         </div>
       ) : reviews.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl border border-cloud bg-white">
-          <p className="text-sm font-semibold text-charcoal">No customer reviews submitted yet.</p>
+        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+          <p className="text-sm font-bold text-[#1A1A1A]">No customer reviews found</p>
         </div>
       ) : (
         <div className="space-y-4">
           {reviews.map((r) => (
-            <div key={r.id} className="bg-white p-5 rounded-3xl border border-cloud space-y-3 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cloud pb-3">
+            <div key={r.id} className="bg-white p-6 rounded-2xl border border-[#ECE8DC] space-y-3 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ECE8DC] pb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-amber-500 font-bold text-sm">{"★".repeat(r.rating)}</span>
-                    <span className="font-bold text-xs text-charcoal">{r.product?.name}</span>
-                    <span className="text-xs text-stone font-mono">({r.product?.designerName})</span>
-                    {r.isVerified && (
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 text-[9px] font-extrabold uppercase rounded-full">
-                        ✓ Verified Purchase
-                      </span>
-                    )}
+                    <div className="flex items-center text-amber-500">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${i < r.rating ? "fill-amber-500 text-amber-500" : "text-[#ECE8DC]"}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-bold text-xs text-[#1A1A1A]">{r.title || `${r.rating} / 5 Stars`}</span>
                   </div>
-                  <p className="text-xs text-stone mt-0.5">
-                    Reviewer: <strong className="text-charcoal">{r.user?.name || r.user?.email}</strong> ·{" "}
-                    {new Date(r.createdAt).toLocaleDateString("en-IN")}
+                  <p className="text-xs text-[#8A8A8A] mt-1 font-medium">
+                    Product: <strong className="text-[#1A1A1A]">{r.product.name}</strong> ({r.product.designerName}) · Buyer:{" "}
+                    <strong className="text-[#1A1A1A]">{r.user.name || r.user.email}</strong>
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleToggleApprove(r.id, r.isApproved)}
-                  className={`px-3.5 py-1.5 font-sans text-xs font-bold uppercase rounded-full shadow-xs ${
-                    r.isApproved
-                      ? "bg-emerald-100 text-emerald-900 border border-emerald-200"
-                      : "bg-red-100 text-red-900 border border-red-200"
-                  }`}
-                >
-                  {r.isApproved ? "Approved (Visible)" : "Hidden"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <AdminStatusBadge status={r.isApproved ? "approved" : "pending"} />
+                  <button
+                    type="button"
+                    onClick={() => handleToggleApprove(r.id, r.isApproved)}
+                    className="px-3 py-1.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-full text-[#8A8A8A] hover:bg-[#F4F0E5] hover:text-[#1A1A1A] transition-colors"
+                  >
+                    {r.isApproved ? "Hide Review" : "Publish Review"}
+                  </button>
+                </div>
               </div>
 
-              {r.title && <h4 className="font-bold text-xs text-charcoal">{r.title}</h4>}
-              <p className="text-xs text-stone leading-relaxed">{r.body}</p>
+              {r.body && <p className="text-xs text-[#1A1A1A]">{r.body}</p>}
 
-              {/* Brand Response Section */}
-              <div className="pt-2 border-t border-cloud space-y-2">
-                {r.designerReply ? (
-                  <div className="bg-mist p-3 rounded-2xl border border-cloud text-xs">
-                    <span className="font-bold text-charcoal block">Published Brand Response:</span>
-                    <p className="text-stone italic mt-0.5">{r.designerReply}</p>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <input
-                      value={replyText[r.id] || ""}
-                      onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
-                      placeholder="Write official brand response to buyer..."
-                      className="flex-1 rounded-xl border border-cloud bg-mist p-2.5 text-xs outline-none"
-                    />
-                    <button
-                      type="button"
-                      disabled={submittingId === r.id}
-                      onClick={() => handlePostReply(r.id)}
-                      className="px-4 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase rounded-full shadow-xs hover:bg-black disabled:opacity-60"
-                    >
-                      Publish Response
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* Designer Official Response */}
+              {r.designerReply ? (
+                <div className="bg-[#F4F0E5]/60 p-3 rounded-xl border border-[#ECE8DC] text-xs space-y-1">
+                  <span className="font-bold uppercase text-[10px] text-[#8A8A8A] block">
+                    Official Atelier Response:
+                  </span>
+                  <p className="text-[#1A1A1A]">{r.designerReply}</p>
+                </div>
+              ) : (
+                <div className="pt-2 flex items-center gap-2">
+                  <input
+                    value={replyText[r.id] || ""}
+                    onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
+                    placeholder="Write official response on behalf of designer house…"
+                    className="flex-1 rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-2.5 text-xs outline-none font-medium"
+                  />
+                  <button
+                    type="button"
+                    disabled={submittingId === r.id}
+                    onClick={() => handlePostReply(r.id)}
+                    className="px-4 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-2xs hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
+                  >
+                    Reply
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

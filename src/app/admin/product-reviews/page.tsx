@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TopBar } from "@/components/TopBar";
-import { BottomNav } from "@/components/BottomNav";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { Check, X } from "lucide-react";
+import { formatPrice } from "@/lib/mock-data";
 
 type ProductReview = {
   id: string;
@@ -67,86 +69,82 @@ export default function AdminProductReviewsPage() {
   }
 
   return (
-    <>
-      <TopBar />
-      <main className="min-h-screen bg-paper pb-24 px-4 pt-6 max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Link href="/admin/applications" className="text-xs text-stone hover:text-charcoal font-semibold">
-              ← Applications Queue
-            </Link>
-            <h1 className="font-display text-3xl font-bold uppercase tracking-tight text-charcoal mt-1">
-              Product Listing QC Queue
-            </h1>
-            <p className="text-xs text-stone">Review and quality-control first listings before marketplace publish</p>
-          </div>
+    <div className="space-y-6 font-sans">
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title="Product Listing QC Queue"
+        subtitle="Review and quality-control first listings before marketplace publication"
+      />
+
+      {loading ? (
+        <div className="space-y-4">
+          <div className="h-40 bg-white/70 animate-pulse rounded-2xl border border-[#ECE8DC]" />
         </div>
-
-        {loading ? (
-          <div className="space-y-4">
-            <div className="h-40 bg-mist animate-pulse rounded-3xl" />
-          </div>
-        ) : products.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl border border-cloud bg-white">
-            <p className="text-sm font-semibold text-charcoal">No products awaiting quality review</p>
-            <p className="text-xs text-stone mt-1">All designer product listings have passed QC inspection</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {products.map((p) => (
-              <div key={p.id} className="bg-white p-6 rounded-3xl border border-cloud space-y-4 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cloud pb-3">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-gold bg-charcoal px-2.5 py-1 rounded-md">
-                      {p.designer.name}
-                    </span>
-                    <h2 className="font-display text-lg font-bold text-charcoal mt-1">
-                      {p.name} · <span className="font-mono text-sm">₹{p.price.toLocaleString("en-IN")}</span>
-                    </h2>
-                  </div>
-                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900">
-                    Pending QC Review
+      ) : products.length === 0 ? (
+        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+          <p className="text-sm font-bold text-[#1A1A1A]">No products awaiting quality review</p>
+          <p className="text-xs text-[#8A8A8A] mt-1 font-medium">All designer product listings have passed QC inspection.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {products.map((p) => (
+            <div key={p.id} className="bg-white p-6 rounded-2xl border border-[#ECE8DC] space-y-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ECE8DC] pb-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A] bg-[#F6D746] px-2.5 py-0.5 rounded-full inline-block mb-1">
+                    {p.designer.name}
                   </span>
+                  <h2 className="font-display text-lg font-bold text-[#1A1A1A]">
+                    {p.name}
+                  </h2>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  {p.images[0] && (
-                    <div className="relative aspect-3/4 rounded-2xl overflow-hidden border border-cloud">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
-                    </div>
-                  )}
-
-                  <div className="sm:col-span-3 space-y-2 text-xs text-charcoal">
-                    <p><strong className="uppercase text-stone text-[10px] block">Category:</strong> {p.category}</p>
-                    <p><strong className="uppercase text-stone text-[10px] block">Description:</strong> {p.description}</p>
-                    <p><strong className="uppercase text-stone text-[10px] block">Available Sizes:</strong> {p.sizes.join(", ")}</p>
-
-                    <div className="pt-3 border-t border-cloud flex gap-2">
-                      <button
-                        type="button"
-                        disabled={processingId === p.id}
-                        onClick={() => handleAction(p.id, "approve")}
-                        className="px-6 py-2.5 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-sm hover:bg-black disabled:opacity-60"
-                      >
-                        ✓ Approve &amp; Publish Listing
-                      </button>
-                      <button
-                        type="button"
-                        disabled={processingId === p.id}
-                        onClick={() => handleAction(p.id, "reject")}
-                        className="px-5 py-2.5 text-red-700 font-sans text-xs font-bold uppercase rounded-full hover:bg-red-50"
-                      >
-                        Reject to Draft
-                      </button>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm font-bold text-[#1A1A1A]">
+                    {formatPrice(p.price)}
+                  </span>
+                  <AdminStatusBadge status={p.status} />
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </>
+
+              <p className="text-xs text-[#1A1A1A]">{p.description}</p>
+
+              {/* Media Images */}
+              {p.images.length > 0 && (
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                  {p.images.map((img, i) => (
+                    <a key={i} href={img} target="_blank" rel="noreferrer" className="relative aspect-[3/4] rounded-xl overflow-hidden border border-[#ECE8DC] block group bg-[#F4F0E5]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {/* Admin Actions */}
+              <div className="pt-3 border-t border-[#ECE8DC] flex gap-2">
+                <button
+                  type="button"
+                  disabled={processingId === p.id}
+                  onClick={() => handleAction(p.id, "approve")}
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-2xs hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer active:scale-95"
+                >
+                  <Check className="w-4 h-4 stroke-[2]" />
+                  Approve Listing
+                </button>
+                <button
+                  type="button"
+                  disabled={processingId === p.id}
+                  onClick={() => handleAction(p.id, "reject")}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-red-700 font-sans text-xs font-bold uppercase rounded-full hover:bg-red-50 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  Reject Listing
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

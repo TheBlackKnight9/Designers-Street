@@ -2,7 +2,7 @@ import type { MediaRecord, MediaType } from "@/server/types/media";
 import type { SignedUploadParams } from "@/server/media/cloudinary";
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "";
+  const base = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_APP_URL || "");
   const res = await fetch(`${base}${path}`, {
     cache: "no-store",
     ...init,
@@ -77,7 +77,7 @@ export async function deleteMedia(id: string): Promise<{ id: string; deleted: tr
 export async function uploadMediaFile(
   formData: FormData
 ): Promise<MediaRecord> {
-  const base = process.env.NEXT_PUBLIC_APP_URL || "";
+  const base = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_APP_URL || "");
   const res = await fetch(`${base}/api/media/upload`, {
     method: "POST",
     body: formData,

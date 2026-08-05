@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import dns from "node:dns";
 
 try {
-  dns.setDefaultResultOrder("ipv6first");
+  // Force ipv4first to prevent Windows TCP socket drops on Supabase direct connections
+  dns.setDefaultResultOrder("ipv4first");
 } catch {
   /* ignore */
 }
