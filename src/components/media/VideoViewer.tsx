@@ -14,20 +14,44 @@ import {
   getPreferredMuted,
   setPreferredMuted,
 } from "@/lib/media/mute-preference";
+import { isVideoAssetUrl, toPlayableVideoUrl } from "@/lib/fashion-videos";
 
 type VideoViewerProps = {
   item: ViewerMediaItem;
   isActive: boolean;
   autoPlay?: boolean;
-  /** Immersive reels chrome — edge-to-edge, minimal controls */
   reelMode?: boolean;
   onSingleTap?: () => void;
   preloadUrl?: string | null;
-  /** Prefetch next 2–3 reel URLs (continuous mode) */
   preloadUrls?: (string | null | undefined)[];
 };
 
 const SAVE_INTERVAL_MS = 2000;
+const LOAD_TIMEOUT_MS = 15000;
+
+function resolvePoster(item: ViewerMediaItem): string | null {
+  const thumb = item.thumbnailUrl;
+  if (thumb && !isVideoAssetUrl(thumb)) {
+    return getOptimizedMediaUrl(
+      { url: thumb, publicId: null, type: "image" },
+      "thumb"
+    );
+  }
+  // Don't derive Cloudinary frame posters for non-Cloudinary hosts —
+  // they can stall. Prefer no poster over a broken one.
+  if (thumb && isVideoAssetUrl(thumb)) return null;
+  try {
+    if (/res\.cloudinary\.com/i.test(new URL(item.url).hostname)) {
+      return getOptimizedMediaUrl(
+        { url: item.url, publicId: null, type: "video" },
+        "thumb"
+      );
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
 
 export function VideoViewer({
   item,
@@ -44,34 +68,37 @@ export function VideoViewer({
   const lastSaveRef = useRef(0);
   const resumedRef = useRef(false);
   const milestonesRef = useRef<Set<number>>(new Set());
+
   const [failed, setFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [ready, setReady] = useState(false);
   const [buffering, setBuffering] = useState(true);
-  const [fadedIn, setFadedIn] = useState(false);
+
+  const src = toPlayableVideoUrl(item.url);
+  const poster = resolvePoster(item);
 
   useEffect(() => {
     setMuted(getPreferredMuted(true));
   }, []);
 
-  // Preload next 2–3 reels quietly
+  // Quiet preload of upcoming reels
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const urls = [...(preloadUrls || []), preloadUrl].filter(
-      (u): u is string => Boolean(u)
-    );
-    const unique = [...new Set(urls)].slice(0, 3);
+    const urls = [...(preloadUrls || []), preloadUrl]
+      .filter((u): u is string => Boolean(u))
+      .map(toPlayableVideoUrl);
+    const unique = [...new Set(urls)].slice(0, 2);
     if (!unique.length) return;
     const els: HTMLVideoElement[] = [];
     for (const url of unique) {
       const el = document.createElement("video");
-      el.preload = "auto";
+      el.preload = "metadata";
       el.muted = true;
       el.playsInline = true;
       el.src = url;
-      el.load();
       els.push(el);
     }
     return () => {
@@ -81,20 +108,6 @@ export function VideoViewer({
       }
     };
   }, [preloadUrl, preloadUrls]);
-
-  const src = failed
-    ? item.url
-    : getOptimizedMediaUrl(
-        { url: item.url, publicId: item.publicId, type: "video" },
-        "stream"
-      );
-
-  const poster =
-    item.thumbnailUrl ||
-    getOptimizedMediaUrl(
-      { url: item.url, publicId: item.publicId, type: "video" },
-      "thumb"
-    );
 
   useEffect(() => {
     const el = videoRef.current;
@@ -109,6 +122,7 @@ export function VideoViewer({
     });
   }, [instanceId, item.id]);
 
+  // Reset when the reel / attempt changes
   useEffect(() => {
     resumedRef.current = false;
     lastSaveRef.current = 0;
@@ -117,9 +131,20 @@ export function VideoViewer({
     setReady(false);
     setBuffering(true);
     setFailed(false);
-    setFadedIn(false);
-  }, [item.id]);
+    setPlaying(false);
+  }, [item.id, loadAttempt, src]);
 
+  // Fail soft if the browser never reaches a playable state
+  useEffect(() => {
+    if (!isActive || failed || ready) return;
+    const t = window.setTimeout(() => {
+      setFailed(true);
+      setBuffering(false);
+    }, LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(t);
+  }, [isActive, failed, ready, item.id, loadAttempt, src]);
+
+  // Play whenever this reel is active and the element is ready
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
@@ -136,22 +161,46 @@ export function VideoViewer({
 
     if (!autoPlay) return;
 
-    MediaPlaybackCoordinator.claim(instanceId);
     let cancelled = false;
-    el.play()
-      .then(() => {
-        if (cancelled) return;
-        setPlaying(true);
-        setBuffering(false);
-        trackMediaEvent("video_play", {
-          mediaId: item.id,
-          type: "video",
-          productId: item.productId,
+
+    const tryPlay = () => {
+      if (cancelled || !videoRef.current) return;
+      MediaPlaybackCoordinator.claim(instanceId);
+      videoRef.current
+        .play()
+        .then(() => {
+          if (cancelled) return;
+          setPlaying(true);
+          setBuffering(false);
+          setReady(true);
+          setFailed(false);
+          trackMediaEvent("video_play", {
+            mediaId: item.id,
+            type: "video",
+            productId: item.productId,
+          });
+        })
+        .catch(() => {
+          if (!cancelled) setPlaying(false);
         });
-      })
-      .catch(() => {
-        if (!cancelled) setPlaying(false);
-      });
+    };
+
+    // If already buffered enough, play immediately; else wait for canplay
+    if (el.readyState >= 2) {
+      tryPlay();
+    } else {
+      const onReady = () => tryPlay();
+      el.addEventListener("loadeddata", onReady, { once: true });
+      el.addEventListener("canplay", onReady, { once: true });
+      return () => {
+        cancelled = true;
+        el.removeEventListener("loadeddata", onReady);
+        el.removeEventListener("canplay", onReady);
+        if (el.duration) {
+          saveWatchProgress(item.id, el.currentTime, el.duration);
+        }
+      };
+    }
 
     return () => {
       cancelled = true;
@@ -159,7 +208,7 @@ export function VideoViewer({
         saveWatchProgress(item.id, el.currentTime, el.duration);
       }
     };
-  }, [isActive, autoPlay, instanceId, item.id, item.productId]);
+  }, [isActive, autoPlay, instanceId, item.id, item.productId, src, loadAttempt]);
 
   useEffect(() => {
     const flush = () => {
@@ -190,6 +239,7 @@ export function VideoViewer({
       el.play()
         .then(() => {
           setPlaying(true);
+          setBuffering(false);
           trackMediaEvent("video_play", { mediaId: item.id, type: "video" });
         })
         .catch(() => undefined);
@@ -219,24 +269,20 @@ export function VideoViewer({
         reelMode ? "overflow-hidden" : "flex-col"
       }`}
     >
-      {/* Soft poster while buffering — avoids black flash */}
-      {poster && (!ready || buffering || !fadedIn) && (
+      {poster && buffering && !ready && (
         <div
-          className={`absolute inset-0 bg-cover bg-center scale-105 blur-md transition-opacity duration-500 ease-out ${
-            ready && !buffering && fadedIn ? "opacity-0" : "opacity-70"
-          }`}
+          className="absolute inset-0 bg-cover bg-center scale-105 blur-md opacity-60"
           style={{ backgroundImage: `url(${poster})` }}
           aria-hidden
         />
       )}
 
       <video
+        key={`${item.id}-${loadAttempt}`}
         ref={videoRef}
         className={
           reelMode
-            ? `absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
-                fadedIn && ready ? "opacity-100" : "opacity-0"
-              }`
+            ? "absolute inset-0 h-full w-full object-cover"
             : "max-w-full max-h-full object-contain"
         }
         src={src}
@@ -244,6 +290,7 @@ export function VideoViewer({
         playsInline
         loop={reelMode}
         muted={muted}
+        autoPlay={autoPlay}
         preload="auto"
         controls={false}
         onLoadedMetadata={() => {
@@ -258,15 +305,20 @@ export function VideoViewer({
           }
           resumedRef.current = true;
         }}
+        onLoadedData={() => {
+          setReady(true);
+          setBuffering(false);
+        }}
         onCanPlay={() => {
           setBuffering(false);
           setReady(true);
-          requestAnimationFrame(() => setFadedIn(true));
+          setFailed(false);
         }}
         onWaiting={() => setBuffering(true)}
         onPlaying={() => {
           setBuffering(false);
-          setFadedIn(true);
+          setReady(true);
+          setPlaying(true);
         }}
         onTimeUpdate={() => {
           const el = videoRef.current;
@@ -315,11 +367,13 @@ export function VideoViewer({
           });
           MediaPlaybackCoordinator.release(instanceId);
         }}
-        onError={() => setFailed(true)}
+        onError={() => {
+          setFailed(true);
+          setBuffering(false);
+        }}
         onClick={togglePlay}
       />
 
-      {/* Thin progress — reels style */}
       <div
         className={`absolute left-0 right-0 z-20 h-[2px] bg-white/20 ${
           reelMode ? "top-0" : "bottom-0"
@@ -331,7 +385,6 @@ export function VideoViewer({
         />
       </div>
 
-      {/* Mute — top left in reel mode (right rail is for social) */}
       <button
         type="button"
         onClick={toggleMute}
@@ -356,7 +409,7 @@ export function VideoViewer({
         )}
       </button>
 
-      {!playing && ready && !buffering && (
+      {!playing && ready && !buffering && !failed && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm">
             <svg className="h-7 w-7 ml-0.5" viewBox="0 0 24 24" fill="currentColor">
@@ -366,9 +419,12 @@ export function VideoViewer({
         </div>
       )}
 
-      {buffering && (
+      {buffering && !failed && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-          <span className="h-8 w-8 rounded-full border-2 border-white/30 border-t-white animate-spin" aria-label="Loading" />
+          <span
+            className="h-8 w-8 rounded-full border-2 border-white/30 border-t-white animate-spin"
+            aria-label="Loading"
+          />
         </div>
       )}
 
@@ -418,7 +474,12 @@ export function VideoViewer({
           <button
             type="button"
             className="px-3 py-1.5 bg-white/20 text-white text-xs rounded-full"
-            onClick={() => setFailed(false)}
+            onClick={() => {
+              setFailed(false);
+              setReady(false);
+              setBuffering(true);
+              setLoadAttempt((n) => n + 1);
+            }}
           >
             Retry
           </button>

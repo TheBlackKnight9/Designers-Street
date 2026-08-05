@@ -29,6 +29,14 @@ export async function POST(request: Request) {
 
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     const name = typeof body.name === "string" ? body.name.trim() : undefined;
+    const metaName =
+      (authUser.user_metadata?.full_name as string | undefined) ||
+      (authUser.user_metadata?.name as string | undefined) ||
+      null;
+    const metaAvatar =
+      (authUser.user_metadata?.avatar_url as string | undefined) ||
+      (authUser.user_metadata?.picture as string | undefined) ||
+      null;
 
     let user = await users.getById(authUser.id).catch(() => null);
 
@@ -40,9 +48,12 @@ export async function POST(request: Request) {
       user = await users.createWithId({
         id: authUser.id,
         email: authUser.email,
-        name: name || (authUser.user_metadata?.full_name as string) || (authUser.user_metadata?.name as string) || null,
+        name: name || metaName,
         role: "buyer",
+        avatarUrl: metaAvatar,
       });
+    } else if (metaAvatar && !user.avatarUrl) {
+      user = await users.updateAccountProfile(authUser.id, { avatarUrl: metaAvatar });
     }
 
     return ok({

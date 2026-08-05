@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#FFFFFF",
+  themeColor: "#E8DFD3",
 };
 
 export default function RootLayout({
@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-paper text-charcoal pb-24" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-canvas text-charcoal pb-24" suppressHydrationWarning>
         <ToastProvider>
           <CartProvider>
             <WishlistProvider>

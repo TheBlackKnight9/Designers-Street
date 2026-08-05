@@ -1,12 +1,24 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { safeInternalPath } from "@/lib/safe-redirect";
+import { getGoogleOAuthRedirectTo, GOOGLE_OAUTH_OPTIONS } from "@/lib/auth/oauth";
+import {
+  AuthBackLink,
+  AuthDivider,
+  AuthField,
+  AuthGoogleButton,
+  AuthPrimaryButton,
+  AuthScreen,
+} from "@/components/auth/AuthScreen";
 
-export default function AccountSignupPage() {
+function BuyerSignupForm() {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = safeInternalPath(params.get("next"), "/profile");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +43,7 @@ export default function AccountSignupPage() {
           },
           emailRedirectTo:
             typeof window !== "undefined"
-              ? `${window.location.origin}/account/login`
+              ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
               : undefined,
         },
       });
@@ -75,7 +87,7 @@ export default function AccountSignupPage() {
         window.dispatchEvent(new Event("ds:commerce-sync"));
       }
 
-      router.replace("/profile");
+      router.replace(next);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
@@ -84,95 +96,119 @@ export default function AccountSignupPage() {
     }
   }
 
+  async function handleGoogleSignup() {
+    try {
+      setLoading(true);
+      setError(null);
+      const supabase = createClient();
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getGoogleOAuthRedirectTo(next),
+          ...GOOGLE_OAUTH_OPTIONS,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Google sign-up failed";
+      const hint =
+        /provider is not enabled|unsupported provider/i.test(message)
+          ? " Google login is not enabled yet in Supabase. Enable the Google provider in Authentication → Providers."
+          : "";
+      setError(message + hint);
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-paper flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-white border border-cloud rounded-3xl p-8 shadow-sm">
-        <p className="text-[10px] font-bold tracking-widest uppercase text-stone mb-1">
-          Designer&apos;s Street
+    <AuthScreen
+      title="Join Designer's Street"
+      subtitle="Continue with Google to join instantly — no password to create."
+    >
+      <AuthGoogleButton
+        onClick={handleGoogleSignup}
+        loading={loading}
+        label="Continue with Google"
+      />
+      <p className="mt-2 text-center text-[11px] text-stone">
+        One tap · we&apos;ll create your account automatically
+      </p>
+
+      {error && (
+        <p className="mt-4 text-xs text-red-700 bg-red-50 rounded-2xl px-3 py-2 font-medium">
+          {error}
         </p>
-        <h1 className="font-display text-3xl font-bold text-charcoal mb-1">
-          Create Account
-        </h1>
-        <p className="text-xs text-stone mb-6">
-          Save wishlist, cart, and track orders across devices.
+      )}
+      {info && (
+        <p className="mt-4 text-xs text-emerald-800 bg-emerald-50 rounded-2xl px-3 py-2 font-medium">
+          {info}
         </p>
+      )}
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-              Full Name
-            </span>
-            <input
-              type="text"
-              required
-              autoComplete="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-              Email Address
-            </span>
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-              Password
-            </span>
-            <input
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
-            />
-          </label>
+      <AuthDivider label="OR USE EMAIL & PASSWORD" />
 
-          {error && (
-            <p className="text-xs text-red-700 bg-red-50 rounded-xl px-3 py-2 font-medium">
-              {error}
-            </p>
-          )}
-          {info && (
-            <p className="text-xs text-emerald-800 bg-emerald-50 rounded-xl px-3 py-2 font-medium">
-              {info}
-            </p>
-          )}
+      <form onSubmit={onSubmit} className="space-y-3.5" suppressHydrationWarning>
+        <AuthField
+          icon="user"
+          placeholder="Full name"
+          autoComplete="name"
+          required
+          value={name}
+          onChange={setName}
+        />
+        <AuthField
+          type="email"
+          icon="email"
+          placeholder="email@domain.com"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={setEmail}
+        />
+        <AuthField
+          type="password"
+          icon="lock"
+          placeholder="Create a password"
+          autoComplete="new-password"
+          required
+          minLength={6}
+          value={password}
+          onChange={setPassword}
+        />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-full bg-charcoal text-paper py-3 text-xs font-bold uppercase tracking-wider disabled:opacity-60 shadow-sm"
+        <AuthPrimaryButton loading={loading}>
+          {loading ? "Creating Account…" : "Sign up with email"}
+        </AuthPrimaryButton>
+      </form>
+
+      <div className="mt-7 text-center space-y-3">
+        <p className="text-sm text-stone">
+          Already have an account?{" "}
+          <Link
+            href={`/account/login${next !== "/profile" ? `?next=${encodeURIComponent(next)}` : ""}`}
+            className="font-extrabold text-espresso hover:underline"
           >
-            {loading ? "Creating Account…" : "Create Buyer Account"}
-          </button>
-        </form>
-
-        <div className="mt-6 pt-4 border-t border-cloud/60 text-center space-y-2 text-xs text-stone">
-          <p>
-            Already have an account?{" "}
-            <Link href="/account/login" className="text-charcoal font-bold underline">
-              Sign in
-            </Link>
-          </p>
-          <p>
-            <Link href="/" className="text-stone hover:text-charcoal">
-              ← Back to shop
-            </Link>
-          </p>
-        </div>
+            Sign In
+          </Link>
+        </p>
+        <AuthBackLink />
       </div>
-    </div>
+    </AuthScreen>
+  );
+}
+
+export default function AccountSignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthScreen title="Join Designer's Street" subtitle="Loading…">
+          <div className="flex justify-center py-10">
+            <span className="h-8 w-8 rounded-full border-2 border-espresso/25 border-t-espresso animate-spin" />
+          </div>
+        </AuthScreen>
+      }
+    >
+      <BuyerSignupForm />
+    </Suspense>
   );
 }

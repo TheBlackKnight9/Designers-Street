@@ -77,24 +77,24 @@ export default function HomePage() {
     <>
       <TopBar />
 
-      <main className="min-h-screen bg-paper pb-4">
-        {/* Gender quick filter */}
-        <div className="px-4 py-2 flex gap-2 overflow-x-auto hide-scrollbar border-b border-[var(--border-subtle)]">
+      <main className="min-h-screen bg-transparent pb-28">
+        {/* Editorial nav strip */}
+        <div className="px-4 py-3 flex gap-2 overflow-x-auto hide-scrollbar border-b border-[var(--border-subtle)]">
           <Link
             href="/designers"
-            className="flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border bg-[var(--newme-green)] text-charcoal border-charcoal"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip-feature"
           >
             Houses
           </Link>
           <Link
             href="/feed"
-            className="flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border bg-paper text-charcoal border-[var(--border-default)]"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip"
           >
             Feed
           </Link>
           <Link
             href="/bespoke"
-            className="flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border bg-paper text-charcoal border-[var(--border-default)]"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip"
           >
             Bespoke
           </Link>
@@ -103,10 +103,8 @@ export default function HomePage() {
               key={g}
               type="button"
               onClick={() => setActiveGender(g)}
-              className={`flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border ${
-                activeGender === g
-                  ? "bg-charcoal text-paper border-charcoal"
-                  : "bg-paper text-charcoal border-[var(--border-default)]"
+              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${
+                activeGender === g ? "ds-chip-active" : "ds-chip"
               }`}
             >
               {g === "all" ? "All" : g === "women" ? "Women" : "Men"}
@@ -158,19 +156,22 @@ export default function HomePage() {
           );
         })}
 
-        {/* Invite / referral banner */}
-        <section className="mx-4 my-6 p-5 bg-[var(--newme-yellow)] border-2 border-charcoal shadow-[4px_4px_0_#0A0A0A]">
-          <h3 className="text-lg font-black uppercase text-charcoal leading-tight">
-            INVITE FRIENDS & EARN
+        {/* Invite / referral */}
+        <section className="mx-4 my-8 p-6 rounded-[1.5rem] bg-charcoal text-paper">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-2">
+            Private Access
+          </p>
+          <h3 className="text-lg font-extrabold tracking-tight leading-tight">
+            Invite friends to the atelier
           </h3>
-          <p className="text-xs font-semibold text-charcoal/80 mt-1 mb-3">
-            Share Designer&apos;s Street with friends — exclusive atelier access for both.
+          <p className="text-[13px] text-white/70 mt-2 mb-4 leading-relaxed">
+            Share Designer&apos;s Street — exclusive house access for both of you.
           </p>
           <Link
             href="/profile/following"
-            className="inline-block px-5 py-2.5 bg-[var(--newme-green-dark)] text-paper text-xs font-extrabold uppercase rounded-sm shadow-[3px_3px_0_#0A0A0A]"
+            className="inline-block px-5 py-2.5 rounded-full bg-bronze text-[#1A120C] text-[11px] font-extrabold uppercase tracking-[0.12em] shadow-[0_2px_10px_rgba(166,124,82,0.35)]"
           >
-            Invite friends now
+            Invite friends
           </Link>
         </section>
 

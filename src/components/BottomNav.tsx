@@ -16,7 +16,7 @@ const BUYER_ITEMS: NavItem[] = [
     label: "Home",
     href: "/",
     icon: (active) => (
-      <svg className="w-6 h-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
+      <svg className="w-[22px] h-[22px]" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
         {active ? (
           <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 01-.53 1.28h-1.44v7.94a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5h-2.25v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-7.94H3.31a.75.75 0 01-.53-1.28l8.69-8.69z" />
         ) : (
@@ -29,7 +29,7 @@ const BUYER_ITEMS: NavItem[] = [
     label: "Shop",
     href: "/store",
     icon: (active) => (
-      <svg className="w-6 h-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
+      <svg className="w-[22px] h-[22px]" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
         {active ? (
           <path d="M5.223 2.25h13.554c1.139 0 2.115.803 2.339 1.917l1.121 5.583c.178.888-.36 1.75-1.237 1.75H3c-.877 0-1.415-.862-1.237-1.75l1.121-5.583A2.394 2.394 0 015.223 2.25zM3 12v8.25A1.5 1.5 0 004.5 21.75h15a1.5 1.5 0 001.5-1.5V12" />
         ) : (
@@ -48,13 +48,15 @@ const BUYER_ITEMS: NavItem[] = [
     label: "Category",
     href: "/category",
     icon: (active) => (
-      <svg className="w-6 h-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
+      <svg className="w-[22px] h-[22px]" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
         {active ? (
           <path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 8.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25h2.25A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zm0 9.75a2.25 2.25 0 012.25-2.25h2.25a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z" />
         ) : (
           <>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 8.25V6z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-2.25z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6a2.25 2.25 0 012.25-2.25h2.25A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 15.75a2.25 2.25 0 012.25-2.25h2.25a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z" />
           </>
         )}
       </svg>
@@ -64,7 +66,7 @@ const BUYER_ITEMS: NavItem[] = [
     label: "Wishlist",
     href: "/wishlist",
     icon: (active) => (
-      <svg className="w-6 h-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
+      <svg className="w-[22px] h-[22px]" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
         {active ? (
           <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
         ) : (
@@ -84,7 +86,7 @@ const DESIGNER_ITEMS: NavItem[] = [
     label: "Studio",
     href: "/dashboard",
     icon: (active) => (
-      <svg className="w-6 h-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
+      <svg className="w-[22px] h-[22px]" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.5M4.5 21V10.5" />
       </svg>
     ),
@@ -108,14 +110,20 @@ export function BottomNav() {
       .catch(() => setRole("buyer"));
   }, []);
 
+  // Product detail uses sticky top commerce actions instead of the tab bar
+  if (pathname.startsWith("/product/")) {
+    return null;
+  }
+
   const items = role === "designer" ? DESIGNER_ITEMS : BUYER_ITEMS;
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-paper border-t border-[var(--border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]"
-      style={{ paddingBottom: "var(--safe-area-bottom)" }}
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4"
+      style={{ paddingBottom: "max(12px, var(--safe-area-bottom))" }}
+      aria-label="Primary"
     >
-      <div className="relative flex items-end justify-around h-[var(--bottom-nav-height)] px-1">
+      <div className="pointer-events-auto relative flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-[var(--charcoal)] px-2 py-2 shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
         {items.map((item) => {
           const isActive = item.isCenter
             ? pathname === item.href || pathname.startsWith(`${item.href}/`)
@@ -128,31 +136,20 @@ export function BottomNav() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="absolute left-1/2 -translate-x-1/2 -top-3 flex flex-col items-center"
+                className="flex flex-1 items-center justify-center"
                 aria-label={item.label}
                 aria-current={isActive ? "page" : undefined}
               >
-                <div
-                  className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-paper active:scale-95 transition-transform ${
-                    isActive ? "bg-[var(--newme-green-dark)] text-paper" : "bg-charcoal text-paper"
-                  }`}
-                >
-                  {item.label === "Feed" ? (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                      <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <span className="text-[7px] font-extrabold uppercase text-center leading-[1.15] block">
-                      {item.label}
-                    </span>
-                  )}
-                </div>
                 <span
-                  className={`text-[10px] font-semibold mt-1 ${
-                    isActive ? "font-extrabold text-[var(--newme-green-dark)]" : "text-stone"
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-transform active:scale-95 ${
+                    isActive
+                      ? "bg-bronze text-[#1A120C]"
+                      : "bg-white/10 text-paper"
                   }`}
                 >
-                  {item.label}
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                  </svg>
                 </span>
               </Link>
             );
@@ -162,14 +159,14 @@ export function BottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1.5 pb-2 transition-colors ${
-                isActive ? "text-[var(--newme-green-dark)]" : "text-stone"
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 transition-colors ${
+                isActive ? "text-bronze" : "text-white/70"
               }`}
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
             >
               {item.icon(isActive)}
-              <span className={`text-[10px] font-semibold ${isActive ? "font-extrabold" : ""}`}>
+              <span className={`text-[9px] font-bold uppercase tracking-wide ${isActive ? "opacity-100" : "opacity-80"}`}>
                 {item.label}
               </span>
             </Link>

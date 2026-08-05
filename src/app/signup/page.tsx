@@ -65,8 +65,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-transparent flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md rounded-[2rem] bg-chip border border-espresso/10 px-6 py-8 shadow-[0_8px_40px_rgba(42,31,24,0.1)]">
         <p className="text-xs tracking-label uppercase text-stone mb-2">
           Designer&apos;s Street
         </p>
@@ -146,7 +146,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-charcoal text-paper py-3 text-sm tracking-wide disabled:opacity-60"
+            className="w-full rounded-full bg-espresso text-chip py-3 text-sm tracking-wide shadow-[0_6px_16px_rgba(42,31,24,0.28)] disabled:opacity-60"
           >
             {loading ? "Creating…" : "Create account"}
           </button>

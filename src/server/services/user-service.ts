@@ -73,6 +73,7 @@ export class UserService {
     email: string;
     name?: string | null;
     role: UserRole;
+    avatarUrl?: string | null;
   }): Promise<SessionUser> {
     if (!isDatabaseEnabled()) {
       throw new ValidationError("User creation requires USE_DATABASE=true");

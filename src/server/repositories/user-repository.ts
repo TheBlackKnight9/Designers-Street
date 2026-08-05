@@ -50,6 +50,7 @@ export class UserRepository {
     email: string;
     name?: string | null;
     role: UserRole;
+    avatarUrl?: string | null;
   }): Promise<User> {
     return prisma.user.create({
       data: {
@@ -57,6 +58,7 @@ export class UserRepository {
         email: input.email.toLowerCase(),
         name: input.name ?? null,
         role: input.role,
+        avatarUrl: input.avatarUrl ?? null,
       },
     });
   }

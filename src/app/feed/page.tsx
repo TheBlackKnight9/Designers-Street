@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { TopBar } from "@/components/TopBar";
-import { BottomNav } from "@/components/BottomNav";
 import { StoriesStrip } from "@/components/home/StoriesStrip";
 import { FeedPost } from "@/components/home/FeedPost";
 import { CatalogStatus } from "@/components/ui/CatalogStatus";
@@ -46,23 +45,27 @@ export default function FeedPage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-[calc(var(--bottom-nav-height)+var(--safe-area-bottom)+12px)] bg-[#FDFCF8]">
-        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+      <main className="min-h-screen pb-28 bg-transparent">
+        <header className="px-5 pt-8 pb-4 flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-[#2B2B2B] uppercase tracking-wide">
-              The Feed
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-stone mb-2">
+              Editorial
+            </p>
+            <h1 className="font-sans text-[1.75rem] font-extrabold text-charcoal tracking-tight leading-none">
+              Feed
             </h1>
-            <p className="font-sans text-xs text-[#7A7A7A] mt-0.5">
-              Live drops, runway edits &amp; designer house stories
+            <p className="mt-2 text-[13px] text-stone leading-relaxed">
+              Runway drops, house stories &amp; atelier films.
             </p>
           </div>
-          <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-[#2B2B2B] text-white rounded-full neu-raised-sm">
+          <span className="mb-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ds-chip text-[9px] font-bold uppercase tracking-[0.14em]">
+            <span className="h-1.5 w-1.5 rounded-full bg-bronze animate-pulse" />
             Live
           </span>
-        </div>
+        </header>
 
         <div
-          className="px-4 pb-2 flex gap-2 overflow-x-auto"
+          className="px-5 pb-3 flex gap-2 overflow-x-auto hide-scrollbar"
           role="tablist"
           aria-label="Feed sort"
         >
@@ -73,10 +76,8 @@ export default function FeedPage() {
               role="tab"
               aria-selected={sort === s.id}
               onClick={() => setSort(s.id)}
-              className={`shrink-0 px-3 py-1.5 rounded-full font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                sort === s.id
-                  ? "bg-[#2B2B2B] text-white"
-                  : "bg-white text-[#7A7A7A] border border-[#E0E0E0]"
+              className={`shrink-0 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${
+                sort === s.id ? "ds-chip-active" : "ds-chip"
               }`}
             >
               {s.label}
@@ -84,11 +85,11 @@ export default function FeedPage() {
           ))}
         </div>
 
-        <div className="border-y border-white/40 my-2 bg-[#FDFCF8]">
+        <div className="border-y border-[var(--border-subtle)] bg-transparent">
           <StoriesStrip />
         </div>
 
-        <div className="py-2 space-y-4">
+        <div className="py-3 space-y-5">
           {loading || error || posts.length === 0 ? (
             <CatalogStatus
               loading={loading}
@@ -109,7 +110,7 @@ export default function FeedPage() {
               ))}
               <div ref={sentinelRef} className="h-8" aria-hidden />
               {loadingMore ? (
-                <p className="text-center font-sans text-[10px] uppercase tracking-wider text-[#A0A0A0] pb-4">
+                <p className="text-center text-[10px] uppercase tracking-[0.16em] text-stone pb-4">
                   Loading more…
                 </p>
               ) : null}
@@ -117,7 +118,6 @@ export default function FeedPage() {
           )}
         </div>
       </main>
-      <BottomNav />
     </>
   );
 }

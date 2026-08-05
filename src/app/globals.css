@@ -11,9 +11,9 @@
   --graphite: #1A1A1A;
   --stone: #6B6B6B;
   --silver: #9A9A9A;
-  --cloud: #E8E8E8;
-  --mist: #F5F5F5;
-  --paper: #FFFFFF;
+  --cloud: #E0D6C8;
+  --mist: #F3EBE2;
+  --paper: #FBF7F2;
   --pure-white: #FFFFFF;
   --gold-zari: #C5A059;
   --accent-hot: #E63946;
@@ -25,23 +25,36 @@
   --newme-pink: #FF4D9A;
   --newme-yellow: #FFE500;
 
+  /* Premium brown canvas */
+  --canvas: #E8DFD3;
+  --canvas-deep: #D9CDBE;
+  --canvas-soft: #F0E8DE;
+
+  /* Feature buttons — high contrast on brown canvas */
+  --espresso: #2A1F18;
+  --espresso-soft: #3D2F26;
+  --bronze: #A67C52;
+  --bronze-deep: #8B6340;
+  --chip: #FFFFFF;
+  --chip-border: #2A1F18;
+
   /* Functional Tokens */
   --text-primary: var(--charcoal);
   --text-secondary: var(--graphite);
   --text-muted: var(--stone);
   --text-ghost: var(--silver);
-  --bg-canvas: var(--paper);
+  --bg-canvas: var(--canvas);
   --bg-surface: var(--mist);
   --bg-elevated: var(--paper);
   --border-default: var(--cloud);
-  --border-subtle: #F0F0F0;
+  --border-subtle: #E5DCD0;
 
   /* Legacy neumorphism tokens — kept for compat, mapped to flat shadows */
   --neu-dark: rgba(0, 0, 0, 0.08);
   --neu-light: rgba(255, 255, 255, 0.9);
 
   /* Navigation */
-  --bottom-nav-height: 68px;
+  --bottom-nav-height: 76px;
   --top-bar-height: 52px;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -54,6 +67,14 @@
   --color-cloud: var(--cloud);
   --color-mist: var(--mist);
   --color-paper: var(--paper);
+  --color-canvas: var(--canvas);
+  --color-canvas-deep: var(--canvas-deep);
+  --color-canvas-soft: var(--canvas-soft);
+  --color-espresso: var(--espresso);
+  --color-espresso-soft: var(--espresso-soft);
+  --color-bronze: var(--bronze);
+  --color-bronze-deep: var(--bronze-deep);
+  --color-chip: var(--chip);
   --color-gold: var(--gold-zari);
 
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
@@ -188,6 +209,10 @@ html {
 
 body {
   background-color: var(--bg-canvas);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -10%, var(--canvas-soft) 0%, transparent 55%),
+    linear-gradient(180deg, var(--canvas-soft) 0%, var(--canvas) 40%, var(--canvas-deep) 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-sans);
   padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
@@ -207,30 +232,66 @@ body {
 }
 
 .curvy-btn {
-  background-color: var(--bg-canvas) !important;
-  border: 1.5px solid var(--charcoal) !important;
+  background-color: var(--chip) !important;
+  border: 1.5px solid var(--chip-border) !important;
   border-radius: 9999px !important;
-  box-shadow: none !important;
-  color: var(--charcoal) !important;
+  box-shadow: 0 1px 2px rgba(42, 31, 24, 0.12) !important;
+  color: var(--espresso) !important;
   transition: all 0.15s ease !important;
 }
 .curvy-btn:active, .curvy-btn.active {
-  background-color: var(--mist) !important;
+  background-color: var(--espresso) !important;
+  color: var(--chip) !important;
   transform: scale(0.97) !important;
 }
 
 /* Dark primary button */
 .curvy-btn-dark {
-  background-color: var(--charcoal) !important;
+  background-color: var(--espresso) !important;
   border: none !important;
   border-radius: 9999px !important;
-  box-shadow: none !important;
-  color: var(--paper) !important;
+  box-shadow: 0 2px 8px rgba(42, 31, 24, 0.25) !important;
+  color: var(--chip) !important;
   transition: all 0.15s ease !important;
 }
 .curvy-btn-dark:active {
-  background-color: var(--graphite) !important;
+  background-color: var(--espresso-soft) !important;
   transform: scale(0.97) !important;
+}
+
+/* Feature / accent CTA — warm bronze on brown canvas */
+.curvy-btn-feature {
+  background-color: var(--bronze) !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 2px 10px rgba(166, 124, 82, 0.35) !important;
+  color: #1A120C !important;
+  font-weight: 800 !important;
+  transition: all 0.15s ease !important;
+}
+.curvy-btn-feature:active {
+  background-color: var(--bronze-deep) !important;
+  transform: scale(0.97) !important;
+}
+
+/* Filter / nav chips */
+.ds-chip {
+  background-color: var(--chip);
+  border: 1.5px solid var(--chip-border);
+  color: var(--espresso);
+  box-shadow: 0 1px 3px rgba(42, 31, 24, 0.1);
+}
+.ds-chip-active {
+  background-color: var(--espresso);
+  border: 1.5px solid var(--espresso);
+  color: var(--chip);
+  box-shadow: 0 2px 6px rgba(42, 31, 24, 0.22);
+}
+.ds-chip-feature {
+  background-color: var(--bronze);
+  border: 1.5px solid var(--bronze);
+  color: #1A120C;
+  box-shadow: 0 2px 8px rgba(166, 124, 82, 0.3);
 }
 
 .curvy-img {
@@ -372,10 +433,10 @@ body {
    ────────────────────────────────────── */
 
 .bottom-nav-glass {
-  background-color: var(--paper) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 -1px 0 var(--border-subtle);
+  background-color: transparent !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 }
 
 /* ──────────────────────────────────────
