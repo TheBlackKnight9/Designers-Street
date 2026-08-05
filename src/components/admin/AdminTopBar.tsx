@@ -41,7 +41,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
           actionButton.href ? (
             <Link
               href={actionButton.href}
-              className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-full hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95"
+              className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[2]" />
               {actionButton.label}
@@ -50,7 +50,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
             <button
               type="button"
               onClick={actionButton.onClick}
-              className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-full hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2]" />
               {actionButton.label}
@@ -59,7 +59,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
         ) : (
           <Link
             href="/admin/designers"
-            className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-full hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95"
+            className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[2]" />
             New House
@@ -69,7 +69,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
         {/* Icon Action Buttons */}
         <button
           type="button"
-          className="w-9 h-9 rounded-full bg-white border border-[#ECE8DC] flex items-center justify-center text-[#1A1A1A] hover:bg-[#F4F0E5] transition-colors shadow-2xs cursor-pointer"
+          className="w-9 h-9 rounded-none bg-white border border-[#ECE8DC] flex items-center justify-center text-[#1A1A1A] hover:bg-[#F4F0E5] transition-colors shadow-2xs cursor-pointer"
           aria-label="Messages"
         >
           <Mail className="w-4 h-4 stroke-[1.8]" />
@@ -77,7 +77,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
 
         <button
           type="button"
-          className="w-9 h-9 rounded-full bg-white border border-[#ECE8DC] flex items-center justify-center text-[#1A1A1A] hover:bg-[#F4F0E5] transition-colors shadow-2xs cursor-pointer"
+          className="w-9 h-9 rounded-none bg-white border border-[#ECE8DC] flex items-center justify-center text-[#1A1A1A] hover:bg-[#F4F0E5] transition-colors shadow-2xs cursor-pointer"
           aria-label="Notifications"
         >
           <Bell className="w-4 h-4 stroke-[1.8]" />
@@ -86,7 +86,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
         {/* Studio Link */}
         <Link
           href="/dashboard"
-          className="w-9 h-9 rounded-full bg-[#17181D] text-white flex items-center justify-center hover:bg-black transition-colors shadow-2xs"
+          className="w-9 h-9 rounded-none bg-[#17181D] text-white flex items-center justify-center hover:bg-black transition-colors shadow-2xs"
           title="Open Designer Studio"
         >
           <ExternalLink className="w-4 h-4 stroke-[1.8]" />
@@ -94,7 +94,7 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
 
         {/* Admin Avatar Chip */}
         <div className="flex items-center gap-2.5 pl-2 border-l border-[#ECE8DC]">
-          <div className="w-9 h-9 rounded-full bg-[#F6D746] text-[#1A1A1A] font-bold text-xs flex items-center justify-center border-2 border-white shadow-2xs">
+          <div className="w-9 h-9 rounded-none bg-[#F6D746] text-[#1A1A1A] font-bold text-xs flex items-center justify-center border border-[#ECE8DC] shadow-2xs">
             AD
           </div>
           <div className="hidden xl:block text-left">

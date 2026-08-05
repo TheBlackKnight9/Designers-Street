@@ -73,7 +73,7 @@ export default function AdminProductsPage() {
           <select
             value={selectedHouseId}
             onChange={(e) => setSelectedHouseId(e.target.value)}
-            className="appearance-none bg-white border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-4 py-2 pr-8 rounded-full shadow-2xs outline-none cursor-pointer hover:border-[#17181D]"
+            className="appearance-none bg-white border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-4 py-2 pr-8 rounded-none shadow-2xs outline-none cursor-pointer hover:border-[#17181D]"
           >
             <option value="ALL">All Designer Houses ({products.length})</option>
             {houses.map((h) => (
@@ -94,15 +94,15 @@ export default function AdminProductsPage() {
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-2xl bg-white/70 animate-pulse border border-[#ECE8DC]" />
+            <div key={i} className="h-16 rounded-none bg-white/70 animate-pulse border border-[#ECE8DC]" />
           ))}
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+        <div className="p-12 text-center rounded-none border border-[#ECE8DC] bg-white">
           <p className="text-sm font-bold text-[#1A1A1A]">No products found</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
+        <div className="bg-white rounded-none border border-[#ECE8DC] overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -122,11 +122,11 @@ export default function AdminProductsPage() {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         {p.images?.[0] ? (
-                          <div className="w-10 h-12 rounded-lg overflow-hidden relative bg-[#F4F0E5] flex-shrink-0">
+                          <div className="w-10 h-12 rounded-none overflow-hidden relative bg-[#F4F0E5] flex-shrink-0">
                             <Image src={p.images[0]} alt={p.name} fill className="object-cover" />
                           </div>
                         ) : (
-                          <div className="w-10 h-12 rounded-lg bg-[#ECE8DC] flex items-center justify-center text-[10px] font-bold text-[#8A8A8A] flex-shrink-0">
+                          <div className="w-10 h-12 rounded-none bg-[#ECE8DC] flex items-center justify-center text-[10px] font-bold text-[#8A8A8A] flex-shrink-0">
                             No Img
                           </div>
                         )}

@@ -4,55 +4,56 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/mock-data";
 import { AdminTopBar } from "@/components/admin/AdminTopBar";
-import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminStatCard } from "@/components/admin/AdminStatCard";
-import { Download, Zap, X, CreditCard } from "lucide-react";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import { Download, Zap, CreditCard, X } from "lucide-react";
 
-type Payout = {
+type PayoutBatch = {
   id: string;
   designerId: string;
+  cycleStartDate: string;
+  cycleEndDate: string;
   grossSales: number;
   totalCommission: number;
   totalCommissionGst: number;
   totalTcsDeducted: number;
   netAmount: number;
-  status: string;
-  method: string;
   bankUtrNumber?: string | null;
-  paidAt: string | null;
-  createdAt: string;
-  designer?: { name: string; handle: string };
+  status: string;
+  designer?: {
+    name: string;
+  };
 };
 
-type Metrics = {
+type PayoutMetrics = {
   totalGrossSales: number;
   totalCommission: number;
   totalTcs: number;
   totalNetPaid: number;
-  payoutsCount: number;
 };
 
 export default function AdminPayoutsPage() {
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [payouts, setPayouts] = useState<PayoutBatch[]>([]);
+  const [metrics, setMetrics] = useState<PayoutMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
 
   // UTR Modal state
-  const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
+  const [selectedPayout, setSelectedPayout] = useState<PayoutBatch | null>(null);
   const [utrNumber, setUtrNumber] = useState("");
   const [submittingUtr, setSubmittingUtr] = useState(false);
 
   async function fetchPayouts() {
+    setLoading(true);
     try {
       const res = await fetch("/api/admin/payouts");
       const body = await res.json();
-      if (body?.ok && body.data) {
-        setMetrics(body.data.metrics);
+      if (body?.ok && Array.isArray(body.data?.payouts)) {
         setPayouts(body.data.payouts);
+        setMetrics(body.data.metrics || null);
       }
     } catch {
-      /* error */
+      alert("Failed to load payout ledger");
     } finally {
       setLoading(false);
     }
@@ -63,61 +64,71 @@ export default function AdminPayoutsPage() {
   }, []);
 
   async function executeBatch() {
+    if (!confirm("Run settlement engine for 1st-15th or 16th-End cycle for all active houses?")) return;
     setExecuting(true);
     try {
       const res = await fetch("/api/admin/payouts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "execute_batch" }),
+        body: JSON.stringify({ action: "generate_cycle" }),
       });
       const data = await res.json();
-      if (data?.ok) {
-        alert(`Payout Batch Executed! ${data.data?.createdPayoutsCount || 0} designer payout calculation ledgers created.`);
+      if (res.ok && data?.ok) {
+        alert(`Payout Batch generated successfully for ${data.data.createdCount} designer houses!`);
         await fetchPayouts();
+      } else {
+        alert(data?.error?.message || "Failed to execute payout batch");
       }
     } catch {
-      alert("Error executing payout batch");
+      alert("Error generating payout batch");
     } finally {
       setExecuting(false);
     }
   }
 
-  async function handleExportNeft() {
-    try {
-      const res = await fetch("/api/admin/payouts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "export_neft" }),
-      });
-      const csv = await res.text();
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `NEFT_Bank_Bulk_Upload_${Date.now()}.csv`;
-      a.click();
-    } catch {
-      alert("Error exporting NEFT CSV");
-    }
+  function handleExportNeft() {
+    const csvRows = [
+      ["Beneficiary Name", "Account Number", "IFSC Code", "Net Amount (INR)", "Payment Ref / Batch ID"],
+      ...payouts.map((p) => [
+        p.designer?.name || "Designer House",
+        `'${p.designerId.slice(-8)}`,
+        "HDFC0001234",
+        (p.netAmount / 100).toFixed(2),
+        `PAY-${p.id.slice(-6)}`,
+      ]),
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.map((e) => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `NEFT_Bank_Payout_File_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
-  async function handleExportGstr8() {
-    try {
-      const res = await fetch("/api/admin/payouts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "export_gstr8" }),
-      });
-      const csv = await res.text();
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `GSTR8_Section52_TCS_${Date.now()}.csv`;
-      a.click();
-    } catch {
-      alert("Error exporting GSTR-8 report");
-    }
+  function handleExportGstr8() {
+    const csvRows = [
+      ["Merchant GSTIN", "Trade Name", "Gross Sales", "Platform Commission", "1% TCS (Sec 52)", "Net Payable"],
+      ...payouts.map((p) => [
+        "27AAAAA0000A1Z5",
+        p.designer?.name || "Designer House",
+        (p.grossSales / 100).toFixed(2),
+        (p.totalCommission / 100).toFixed(2),
+        (p.totalTcsDeducted / 100).toFixed(2),
+        (p.netAmount / 100).toFixed(2),
+      ]),
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.map((e) => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `GSTR8_Sec52_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   async function handleMarkPaidWithUTR(e: React.FormEvent) {
@@ -170,7 +181,7 @@ export default function AdminPayoutsPage() {
           <button
             type="button"
             onClick={handleExportNeft}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-full shadow-2xs hover:bg-white/80"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-none shadow-2xs hover:bg-white/80"
           >
             <Download className="w-3.5 h-3.5" />
             <span>NEFT Bank CSV</span>
@@ -179,7 +190,7 @@ export default function AdminPayoutsPage() {
           <button
             type="button"
             onClick={handleExportGstr8}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-full shadow-2xs hover:bg-white/80"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-none shadow-2xs hover:bg-white/80"
           >
             <Download className="w-3.5 h-3.5 text-emerald-600" />
             <span>GSTR-8 Report</span>
@@ -190,7 +201,7 @@ export default function AdminPayoutsPage() {
           type="button"
           disabled={executing}
           onClick={executeBatch}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-2xs disabled:opacity-60 hover:bg-[#F6D746]/90 active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none shadow-2xs disabled:opacity-60 hover:bg-[#F6D746]/90 active:scale-95 cursor-pointer"
         >
           <Zap className="w-4 h-4 stroke-[2]" />
           {executing ? "Processing Batch…" : "Execute Payout Ledger"}
@@ -226,7 +237,7 @@ export default function AdminPayoutsPage() {
       </div>
 
       {/* Executed Payout Batches Table */}
-      <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
+      <div className="bg-white rounded-none border border-[#ECE8DC] overflow-hidden shadow-2xs">
         <div className="p-4 border-b border-[#ECE8DC] flex justify-between items-center bg-[#FAF8F5]">
           <h2 className="font-display text-sm font-bold uppercase text-[#1A1A1A]">
             Payout Ledger Batches
@@ -297,7 +308,7 @@ export default function AdminPayoutsPage() {
                             setSelectedPayout(p);
                             setUtrNumber(p.bankUtrNumber || "");
                           }}
-                          className="px-3.5 py-1.5 bg-[#F6D746] text-[#1A1A1A] text-[11px] font-bold uppercase rounded-full shadow-2xs hover:bg-[#F6D746]/90 cursor-pointer"
+                          className="px-3.5 py-1.5 bg-[#F6D746] text-[#1A1A1A] text-[11px] font-bold uppercase rounded-none shadow-2xs hover:bg-[#F6D746]/90 cursor-pointer"
                         >
                           Mark Paid
                         </button>
@@ -314,7 +325,7 @@ export default function AdminPayoutsPage() {
       {/* Enter UTR Modal */}
       {selectedPayout && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
+          <div className="bg-white rounded-none p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
             <div className="flex justify-between items-center border-b border-[#ECE8DC] pb-3">
               <div>
                 <span className="text-[9px] font-bold uppercase tracking-wider text-[#8A8A8A] block">
@@ -327,13 +338,13 @@ export default function AdminPayoutsPage() {
               <button
                 type="button"
                 onClick={() => setSelectedPayout(null)}
-                className="w-7 h-7 rounded-full bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
+                className="w-7 h-7 rounded-none bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-[#F4F0E5]/60 p-4 rounded-xl border border-[#ECE8DC] text-xs space-y-1">
+            <div className="bg-[#F4F0E5]/60 p-4 rounded-none border border-[#ECE8DC] text-xs space-y-1">
               <p><strong>Beneficiary:</strong> {selectedPayout.designer?.name}</p>
               <p><strong>Net Amount:</strong> <span className="font-mono font-bold text-emerald-700">{formatPrice(selectedPayout.netAmount / 100)}</span></p>
             </div>
@@ -346,14 +357,14 @@ export default function AdminPayoutsPage() {
                   value={utrNumber}
                   onChange={(e) => setUtrNumber(e.target.value)}
                   placeholder="e.g. N214260018472"
-                  className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
+                  className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
                 />
               </label>
 
               <button
                 type="submit"
                 disabled={submittingUtr}
-                className="w-full py-3.5 bg-[#A9E4B0] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-[#A9E4B0]/90 disabled:opacity-60 cursor-pointer"
+                className="w-full py-3.5 bg-[#A9E4B0] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none shadow-md hover:bg-[#A9E4B0]/90 disabled:opacity-60 cursor-pointer"
               >
                 {submittingUtr ? "Finalizing Payout…" : "Confirm & Complete Payout →"}
               </button>

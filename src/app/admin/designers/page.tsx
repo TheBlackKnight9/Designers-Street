@@ -187,16 +187,16 @@ export default function AdminDesignersPage() {
             placeholder="Search by house name or @handle…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-full border border-[#ECE8DC] bg-white pl-10 pr-4 py-2 text-xs outline-none focus:border-[#17181D] font-medium shadow-2xs"
+            className="w-full rounded-none border border-[#ECE8DC] bg-white pl-10 pr-4 py-2 text-xs outline-none focus:border-[#17181D] font-medium shadow-2xs"
           />
         </div>
 
-        <div className="flex bg-white p-1 rounded-full border border-[#ECE8DC] shadow-2xs">
+        <div className="flex bg-white p-1 rounded-none border border-[#ECE8DC] shadow-2xs">
           {(["active", "suspended"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
+              className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-colors ${
                 activeTab === t
                   ? "bg-[#17181D] text-white shadow-xs"
                   : "text-[#8A8A8A] hover:text-[#1A1A1A]"
@@ -212,11 +212,11 @@ export default function AdminDesignersPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-48 rounded-2xl bg-white/70 animate-pulse border border-[#ECE8DC]" />
+            <div key={i} className="h-48 rounded-none bg-white/70 animate-pulse border border-[#ECE8DC]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-[#ECE8DC] rounded-2xl bg-white">
+        <div className="py-16 text-center border border-dashed border-[#ECE8DC] rounded-none bg-white">
           <p className="text-sm font-bold text-[#1A1A1A]">No designer houses found</p>
           <p className="text-xs text-[#8A8A8A] mt-1 font-medium">
             {activeTab === "active" ? "Click '+ New House' to register your first designer house." : "No suspended designer houses."}
@@ -227,7 +227,7 @@ export default function AdminDesignersPage() {
           {filtered.map((h) => (
             <div
               key={h.id}
-              className="bg-white border border-[#ECE8DC] rounded-2xl p-5 space-y-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white border border-[#ECE8DC] rounded-none p-5 space-y-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
             >
               <div>
                 {/* House Header */}
@@ -237,10 +237,10 @@ export default function AdminDesignersPage() {
                     <img
                       src={h.logo}
                       alt={h.name}
-                      className="w-12 h-12 rounded-full object-cover border border-[#ECE8DC] shadow-2xs flex-shrink-0"
+                      className="w-12 h-12 rounded-none object-cover border border-[#ECE8DC] shadow-2xs flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-[#17181D] text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-none bg-[#17181D] text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
                       {h.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -259,7 +259,7 @@ export default function AdminDesignersPage() {
                 </div>
 
                 {/* Metrics Bar */}
-                <div className="grid grid-cols-3 gap-2 text-center bg-[#F4F0E5]/60 rounded-xl p-2.5 text-xs mt-4 border border-[#ECE8DC]">
+                <div className="grid grid-cols-3 gap-2 text-center bg-[#F4F0E5]/60 rounded-none p-2.5 text-xs mt-4 border border-[#ECE8DC]">
                   <div>
                     <p className="font-bold font-mono text-[#1A1A1A]">{h._count.products}</p>
                     <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Products</p>
@@ -277,17 +277,17 @@ export default function AdminDesignersPage() {
                 {/* Finance Chips */}
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   {h.gstin && (
-                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-full font-mono text-[#1A1A1A]">
+                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-none font-mono text-[#1A1A1A]">
                       GST: {h.gstin}
                     </span>
                   )}
                   {h.bankAccount && (
-                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-full font-mono text-[#1A1A1A]">
+                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-none font-mono text-[#1A1A1A]">
                       A/C: ****{h.bankAccount.slice(-4)}
                     </span>
                   )}
                   {h.returnPincode && (
-                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-full font-mono text-[#1A1A1A]">
+                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-none font-mono text-[#1A1A1A]">
                       PIN: {h.returnPincode}
                     </span>
                   )}
@@ -299,7 +299,7 @@ export default function AdminDesignersPage() {
                 <button
                   type="button"
                   onClick={() => handleSelectHouse(h.id)}
-                  className="flex-1 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#F6D746]/90 transition-all shadow-2xs text-center flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                  className="flex-1 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs text-center flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
                 >
                   Studio
                   <ExternalLink className="w-3.5 h-3.5 stroke-[2]" />
@@ -308,7 +308,7 @@ export default function AdminDesignersPage() {
                 <button
                   type="button"
                   onClick={() => handleSuspend(h.id, h.accountStatus === "active")}
-                  className="px-3 py-2.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-full text-[#8A8A8A] hover:bg-[#F2A6A6]/20 hover:text-red-700 transition-colors"
+                  className="px-3 py-2.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-none text-[#8A8A8A] hover:bg-[#F2A6A6]/20 hover:text-red-700 transition-colors"
                 >
                   {h.accountStatus === "active" ? "Suspend" : "Activate"}
                 </button>
@@ -321,8 +321,8 @@ export default function AdminDesignersPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[#ECE8DC]">
-            <div className="sticky top-0 bg-white border-b border-[#ECE8DC] px-6 py-4 flex items-center justify-between rounded-t-3xl">
+          <div className="bg-white rounded-none w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[#ECE8DC]">
+            <div className="sticky top-0 bg-white border-b border-[#ECE8DC] px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="font-display text-lg font-bold uppercase text-[#1A1A1A]">
                   Register Designer House
@@ -332,7 +332,7 @@ export default function AdminDesignersPage() {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
+                className="w-8 h-8 rounded-none bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -357,20 +357,20 @@ export default function AdminDesignersPage() {
                       }
                     }}
                     placeholder="Noir Structure"
-                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-bold"
+                    className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-bold"
                   />
                 </label>
 
                 <label className="block">
                   <span className="font-bold uppercase text-[#8A8A8A]">Handle (URL slug) *</span>
                   <div className="mt-1 flex items-center gap-1">
-                    <span className="px-3 py-2.5 bg-[#ECE8DC] rounded-xl font-bold text-[#8A8A8A]">@</span>
+                    <span className="px-3 py-2.5 bg-[#ECE8DC] rounded-none font-bold text-[#8A8A8A]">@</span>
                     <input
                       required
                       value={form.handle}
                       onChange={(e) => f("handle", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ""))}
                       placeholder="noir-structure"
-                      className="flex-1 rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-mono"
+                      className="flex-1 rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-mono"
                     />
                   </div>
                 </label>
@@ -382,7 +382,7 @@ export default function AdminDesignersPage() {
                     value={form.bio}
                     onChange={(e) => f("bio", e.target.value)}
                     placeholder="Luxury Indian couture redefining contemporary bridal fashion…"
-                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none resize-none"
+                    className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none resize-none"
                   />
                 </label>
 
@@ -394,7 +394,7 @@ export default function AdminDesignersPage() {
                       value={form.logo}
                       onChange={(e) => f("logo", e.target.value)}
                       placeholder="https://…/logo.jpg"
-                      className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
+                      className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
                     />
                   </label>
                   <label className="block">
@@ -404,7 +404,7 @@ export default function AdminDesignersPage() {
                       value={form.banner}
                       onChange={(e) => f("banner", e.target.value)}
                       placeholder="https://…/banner.jpg"
-                      className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
+                      className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
                     />
                   </label>
                 </div>
@@ -415,7 +415,7 @@ export default function AdminDesignersPage() {
                     <select
                       value={form.state}
                       onChange={(e) => { f("state", e.target.value); f("city", ""); }}
-                      className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
+                      className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
                     >
                       <option value="">Select State…</option>
                       {getIndianStates().map((s) => (
@@ -429,7 +429,7 @@ export default function AdminDesignersPage() {
                       <select
                         value={form.city}
                         onChange={(e) => f("city", e.target.value)}
-                        className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
+                        className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
                       >
                         <option value="">Select City…</option>
                         {getCitiesForState(form.state).map((c) => (
@@ -441,7 +441,7 @@ export default function AdminDesignersPage() {
                         value={form.city}
                         onChange={(e) => f("city", e.target.value)}
                         placeholder="City / District"
-                        className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
+                        className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
                       />
                     )}
                   </label>
@@ -463,7 +463,7 @@ export default function AdminDesignersPage() {
                     onChange={(e) => f("commissionRate", e.target.value)}
                     className="flex-1 accent-[#17181D]"
                   />
-                  <span className="w-14 text-center font-bold font-mono text-[#1A1A1A] bg-[#F4F0E5] border border-[#ECE8DC] rounded-xl px-2 py-1">
+                  <span className="w-14 text-center font-bold font-mono text-[#1A1A1A] bg-[#F4F0E5] border border-[#ECE8DC] rounded-none px-2 py-1">
                     {form.commissionRate}%
                   </span>
                 </div>
@@ -474,14 +474,14 @@ export default function AdminDesignersPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 border border-[#ECE8DC] text-[#8A8A8A] font-bold uppercase rounded-full"
+                  className="flex-1 py-3 border border-[#ECE8DC] text-[#8A8A8A] font-bold uppercase rounded-none"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-3 bg-[#F6D746] text-[#1A1A1A] font-bold uppercase rounded-full shadow-sm hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
+                  className="flex-1 py-3 bg-[#F6D746] text-[#1A1A1A] font-bold uppercase rounded-none shadow-sm hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
                 >
                   {saving ? "Registering…" : "Register House →"}
                 </button>

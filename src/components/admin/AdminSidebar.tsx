@@ -71,7 +71,7 @@ export function AdminSidebar() {
             <Link
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3.5 px-4 py-2.5 rounded-full font-sans text-sm font-medium transition-all ${
+              className={`flex items-center gap-3.5 px-4 py-2.5 rounded-none font-sans text-sm font-medium transition-all ${
                 isActive
                   ? "bg-white text-[#17181D] font-bold shadow-md"
                   : "text-[#A0A5B5] hover:text-white hover:bg-white/5"
@@ -80,7 +80,7 @@ export function AdminSidebar() {
               <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-[#17181D]" : "text-[#A0A5B5]"}`} />
               <span className="truncate">{item.label}</span>
               {item.badge && (
-                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#F6D746] text-[#1A1A1A]">
+                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold rounded-none bg-[#F6D746] text-[#1A1A1A]">
                   {item.badge}
                 </span>
               )}
@@ -97,7 +97,7 @@ export function AdminSidebar() {
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed bottom-4 right-4 z-[90] p-3 rounded-full bg-[#17181D] text-white shadow-xl flex items-center justify-center"
+        className="lg:hidden fixed bottom-4 right-4 z-[90] p-3 rounded-none bg-[#17181D] text-white shadow-xl flex items-center justify-center"
         aria-label="Toggle Navigation Sidebar"
       >
         {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -122,7 +122,7 @@ export function AdminSidebar() {
         <div className="space-y-6">
           {/* Brand Logo & Name */}
           <Link href="/admin" className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 rounded-xl bg-[#F6D746] text-[#17181D] flex items-center justify-center font-black text-sm shadow-sm">
+            <div className="w-9 h-9 rounded-none bg-[#F6D746] text-[#17181D] flex items-center justify-center font-black text-sm shadow-sm">
               DS
             </div>
             <div>

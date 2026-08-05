@@ -72,17 +72,17 @@ export default function AdminConceptLeadsPage() {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
-          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
+          <div className="h-28 bg-white/70 rounded-none animate-pulse border border-[#ECE8DC]" />
+          <div className="h-28 bg-white/70 rounded-none animate-pulse border border-[#ECE8DC]" />
         </div>
       ) : leads.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white space-y-1">
+        <div className="p-12 text-center rounded-none border border-[#ECE8DC] bg-white space-y-1">
           <Sparkles className="w-8 h-8 text-[#F6D746] mx-auto mb-2" />
           <p className="text-sm font-bold text-[#1A1A1A]">No concept art leads received yet</p>
           <p className="text-xs text-[#8A8A8A] font-medium">Inquiries submitted on prototype concept listings will appear here.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
+        <div className="bg-white rounded-none border border-[#ECE8DC] overflow-hidden shadow-2xs">
           <div className="p-4 border-b border-[#ECE8DC] flex justify-between items-center bg-[#FAF8F5]">
             <h2 className="font-display text-sm font-bold uppercase text-[#1A1A1A]">
               Inquiry Leads Queue
@@ -112,7 +112,7 @@ export default function AdminConceptLeadsPage() {
                       <div className="flex items-center gap-3">
                         {l.product?.images?.[0] && (
                           /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={l.product.images[0]} alt="" className="w-10 h-12 object-cover rounded-lg flex-shrink-0" />
+                          <img src={l.product.images[0]} alt="" className="w-10 h-12 object-cover rounded-none flex-shrink-0" />
                         )}
                         <div>
                           <p className="text-xs font-bold text-[#1A1A1A] truncate max-w-[160px]">{l.product?.name || "Concept Item"}</p>
@@ -153,7 +153,7 @@ export default function AdminConceptLeadsPage() {
                           value={l.status}
                           aria-label="Update lead status"
                           onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                          className="appearance-none bg-[#F4F0E5] border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-3 py-1.5 pr-7 rounded-full outline-none cursor-pointer hover:border-[#17181D]"
+                          className="appearance-none bg-[#F4F0E5] border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-3 py-1.5 pr-7 rounded-none outline-none cursor-pointer hover:border-[#17181D]"
                         >
                           <option value="new">New</option>
                           <option value="contacted">Contacted</option>

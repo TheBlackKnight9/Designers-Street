@@ -15,10 +15,10 @@ export function AdminActionHubCard({ label, desc, icon, href }: AdminActionHubCa
   return (
     <Link
       href={href}
-      className="bg-white rounded-2xl p-5 border border-[#ECE8DC] shadow-2xs hover:border-[#17181D] hover:shadow-md transition-all group flex flex-col justify-between"
+      className="bg-white rounded-none p-5 border border-[#ECE8DC] shadow-2xs hover:border-[#17181D] hover:shadow-md transition-all group flex flex-col justify-between"
     >
       <div>
-        <div className="w-10 h-10 rounded-xl bg-[#F4F0E5] flex items-center justify-center text-xl mb-3 group-hover:scale-105 transition-transform">
+        <div className="w-10 h-10 rounded-none bg-[#F4F0E5] flex items-center justify-center text-xl mb-3 group-hover:scale-105 transition-transform">
           {icon}
         </div>
         <h4 className="font-sans text-sm font-bold text-[#1A1A1A] group-hover:underline leading-snug">

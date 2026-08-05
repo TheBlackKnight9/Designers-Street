@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-32 rounded-2xl bg-white/60 animate-pulse border border-[#ECE8DC]" />
+                <div key={i} className="h-32 rounded-none bg-white/60 animate-pulse border border-[#ECE8DC]" />
               ))
             : stats.map((s) => (
                 <AdminStatCard
@@ -140,7 +140,7 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* Studio Banner Shortcut */}
-      <section className="bg-[#17181D] text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md border border-black">
+      <section className="bg-[#17181D] text-white rounded-none p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md border border-black">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#F6D746]" />
@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
 
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#F6D746]/90 transition-all shadow-sm whitespace-nowrap active:scale-95"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-none hover:bg-[#F6D746]/90 transition-all shadow-sm whitespace-nowrap active:scale-95"
         >
           Open Studio
           <ArrowRight className="w-4 h-4 stroke-[2]" />

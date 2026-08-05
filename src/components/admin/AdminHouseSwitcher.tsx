@@ -56,7 +56,7 @@ export function AdminHouseSwitcher() {
   if (loading || houses.length === 0) return null;
 
   return (
-    <div className="relative flex items-center gap-1.5 bg-white border border-[#ECE8DC] px-3 py-1.5 rounded-full shadow-2xs hover:border-[#17181D] transition-colors">
+    <div className="relative flex items-center gap-1.5 bg-white border border-[#ECE8DC] px-3 py-1.5 rounded-none shadow-2xs hover:border-[#17181D] transition-colors">
       <Store className="w-3.5 h-3.5 text-[#8A8A8A]" />
       <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A8A]">House:</span>
       <div className="relative flex items-center">

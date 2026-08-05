@@ -10,13 +10,6 @@ interface AdminStatusBadgeProps {
 export function AdminStatusBadge({ status, className = "" }: AdminStatusBadgeProps) {
   const s = (status || "").toLowerCase().trim();
 
-  // Palette Mapping from reference:
-  // Primary Gold (#F6D746): paid, verified, approved, active
-  // Secondary Peach (#F3B383): delivered, in-progress, shipped, processing
-  // Success Mint (#A9E4B0): completed, resolved, delivered_confirmed
-  // Danger Pink (#F2A6A6): suspended, declined, rejected, cancelled, dispute
-  // Neutral Gray (#E4E1D6): draft, pending, inactive, default
-
   let bg = "bg-[#E4E1D6] text-[#2B2B2B]";
 
   if (["paid", "verified", "approved", "active", "published"].some((k) => s.includes(k))) {
@@ -31,7 +24,6 @@ export function AdminStatusBadge({ status, className = "" }: AdminStatusBadgePro
     bg = "bg-[#E4E1D6] text-[#4A4A4A]";
   }
 
-  // Format label nicely (e.g. "paid" -> "Paid", "in_transit" -> "In Transit")
   const label = status
     ? status
         .replace(/_/g, " ")
@@ -41,7 +33,7 @@ export function AdminStatusBadge({ status, className = "" }: AdminStatusBadgePro
 
   return (
     <span
-      className={`inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-2xs whitespace-nowrap ${bg} ${className}`}
+      className={`inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-none shadow-2xs whitespace-nowrap ${bg} ${className}`}
     >
       {label}
     </span>

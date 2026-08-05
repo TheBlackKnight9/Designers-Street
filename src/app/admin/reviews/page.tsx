@@ -95,17 +95,17 @@ export default function AdminReviewsPage() {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
-          <div className="h-28 bg-white/70 rounded-2xl animate-pulse border border-[#ECE8DC]" />
+          <div className="h-28 bg-white/70 rounded-none animate-pulse border border-[#ECE8DC]" />
+          <div className="h-28 bg-white/70 rounded-none animate-pulse border border-[#ECE8DC]" />
         </div>
       ) : reviews.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+        <div className="p-12 text-center rounded-none border border-[#ECE8DC] bg-white">
           <p className="text-sm font-bold text-[#1A1A1A]">No customer reviews found</p>
         </div>
       ) : (
         <div className="space-y-4">
           {reviews.map((r) => (
-            <div key={r.id} className="bg-white p-6 rounded-2xl border border-[#ECE8DC] space-y-3 shadow-2xs">
+            <div key={r.id} className="bg-white p-6 rounded-none border border-[#ECE8DC] space-y-3 shadow-2xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ECE8DC] pb-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function AdminReviewsPage() {
                   <button
                     type="button"
                     onClick={() => handleToggleApprove(r.id, r.isApproved)}
-                    className="px-3 py-1.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-full text-[#8A8A8A] hover:bg-[#F4F0E5] hover:text-[#1A1A1A] transition-colors"
+                    className="px-3 py-1.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-none text-[#8A8A8A] hover:bg-[#F4F0E5] hover:text-[#1A1A1A] transition-colors"
                   >
                     {r.isApproved ? "Hide Review" : "Publish Review"}
                   </button>
@@ -141,7 +141,7 @@ export default function AdminReviewsPage() {
 
               {/* Designer Official Response */}
               {r.designerReply ? (
-                <div className="bg-[#F4F0E5]/60 p-3 rounded-xl border border-[#ECE8DC] text-xs space-y-1">
+                <div className="bg-[#F4F0E5]/60 p-3 rounded-none border border-[#ECE8DC] text-xs space-y-1">
                   <span className="font-bold uppercase text-[10px] text-[#8A8A8A] block">
                     Official Atelier Response:
                   </span>
@@ -153,13 +153,13 @@ export default function AdminReviewsPage() {
                     value={replyText[r.id] || ""}
                     onChange={(e) => setReplyText({ ...replyText, [r.id]: e.target.value })}
                     placeholder="Write official response on behalf of designer house…"
-                    className="flex-1 rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-2.5 text-xs outline-none font-medium"
+                    className="flex-1 rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-2.5 text-xs outline-none font-medium"
                   />
                   <button
                     type="button"
                     disabled={submittingId === r.id}
                     onClick={() => handlePostReply(r.id)}
-                    className="px-4 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-2xs hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
+                    className="px-4 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none shadow-2xs hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
                   >
                     Reply
                   </button>

@@ -85,7 +85,7 @@ export default function AdminApplicationsPage() {
             key={st}
             type="button"
             onClick={() => setFilter(st)}
-            className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
+            className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-colors ${
               filter === st
                 ? "bg-[#17181D] text-white shadow-xs"
                 : "bg-white text-[#8A8A8A] border border-[#ECE8DC] hover:text-[#1A1A1A]"
@@ -98,20 +98,20 @@ export default function AdminApplicationsPage() {
 
       {loading ? (
         <div className="space-y-4">
-          <div className="h-40 bg-white/70 animate-pulse rounded-2xl border border-[#ECE8DC]" />
-          <div className="h-40 bg-white/70 animate-pulse rounded-2xl border border-[#ECE8DC]" />
+          <div className="h-40 bg-white/70 animate-pulse rounded-none border border-[#ECE8DC]" />
+          <div className="h-40 bg-white/70 animate-pulse rounded-none border border-[#ECE8DC]" />
         </div>
       ) : applications.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+        <div className="p-12 text-center rounded-none border border-[#ECE8DC] bg-white">
           <p className="text-sm font-bold text-[#1A1A1A]">No applications found in this queue</p>
         </div>
       ) : (
         <div className="space-y-4">
           {applications.map((app) => (
-            <div key={app.id} className="bg-white p-6 rounded-2xl border border-[#ECE8DC] space-y-4 shadow-2xs">
+            <div key={app.id} className="bg-white p-6 rounded-none border border-[#ECE8DC] space-y-4 shadow-2xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ECE8DC] pb-3">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A] bg-[#F6D746] px-2.5 py-0.5 rounded-full inline-block mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A] bg-[#F6D746] px-2.5 py-0.5 rounded-none inline-block mb-1">
                     {app.brandName}
                   </span>
                   <h2 className="font-display text-lg font-bold text-[#1A1A1A]">
@@ -135,7 +135,7 @@ export default function AdminApplicationsPage() {
                     <span className="uppercase text-[#8A8A8A] text-[10px] block">Categories:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {app.categories.map((c) => (
-                        <span key={c} className="px-2 py-0.5 bg-[#F4F0E5] text-[10px] font-bold rounded-md text-[#1A1A1A]">
+                        <span key={c} className="px-2 py-0.5 bg-[#F4F0E5] text-[10px] font-bold rounded-none text-[#1A1A1A]">
                           {c}
                         </span>
                       ))}
@@ -164,7 +164,7 @@ export default function AdminApplicationsPage() {
                   </span>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     {app.portfolioImages.map((img, i) => (
-                      <a key={i} href={img} target="_blank" rel="noreferrer" className="relative aspect-square rounded-xl overflow-hidden border border-[#ECE8DC] block group bg-[#F4F0E5]">
+                      <a key={i} href={img} target="_blank" rel="noreferrer" className="relative aspect-square rounded-none overflow-hidden border border-[#ECE8DC] block group bg-[#F4F0E5]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       </a>
@@ -180,7 +180,7 @@ export default function AdminApplicationsPage() {
                     type="button"
                     disabled={processingId === app.id}
                     onClick={() => handleAction(app.id, "approve")}
-                    className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-2xs hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer active:scale-95"
+                    className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-none shadow-2xs hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer active:scale-95"
                   >
                     <Check className="w-4 h-4 stroke-[2]" />
                     Approve Application
@@ -189,7 +189,7 @@ export default function AdminApplicationsPage() {
                     type="button"
                     disabled={processingId === app.id}
                     onClick={() => handleAction(app.id, "more_info")}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold uppercase rounded-full hover:bg-white/80"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold uppercase rounded-none hover:bg-white/80"
                   >
                     <HelpCircle className="w-4 h-4" />
                     Request Info
@@ -198,7 +198,7 @@ export default function AdminApplicationsPage() {
                     type="button"
                     disabled={processingId === app.id}
                     onClick={() => handleAction(app.id, "reject")}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-red-700 font-sans text-xs font-bold uppercase rounded-full hover:bg-red-50"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-red-700 font-sans text-xs font-bold uppercase rounded-none hover:bg-red-50"
                   >
                     <X className="w-4 h-4" />
                     Reject

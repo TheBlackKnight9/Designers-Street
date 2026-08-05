@@ -106,15 +106,15 @@ export default function AdminCouponsPage() {
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-2xl bg-white/70 animate-pulse border border-[#ECE8DC]" />
+            <div key={i} className="h-16 rounded-none bg-white/70 animate-pulse border border-[#ECE8DC]" />
           ))}
         </div>
       ) : coupons.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-[#ECE8DC] bg-white">
+        <div className="p-12 text-center rounded-none border border-[#ECE8DC] bg-white">
           <p className="text-sm font-bold text-[#1A1A1A]">No promotional coupons active</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#ECE8DC] overflow-hidden shadow-2xs">
+        <div className="bg-white rounded-none border border-[#ECE8DC] overflow-hidden shadow-2xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -134,7 +134,7 @@ export default function AdminCouponsPage() {
                     <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
                       <div className="flex items-center gap-2">
                         <Tag className="w-4 h-4 text-[#F6D746] fill-[#F6D746]" />
-                        <span className="bg-[#F4F0E5] px-2.5 py-1 rounded-md border border-[#ECE8DC]">
+                        <span className="bg-[#F4F0E5] px-2.5 py-1 rounded-none border border-[#ECE8DC]">
                           {c.code}
                         </span>
                       </div>
@@ -168,7 +168,7 @@ export default function AdminCouponsPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
+          <div className="bg-white rounded-none p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
             <div className="flex justify-between items-center border-b border-[#ECE8DC] pb-3">
               <div>
                 <span className="text-[9px] font-bold uppercase tracking-wider text-[#8A8A8A] block">
@@ -181,7 +181,7 @@ export default function AdminCouponsPage() {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="w-7 h-7 rounded-full bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
+                className="w-7 h-7 rounded-none bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -195,7 +195,7 @@ export default function AdminCouponsPage() {
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
                   placeholder="e.g. WELCOME15"
-                  className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none tracking-wider"
+                  className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none tracking-wider"
                 />
               </label>
 
@@ -205,7 +205,7 @@ export default function AdminCouponsPage() {
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as any)}
-                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-bold outline-none"
+                    className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-bold outline-none"
                   >
                     <option value="fixed_amount">Fixed Amount (₹)</option>
                     <option value="percentage">Percentage (%)</option>
@@ -219,7 +219,7 @@ export default function AdminCouponsPage() {
                     required
                     value={value}
                     onChange={(e) => setValue(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
+                    className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
                   />
                 </label>
               </div>
@@ -230,14 +230,14 @@ export default function AdminCouponsPage() {
                   type="number"
                   value={minOrderValue}
                   onChange={(e) => setMinOrderValue(Number(e.target.value))}
-                  className="mt-1 w-full rounded-xl border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
+                  className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
                 />
               </label>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
+                className="w-full py-3.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none shadow-md hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
               >
                 {submitting ? "Creating Promo…" : "Create Coupon Code →"}
               </button>
