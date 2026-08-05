@@ -237,19 +237,21 @@ export default function ProfilePage() {
             {user?.role === "admin" && (
               <Link
                 href="/admin"
-                className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 backdrop-blur-sm"
+                className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/10 px-5 py-4 backdrop-blur-sm hover:bg-white/15 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.1)] active:scale-[0.98]"
               >
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-bronze">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#d4af37]">
                     Admin Studio
                   </p>
-                  <p className="text-[12px] text-white/60 mt-0.5">
+                  <p className="text-[12px] text-white/70 mt-1 font-medium">
                     Houses, products &amp; orders
                   </p>
                 </div>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-bronze">
-                  Open →
-                </span>
+                <div className="bg-[#d4af37]/15 border border-[#d4af37]/30 rounded-full px-4 py-1.5 shadow-sm">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#d4af37]">
+                    Open
+                  </span>
+                </div>
               </Link>
             )}
           </div>
@@ -378,13 +380,18 @@ export default function ProfilePage() {
             </div>
 
             {user && (
-              <button
-                type="button"
-                onClick={logout}
-                className="w-full py-3 text-center text-[12px] font-bold uppercase tracking-[0.14em] text-stone hover:text-red-700 transition-colors"
-              >
-                Log out
-              </button>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="w-full py-3.5 flex justify-center items-center gap-2 rounded-xl border border-red-900/10 bg-red-50 text-[11px] font-extrabold uppercase tracking-[0.15em] text-red-600 shadow-sm hover:bg-red-100 hover:border-red-900/20 active:scale-[0.98] transition-all"
+                >
+                  <svg className="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Log out
+                </button>
+              </div>
             )}
           </section>
         </div>
