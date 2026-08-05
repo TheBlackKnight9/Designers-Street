@@ -3,6 +3,17 @@ import { resolvePostProductId } from "@/lib/feed-product";
 import type { MediaItemDTO } from "@/server/dto/public";
 import type { ViewerMediaItem } from "@/lib/media/types";
 import { getProductById, getDesignerById } from "@/lib/mock-data";
+import { isVideoAssetUrl } from "@/lib/fashion-videos";
+import { getOptimizedMediaUrl } from "@/lib/media/cloudinary-delivery";
+
+/** Prefer a real still for <video poster>; derive a Cloudinary frame if cover is a video URL. */
+function resolveVideoPoster(videoUrl: string, cover?: string | null): string | null {
+  if (cover && !isVideoAssetUrl(cover)) return cover;
+  if (videoUrl) {
+    return getOptimizedMediaUrl({ url: videoUrl, type: "video" }, "thumb");
+  }
+  return null;
+}
 
 function enrichFromProduct(
   productId: string | undefined,
@@ -144,29 +155,41 @@ export function feedPostToViewerMedia(post: FeedPostData): ViewerMediaItem[] {
         id: `${post.id}-video`,
         type: "video",
         url: post.videoUrl,
-        thumbnailUrl: post.image || null,
+        thumbnailUrl: resolveVideoPoster(post.videoUrl, post.image),
         alt: post.caption,
         ...social,
       },
     ];
   }
 
-  const items: ViewerMediaItem[] = [
-    {
-      id: `${post.id}-cover`,
-      type: "image",
-      url: post.image,
-      thumbnailUrl: post.image,
-      alt: post.caption,
-      ...social,
-    },
-  ];
+  const coverIsVideo = isVideoAssetUrl(post.image);
+  const items: ViewerMediaItem[] = coverIsVideo
+    ? []
+    : [
+        {
+          id: `${post.id}-cover`,
+          type: "image",
+          url: post.image,
+          thumbnailUrl: post.image,
+          alt: post.caption,
+          ...social,
+        },
+      ];
   if (post.videoUrl) {
     items.push({
       id: `${post.id}-video`,
       type: "video",
       url: post.videoUrl,
-      thumbnailUrl: post.image,
+      thumbnailUrl: resolveVideoPoster(post.videoUrl, post.image),
+      alt: post.caption,
+      ...social,
+    });
+  } else if (coverIsVideo) {
+    items.push({
+      id: `${post.id}-video`,
+      type: "video",
+      url: post.image,
+      thumbnailUrl: resolveVideoPoster(post.image, null),
       alt: post.caption,
       ...social,
     });

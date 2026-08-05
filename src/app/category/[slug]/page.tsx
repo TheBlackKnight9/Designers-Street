@@ -280,10 +280,8 @@ export default function CategoryPage({ params }: PageProps) {
                 key={item.id}
                 type="button"
                 onClick={() => setQuickFilter(item.id as QuickFilterOption)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold border transition-all ${
-                  active
-                    ? "bg-[#2B2B2B] border-[#2B2B2B] text-white"
-                    : "bg-white border-[#E0E0E0] text-[#4A4A4A]"
+                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full font-sans text-xs font-semibold transition-all ${
+                  active ? "ds-chip-active" : "ds-chip"
                 }`}
               >
                 {item.label}

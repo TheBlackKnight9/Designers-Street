@@ -83,7 +83,8 @@ const WIDTHS: Record<Exclude<DeliveryTier, "stream" | "full">, number> = {
 
 /**
  * Optimized delivery URL for a given tier.
- * Prefer publicId when available; else rewrite existing Cloudinary URL.
+ * Prefer rewriting an existing Cloudinary delivery URL — seed `publicId`s
+ * are often placeholders (demo/...) that do not exist on the CDN.
  */
 export function getOptimizedMediaUrl(
   input: {
@@ -95,38 +96,44 @@ export function getOptimizedMediaUrl(
 ): string {
   const type = input.type ?? "image";
   const { url, publicId } = input;
+  const usablePublicId =
+    publicId && !publicId.startsWith("demo/") && !isCloudinaryUrl(url)
+      ? publicId
+      : null;
 
   if (type === "video") {
     if (tier === "thumb") {
-      if (publicId) {
-        const built = buildCloudinaryUrlFromPublicId(publicId, {
+      if (usablePublicId) {
+        const built = buildCloudinaryUrlFromPublicId(usablePublicId, {
           type: "video",
           transforms: ["so_0", "f_jpg", "q_auto", "w_400"],
         });
         if (built) return built;
       }
-      // Video still via image transform on video URL is CDN-specific; fallback to url
       return withCloudinaryTransforms(
         url,
         ["so_0", "f_jpg", "q_auto", "w_400"],
         "video"
       );
     }
-    // Streaming-friendly delivery
-    if (publicId) {
-      const built = buildCloudinaryUrlFromPublicId(publicId, {
+    if (usablePublicId) {
+      const built = buildCloudinaryUrlFromPublicId(usablePublicId, {
         type: "video",
-        transforms: ["f_auto", "q_auto"],
+        transforms: ["w_720", "c_limit", "q_auto:eco", "f_mp4", "vc_h264"],
       });
       if (built) return built;
     }
-    return withCloudinaryTransforms(url, ["f_auto", "q_auto"], "video");
+    return withCloudinaryTransforms(
+      url,
+      ["w_720", "c_limit", "q_auto:eco", "f_mp4", "vc_h264"],
+      "video"
+    );
   }
 
   // Images
   if (tier === "full") {
-    if (publicId) {
-      const built = buildCloudinaryUrlFromPublicId(publicId, {
+    if (usablePublicId) {
+      const built = buildCloudinaryUrlFromPublicId(usablePublicId, {
         type: "image",
         transforms: ["f_auto", "q_auto"],
       });
@@ -136,8 +143,8 @@ export function getOptimizedMediaUrl(
   }
 
   const width = WIDTHS[tier === "thumb" ? "thumb" : "medium"];
-  if (publicId) {
-    const built = buildCloudinaryUrlFromPublicId(publicId, {
+  if (usablePublicId) {
+    const built = buildCloudinaryUrlFromPublicId(usablePublicId, {
       type: "image",
       width,
     });

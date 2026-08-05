@@ -109,10 +109,8 @@ export default function DesignersDirectoryPage() {
                 setSelectedCity(city);
                 setSelectedState("");
               }}
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-colors border ${
-                selectedCity === city && !selectedState
-                  ? "bg-charcoal text-paper border-charcoal shadow-xs"
-                  : "bg-white text-stone border-cloud hover:border-stone"
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-colors ${
+                selectedCity === city && !selectedState ? "ds-chip-active" : "ds-chip"
               }`}
             >
               {city}
@@ -127,10 +125,8 @@ export default function DesignersDirectoryPage() {
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-colors border ${
-                selectedCategory === cat
-                  ? "bg-stone text-white border-stone"
-                  : "bg-mist text-stone border-cloud hover:bg-cloud"
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-colors ${
+                selectedCategory === cat ? "ds-chip-active" : "ds-chip"
               }`}
             >
               {cat}
@@ -154,7 +150,7 @@ export default function DesignersDirectoryPage() {
                 setSearchQuery("");
                 setSelectedCity("All");
               }}
-              className="px-5 py-2 bg-charcoal text-paper text-xs font-bold uppercase rounded-full"
+              className="px-5 py-2 bg-espresso text-chip text-xs font-bold uppercase rounded-full shadow-[0_2px_8px_rgba(42,31,24,0.25)]"
             >
               Reset Filters
             </button>

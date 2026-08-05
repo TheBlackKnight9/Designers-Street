@@ -77,6 +77,7 @@ export async function updateSession(request: NextRequest) {
     path === "/account/signup" ||
     path === "/account/forgot-password" ||
     path === "/account/reset-password";
+  // /account/oauth-complete must stay reachable while session cookies settle
 
   // Check user role from metadata or default to buyer
   const userRole = (user?.user_metadata?.role as string) || (user?.app_metadata?.role as string) || "buyer";

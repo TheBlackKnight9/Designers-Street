@@ -20,7 +20,7 @@ import {
 
 const signatureFont = Caveat({
   subsets: ["latin"],
-  weight: ["600", "700"],
+  display: "swap",
 });
 
 const FRAME_PALETTES = [

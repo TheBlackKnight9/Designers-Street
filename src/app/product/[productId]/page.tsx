@@ -4,7 +4,6 @@ import { use, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
-import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { useCart } from "@/context/CartContext";
@@ -28,6 +27,7 @@ import { ProductReviews } from "@/components/product/ProductReviews";
 import { useRouter } from "next/navigation";
 import { SizeRecommendation } from "@/components/product/SizeRecommendation";
 import { ConceptInterestModal } from "@/components/product/ConceptInterestModal";
+import { ProductStickyActions } from "@/components/product/ProductStickyActions";
 import { getEditionInfo } from "@/lib/luxury";
 import { getDesignerUrl } from "@/lib/routes";
 
@@ -120,7 +120,6 @@ export default function ProductDetailPage({ params }: PageProps) {
       <>
         <TopBar />
         <CatalogStatus loading skeletonCount={1} />
-        <BottomNav />
       </>
     );
   }
@@ -130,7 +129,6 @@ export default function ProductDetailPage({ params }: PageProps) {
       <>
         <TopBar />
         <CatalogStatus error={catalogProduct.error} onRetry={catalogProduct.reload} />
-        <BottomNav />
       </>
     );
   }
@@ -152,7 +150,6 @@ export default function ProductDetailPage({ params }: PageProps) {
             </Link>
           </div>
         </main>
-        <BottomNav />
       </>
     );
   }
@@ -202,118 +199,214 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const toggleSection = (s: string) => setOpenSection(openSection === s ? null : s);
 
+  const isConcept = (product as { listingType?: string }).listingType === "CONCEPT_ART";
+  const conceptLabel =
+    (product as { conceptCta?: string }).conceptCta === "EXPRESS_INTEREST"
+      ? "Express Interest"
+      : (product as { conceptCta?: string }).conceptCta === "PRE_ORDER_DEPOSIT"
+        ? "Pre-Order Sample"
+        : "Request Bespoke Quote";
+  const rating = product.rating ?? 4.5;
+
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-4">
-        {/* Image Carousel */}
-        <div className="relative w-full aspect-[3/4] bg-[#F0F0F0]">
-          <button
-            type="button"
-            className="absolute inset-0 block w-full h-full cursor-zoom-in"
-            onClick={() => openGallery(activeImage)}
-            aria-label="Open media viewer"
-          >
-            <Image
-              src={product.images[activeImage]}
-              alt={product.name}
-              fill
-              className="object-cover pointer-events-none"
-              priority
-              sizes="100vw"
-            />
-          </button>
+      <main className="min-h-screen pb-10 bg-paper">
+        <div className="px-4 pt-2 max-w-3xl mx-auto">
+          {/* Sticky primary commerce actions — always visible while scrolling */}
+          <ProductStickyActions
+            isConcept={isConcept}
+            conceptLabel={conceptLabel}
+            inBag={inBag}
+            bagQty={bagQty}
+            error={error}
+            onAddToBag={handleAddToBag}
+            onBuyNow={handleBuyNow}
+            onConcept={() => setShowConceptModal(true)}
+          />
 
-          {product.videos && product.videos.length > 0 ? (
+          {/* Product toolbar */}
+          <div className="flex items-center justify-between mb-3">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                openLookbook();
-              }}
-              className="absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-full bg-black/75 px-3 py-2 text-white backdrop-blur-sm"
-              aria-label="Play lookbook video"
+              onClick={() => router.back()}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-mist text-charcoal active:scale-95"
+              aria-label="Go back"
             >
-              <svg className="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M8 5.14v14l11-7-11-7z" />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
               </svg>
-              <span className="font-sans text-[10px] font-bold uppercase tracking-wider">
-                Lookbook
-              </span>
             </button>
-          ) : null}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => toggle(product.id)}
+                className={`flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+                  wished ? "bg-charcoal border-charcoal text-paper" : "bg-paper border-cloud text-charcoal"
+                }`}
+                aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+                aria-pressed={wished}
+              >
+                <svg
+                  className={`h-5 w-5 ${wished ? "fill-current" : "fill-none"}`}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+                </svg>
+              </button>
+              <ShareButton
+                title={product.name}
+                text={`${product.designerName} — ${product.name}`}
+                path={`/product/${product.id}`}
+                label="⋯"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-cloud bg-paper text-charcoal text-lg leading-none"
+              />
+            </div>
+          </div>
 
-          {/* Image dots */}
-          {product.images.length > 1 && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
-              {product.images.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
+          {/* Gallery — main image + side thumbnails */}
+          <div className="flex gap-2.5 mb-5">
+            <button
+              type="button"
+              className="relative flex-1 aspect-[3/4] overflow-hidden rounded-[1.75rem] bg-mist cursor-zoom-in"
+              onClick={() => openGallery(activeImage)}
+              aria-label="Open media viewer"
+            >
+              <Image
+                src={product.images[activeImage]}
+                alt={product.name}
+                fill
+                className="object-cover pointer-events-none"
+                priority
+                sizes="(max-width: 768px) 75vw, 480px"
+              />
+              {product.videos && product.videos.length > 0 ? (
+                <span
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveImage(i);
+                    openLookbook();
                   }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    i === activeImage ? "bg-white w-4" : "bg-white/50"
-                  }`}
-                  aria-label={`View image ${i + 1}`}
-                />
-              ))}
-            </div>
-          )}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.stopPropagation();
+                      openLookbook();
+                    }
+                  }}
+                  className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-full bg-black/75 px-2.5 py-1.5 text-white backdrop-blur-sm"
+                  aria-label="Play lookbook video"
+                >
+                  <svg className="w-3.5 h-3.5 ml-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M8 5.14v14l11-7-11-7z" />
+                  </svg>
+                  <span className="font-sans text-[9px] font-bold uppercase tracking-wider">Lookbook</span>
+                </span>
+              ) : null}
+              {(product.limitedEdition || product.piecesRemaining != null) && (
+                <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full pointer-events-none">
+                  <span className="limited-badge text-charcoal text-[9px]">
+                    {getEditionInfo(product)?.label ||
+                      (product.piecesRemaining != null
+                        ? `Limited — ${product.piecesRemaining} left`
+                        : "Limited Release")}
+                  </span>
+                </div>
+              )}
+            </button>
 
-          {/* Limited / edition badge */}
-          {(product.limitedEdition || product.piecesRemaining != null) && (
-            <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm z-10 pointer-events-none">
-              <span className="limited-badge text-[#2B2B2B]">
-                {getEditionInfo(product)?.label ||
-                  (product.piecesRemaining != null
-                    ? `Limited — ${product.piecesRemaining} remaining`
-                    : "Limited Release")}
+            {product.images.length > 1 && (
+              <div className="flex w-[72px] flex-col gap-2 overflow-y-auto max-h-[min(68vw,420px)] hide-scrollbar">
+                {product.images.map((src, i) => (
+                  <button
+                    key={`${src}-${i}`}
+                    type="button"
+                    onClick={() => setActiveImage(i)}
+                    className={`relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-2xl border-2 transition-all ${
+                      i === activeImage ? "border-charcoal opacity-100" : "border-transparent opacity-75"
+                    }`}
+                    aria-label={`Show image ${i + 1}`}
+                  >
+                    <Image src={src} alt="" fill className="object-cover" sizes="72px" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Title + price */}
+          <div className="mb-4">
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="font-sans text-[1.35rem] font-extrabold text-charcoal leading-tight tracking-tight flex-1">
+                {product.name}
+              </h1>
+              <span className="font-sans text-[1.35rem] font-extrabold text-charcoal whitespace-nowrap">
+                {formatPrice(product.price)}
               </span>
             </div>
-          )}
-        </div>
-
-        {/* Thumbnail strip */}
-        {product.images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
-            {product.images.map((src, i) => (
-              <button
-                key={`${src}-${i}`}
-                type="button"
-                onClick={() => setActiveImage(i)}
-                className={`relative h-16 w-12 flex-shrink-0 overflow-hidden border transition-opacity ${
-                  i === activeImage ? "border-[#2B2B2B] opacity-100" : "border-transparent opacity-70"
-                }`}
-                aria-label={`Show image ${i + 1}`}
-              >
-                <Image src={src} alt="" fill className="object-cover" sizes="48px" />
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Product Info */}
-        <div className="px-4 pt-2">
-          {/* Designer + Name + Price */}
-          <div className="mb-5">
             <Link
               href={getDesignerUrl(designer?.handle) ?? "#"}
-              className="font-sans text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]"
+              className="mt-1 inline-block font-sans text-[11px] font-bold uppercase tracking-[0.14em] text-stone"
             >
               {product.designerName}
             </Link>
-            <h1 className="font-display text-xl font-bold text-[#2B2B2B] leading-tight mt-1">
-              {product.name}
-            </h1>
-            {/* Concept Showcase Badge */}
-            {(product as any).listingType === "CONCEPT_ART" && (
-              <div className="mt-2 mb-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-amber-900 font-sans text-xs font-bold uppercase tracking-wider">
-                <span>🎨 Concept Showcase &amp; Runway Prototype</span>
+
+            {isConcept && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-amber-900 font-sans text-xs font-bold uppercase tracking-wider">
+                Concept Showcase
               </div>
             )}
+
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="font-sans text-sm font-extrabold text-charcoal">{rating.toFixed(1)}</span>
+                <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg
+                      key={i}
+                      className={`h-3.5 w-3.5 ${i < Math.round(rating) ? "text-[var(--newme-green-dark)]" : "text-cloud"}`}
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+              </div>
+              {!isConcept && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    document.getElementById("product-size-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
+                  className="px-4 py-2 rounded-full bg-charcoal text-paper font-sans text-[11px] font-extrabold uppercase tracking-wider active:scale-95"
+                >
+                  {selectedSize ? `Size ${selectedSize}` : "Select size"}
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-baseline gap-2.5 mt-3 flex-wrap">
+              <span className="font-sans text-xs text-stone line-through">
+                MRP {formatPrice(product.mrp || Math.round(product.price * 1.15))}
+              </span>
+              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-sans text-[10px] font-extrabold uppercase tracking-wider">
+                {Math.round(
+                  (((product.mrp || Math.round(product.price * 1.15)) - product.price) /
+                    (product.mrp || Math.round(product.price * 1.15))) *
+                    100
+                )}
+                % OFF
+              </span>
+              {!isConcept && (
+                <span className="px-2.5 py-0.5 bg-emerald-700 text-white rounded font-sans text-[9px] font-extrabold uppercase tracking-wider">
+                  Free Shipping
+                </span>
+              )}
+            </div>
 
             <LuxuryBadges
               product={product}
@@ -322,52 +415,23 @@ export default function ProductDetailPage({ params }: PageProps) {
             />
             <ScarcityStrip product={product} className="mt-3" />
             <EditionBadge product={product} className="mt-3" />
-            {/* Price Row: Our Price + Strikethrough MRP + Discount % + Free Shipping Badge */}
-            <div className="flex items-baseline gap-2.5 mt-2.5 flex-wrap">
-              <span className="font-sans text-xl font-extrabold text-[#2B2B2B]">
-                {formatPrice(product.price)}
-              </span>
-              <span className="font-sans text-xs text-[#7A7A7A] line-through">
-                MRP {formatPrice(product.mrp || Math.round(product.price * 1.15))}
-              </span>
-              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-sans text-[10px] font-extrabold uppercase tracking-wider">
-                {Math.round(
-                  (((product.mrp || Math.round(product.price * 1.15)) - product.price) /
-                    (product.mrp || Math.round(product.price * 1.15))) *
-                    100
-                )}% OFF
-              </span>
-              {(product as any).listingType !== "CONCEPT_ART" && (
-                <span className="px-2.5 py-0.5 bg-emerald-700 text-white rounded font-sans text-[9px] font-extrabold uppercase tracking-wider">
-                  ✓ FREE SHIPPING
-                </span>
-              )}
-            </div>
 
-            {/* Best Offer Price Callout Badge */}
             {product.bestPrice && (
               <div className="mt-2.5 flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/80 border border-emerald-200 rounded-lg text-emerald-900 font-sans text-xs font-bold shadow-2xs">
-                <span>🎉 Best Offer Price:</span>
+                <span>Best Offer Price:</span>
                 <span className="font-extrabold text-emerald-800">{formatPrice(product.bestPrice)}</span>
               </div>
             )}
-
-            {product.occasion && (
-              <span className="inline-block mt-3 px-2.5 py-1 bg-[#F0F0F0] font-sans text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A] rounded-full">
-                {product.occasion}
-              </span>
-            )}
           </div>
 
-          {/* Recommended Size & Measurement Match Badge */}
           <div className="mb-4">
             <SizeRecommendation selectedSize={selectedSize} onSelectSize={setSelectedSize} />
           </div>
 
           {/* Sizes */}
-          <div className="mb-5">
+          <div id="product-size-section" className="mb-5">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-charcoal">
                 Select Size
               </span>
               <button
@@ -375,7 +439,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                 onClick={() => setShowSizeGuide(true)}
                 className="font-sans text-xs font-bold uppercase tracking-wider text-charcoal underline"
               >
-                📏 View Size Guide
+                Size Guide
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -383,78 +447,20 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <button
                   key={size}
                   type="button"
-                  onClick={() => { setSelectedSize(size); setError(""); }}
-                  className={`h-10 min-w-[44px] px-3 border text-xs font-semibold rounded-lg transition-all ${
+                  onClick={() => {
+                    setSelectedSize(size);
+                    setError("");
+                  }}
+                  className={`h-10 min-w-[44px] px-3 border text-xs font-semibold rounded-full transition-all ${
                     selectedSize === size
-                      ? "border-[#2B2B2B] bg-[#2B2B2B] text-[#FAFAFA]"
-                      : "border-[#E0E0E0] text-[#2B2B2B]"
+                      ? "border-charcoal bg-charcoal text-paper"
+                      : "border-cloud text-charcoal"
                   }`}
                 >
                   {size}
                 </button>
               ))}
             </div>
-            {error && (
-              <p className="mt-2 font-sans text-xs font-medium text-[#2B2B2B] bg-[#F0F0F0] px-3 py-2 rounded-lg">
-                {error}
-              </p>
-            )}
-          </div>
-
-          {/* Actions: Add to Bag + Buy Now / Bespoke Quote */}
-          <div className="flex gap-2.5 mb-3">
-            {(product as any).listingType === "CONCEPT_ART" ? (
-              <button
-                type="button"
-                onClick={() => setShowConceptModal(true)}
-                className="flex-1 h-12 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black transition-colors"
-              >
-                🎨 {(product as any).conceptCta === "EXPRESS_INTEREST" ? "Express Interest" : (product as any).conceptCta === "PRE_ORDER_DEPOSIT" ? "Pre-Order Sample" : "Request Bespoke Quote"}
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleAddToBag}
-                  className={`flex-1 h-12 font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press ${
-                    inBag
-                      ? "bg-white text-[#2B2B2B] border border-[#2B2B2B]"
-                      : "bg-mist text-[#2B2B2B] border border-[#2B2B2B]"
-                  }`}
-                >
-                  {inBag
-                    ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓`
-                    : "Add to Bag"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleBuyNow}
-                  className="flex-1 h-12 bg-charcoal text-paper font-sans text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black transition-colors"
-                >
-                  ⚡ Buy Now
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              onClick={() => toggle(product.id)}
-              className={`h-12 w-12 flex items-center justify-center border rounded-full transition-colors ${
-                wished ? "bg-[#2B2B2B] border-[#2B2B2B]" : "border-[#E0E0E0]"
-              }`}
-              aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-              aria-pressed={wished}
-            >
-              <svg
-                className={`h-5 w-5 transition-colors ${
-                  wished ? "fill-[#FAFAFA] text-[#FAFAFA]" : "fill-none text-[#2B2B2B]"
-                }`}
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.5}
-              >
-                <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-              </svg>
-            </button>
           </div>
 
           <div className="flex items-center gap-4 mb-5">
@@ -465,13 +471,13 @@ export default function ProductDetailPage({ params }: PageProps) {
                   setLikeHint("Sign in to like this piece")
                 )
               }
-              className="flex items-center gap-1.5 font-sans text-xs font-semibold text-[#2B2B2B]"
+              className="flex items-center gap-1.5 font-sans text-xs font-semibold text-charcoal"
               aria-pressed={productLiked}
               aria-label="Like product"
             >
               <svg
                 className={`h-5 w-5 ${
-                  productLiked ? "fill-red-500 text-red-500" : "fill-none text-[#2B2B2B]"
+                  productLiked ? "fill-red-500 text-red-500" : "fill-none text-charcoal"
                 }`}
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -485,12 +491,6 @@ export default function ProductDetailPage({ params }: PageProps) {
               </svg>
               {productLikes > 0 ? productLikes : "Like"}
             </button>
-            <ShareButton
-              title={product.name}
-              text={`${product.designerName} — ${product.name}`}
-              path={`/product/${product.id}`}
-              className="font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B] underline"
-            />
           </div>
           {likeHint && (
             <p className="mb-4 text-[10px] text-stone">
@@ -501,11 +501,10 @@ export default function ProductDetailPage({ params }: PageProps) {
             </p>
           )}
 
-          {/* Customize CTA */}
           {product.customizable && (
             <Link
               href={`/bespoke?productId=${encodeURIComponent(product.id)}&designerId=${encodeURIComponent(product.designerId)}`}
-              className="flex items-center justify-center h-12 border border-[#2B2B2B] text-[#2B2B2B] font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press mb-5"
+              className="flex items-center justify-center h-12 border border-charcoal text-charcoal font-sans text-xs font-semibold uppercase tracking-wider rounded-full btn-press mb-5"
             >
               Customize This Piece
             </Link>
@@ -517,16 +516,15 @@ export default function ProductDetailPage({ params }: PageProps) {
             className="mb-4"
           />
 
-          {/* Concierge */}
           <div className="flex items-center gap-2 mb-6 py-3 border-b border-[#EBEBEB]">
-            <svg className="w-4 h-4 text-[#7A7A7A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-4 h-4 text-stone" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
             </svg>
-            <span className="font-sans text-xs text-[#7A7A7A]">
+            <span className="font-sans text-xs text-stone">
               Need help?{" "}
               <Link
                 href={getDesignerUrl(designer?.handle) ?? "/bespoke"}
-                className="font-semibold text-[#2B2B2B] underline"
+                className="font-semibold text-charcoal underline"
               >
                 Speak to a stylist
               </Link>
@@ -535,12 +533,11 @@ export default function ProductDetailPage({ params }: PageProps) {
 
           {/* Accordion Sections */}
           <div className="space-y-0">
-            {/* Story */}
             <div className="border-b border-[#EBEBEB]">
               <button
                 type="button"
                 onClick={() => toggleSection("story")}
-                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]"
+                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-charcoal"
               >
                 <span>The Story</span>
                 <span className="text-sm">{openSection === "story" ? "−" : "+"}</span>
@@ -548,10 +545,10 @@ export default function ProductDetailPage({ params }: PageProps) {
               {openSection === "story" && (
                 <div className="pb-4 font-sans text-xs text-[#4A4A4A] leading-relaxed space-y-2">
                   <p>{product.description}</p>
-                  {product.story && <p className="italic text-[#7A7A7A]">{product.story}</p>}
+                  {product.story && <p className="italic text-stone">{product.story}</p>}
                   {product.designerInspiration && (
                     <p>
-                      <strong className="text-[#2B2B2B]">Inspiration: </strong>
+                      <strong className="text-charcoal">Inspiration: </strong>
                       {product.designerInspiration}
                     </p>
                   )}
@@ -559,12 +556,11 @@ export default function ProductDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Craft & Material */}
             <div className="border-b border-[#EBEBEB]">
               <button
                 type="button"
                 onClick={() => toggleSection("craft")}
-                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]"
+                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-charcoal"
               >
                 <span>Craftsmanship &amp; Materials</span>
                 <span className="text-sm">{openSection === "craft" ? "−" : "+"}</span>
@@ -579,13 +575,12 @@ export default function ProductDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* About the House */}
             {designer && (
               <div className="border-b border-[#EBEBEB]">
                 <button
                   type="button"
                   onClick={() => toggleSection("house")}
-                  className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]"
+                  className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-charcoal"
                 >
                   <span>About {designer.name}</span>
                   <span className="text-sm">{openSection === "house" ? "−" : "+"}</span>
@@ -594,7 +589,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   <div className="pb-4 font-sans text-xs text-[#4A4A4A] leading-relaxed space-y-2">
                     <p>{designer.foundingStory}</p>
                     {designer.founded && (
-                      <p className="text-[10px] text-[#A0A0A0] uppercase tracking-wide">
+                      <p className="text-[10px] text-silver uppercase tracking-wide">
                         Est. {designer.founded} · {designer.location}
                       </p>
                     )}
@@ -603,12 +598,11 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Shipping */}
             <div className="border-b border-[#EBEBEB]">
               <button
                 type="button"
                 onClick={() => toggleSection("shipping")}
-                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]"
+                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-charcoal"
               >
                 <span>Shipping &amp; Care</span>
                 <span className="text-sm">{openSection === "shipping" ? "−" : "+"}</span>
@@ -624,7 +618,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   </p>
                   {product.careInstructions && (
                     <p className="pt-2">
-                      <strong className="text-[#2B2B2B]">Care: </strong>
+                      <strong className="text-charcoal">Care: </strong>
                       {product.careInstructions}
                     </p>
                   )}
@@ -632,24 +626,23 @@ export default function ProductDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Legal Metrology Compliance */}
             <div className="border-b border-[#EBEBEB]">
               <button
                 type="button"
                 onClick={() => toggleSection("metrology")}
-                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-[#2B2B2B]"
+                className="flex w-full items-center justify-between py-4 font-sans text-xs font-semibold uppercase tracking-wider text-charcoal"
               >
-                <span>⚖️ Legal Metrology &amp; Compliance</span>
+                <span>Legal Metrology &amp; Compliance</span>
                 <span className="text-sm">{openSection === "metrology" ? "−" : "+"}</span>
               </button>
               {openSection === "metrology" && (
                 <div className="pb-4 font-sans text-xs text-[#4A4A4A] leading-relaxed space-y-1.5">
-                  <p><strong>Net Quantity:</strong> {(product as any).netQuantity || "1 Piece"}</p>
-                  <p><strong>Shipping Weight:</strong> {(product as any).weightGrams ? `${(product as any).weightGrams}g` : "Standard"}</p>
-                  <p><strong>Country of Origin:</strong> {(product as any).countryOfOrigin || "India"}</p>
-                  <p><strong>Manufacturer / Brand:</strong> {(product as any).manufacturerName || product.designerName}</p>
-                  {(product as any).manufacturerAddress && (
-                    <p><strong>Manufacturer Address:</strong> {(product as any).manufacturerAddress}</p>
+                  <p><strong>Net Quantity:</strong> {(product as { netQuantity?: string }).netQuantity || "1 Piece"}</p>
+                  <p><strong>Shipping Weight:</strong> {(product as { weightGrams?: number }).weightGrams ? `${(product as { weightGrams?: number }).weightGrams}g` : "Standard"}</p>
+                  <p><strong>Country of Origin:</strong> {(product as { countryOfOrigin?: string }).countryOfOrigin || "India"}</p>
+                  <p><strong>Manufacturer / Brand:</strong> {(product as { manufacturerName?: string }).manufacturerName || product.designerName}</p>
+                  {(product as { manufacturerAddress?: string }).manufacturerAddress && (
+                    <p><strong>Manufacturer Address:</strong> {(product as { manufacturerAddress?: string }).manufacturerAddress}</p>
                   )}
                 </div>
               )}
@@ -657,13 +650,11 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* A+ Rich Content Module Renderer */}
-        <APlusContentRenderer modules={(product as any)?.aPlusContent} />
+        <APlusContentRenderer modules={(product as { aPlusContent?: unknown })?.aPlusContent as never} />
 
-        {/* Recommendations */}
         {recommendations.length > 0 && (
-          <div className="mt-8 px-4">
-            <h2 className="font-sans text-sm font-semibold uppercase tracking-wider text-[#2B2B2B] mb-4">
+          <div className="mt-8 px-4 max-w-3xl mx-auto">
+            <h2 className="font-sans text-sm font-semibold uppercase tracking-wider text-charcoal mb-4">
               Complete the Look
             </h2>
             <div className="grid grid-cols-2 gap-3">
@@ -674,15 +665,12 @@ export default function ProductDetailPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Verified Customer Reviews */}
         <ProductReviews productId={product.id} />
 
-        {/* Concept Interest Lead Modal */}
         {showConceptModal && (
           <ConceptInterestModal product={product} onClose={() => setShowConceptModal(false)} />
         )}
 
-        {/* Size Guide Drawer Modal */}
         {showSizeGuide && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[85vh] overflow-y-auto">
@@ -696,9 +684,9 @@ export default function ProductDetailPage({ params }: PageProps) {
                 </button>
               </div>
 
-              {(product as any).sizeChart?.rows ? (
+              {(product as { sizeChart?: { unit?: string; rows?: Array<Record<string, string>> } }).sizeChart?.rows ? (
                 <div className="space-y-3">
-                  <p className="text-xs text-stone font-semibold">Unit: {(product as any).sizeChart.unit || "inches"}</p>
+                  <p className="text-xs text-stone font-semibold">Unit: {(product as { sizeChart?: { unit?: string } }).sizeChart?.unit || "inches"}</p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
@@ -712,7 +700,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {(product as any).sizeChart.rows.map((row: any) => (
+                        {((product as { sizeChart?: { rows?: Array<Record<string, string>> } }).sizeChart?.rows || []).map((row) => (
                           <tr key={row.size} className="border-b border-cloud/40">
                             <td className="py-2 px-2 font-bold text-charcoal">{row.size}</td>
                             <td className="py-2 px-2 text-stone">{row.chest || "—"}</td>

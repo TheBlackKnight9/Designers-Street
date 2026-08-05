@@ -301,3 +301,88 @@ export function flattenBrowseCategories(
   walk(nodes, 0);
   return out;
 }
+
+/** UI section for subcategory chips under Women / Men. */
+export type CategoryBrowseSection = {
+  id: string;
+  title: string;
+  hint?: string;
+  items: Category[];
+};
+
+const COLLECTION_SLUG_SUFFIXES = new Set(["latest-drop", "limited-design"]);
+const ACCESSORY_SLUG_SUFFIXES = new Set([
+  "jewellery",
+  "bags",
+  "footwear",
+  "accessories",
+  "kids",
+]);
+
+function childSuffix(slug: string, gender: "women" | "men"): string {
+  const prefix = `${gender}-`;
+  return slug.startsWith(prefix) ? slug.slice(prefix.length) : slug;
+}
+
+/** Group a gender branch's children into Collections / Apparel / Accessories. */
+export function groupGenderSubcategories(
+  branch: Category | undefined,
+  gender: "women" | "men"
+): CategoryBrowseSection[] {
+  const children = branch?.children ?? [];
+  if (children.length === 0) return [];
+
+  const collections: Category[] = [];
+  const apparel: Category[] = [];
+  const accessories: Category[] = [];
+
+  for (const child of children) {
+    const suffix = childSuffix(child.slug, gender);
+    if (COLLECTION_SLUG_SUFFIXES.has(suffix)) collections.push(child);
+    else if (ACCESSORY_SLUG_SUFFIXES.has(suffix)) accessories.push(child);
+    else apparel.push(child);
+  }
+
+  const sections: CategoryBrowseSection[] = [];
+  if (collections.length) {
+    sections.push({
+      id: "collections",
+      title: "Collections",
+      hint: "New & limited drops",
+      items: collections,
+    });
+  }
+  if (apparel.length) {
+    sections.push({
+      id: "apparel",
+      title: "Apparel",
+      hint: "Silhouettes & craft",
+      items: apparel,
+    });
+  }
+  if (accessories.length) {
+    sections.push({
+      id: "accessories",
+      title: "Accessories & Kids",
+      hint: "Finish the look",
+      items: accessories,
+    });
+  }
+  return sections;
+}
+
+/** Limited / Latest quick rows spanning both genders. */
+export function buildSpotlightLinks(nodes: Category[]): {
+  limited: Category[];
+  latest: Category[];
+} {
+  const limited: Category[] = [];
+  const latest: Category[] = [];
+  for (const node of nodes) {
+    for (const child of node.children ?? []) {
+      if (child.slug.endsWith("limited-design")) limited.push(child);
+      if (child.slug.endsWith("latest-drop")) latest.push(child);
+    }
+  }
+  return { limited, latest };
+}

@@ -14,6 +14,8 @@ import { ThumbUpIcon } from "@/components/icons/ThumbUpIcon";
 import { ShareSheet } from "@/components/ShareSheet";
 import { getDesignerUrl } from "@/lib/routes";
 import { resolvePostProductId } from "@/lib/feed-product";
+import { isVideoAssetUrl, toPlayableVideoUrl } from "@/lib/fashion-videos";
+import { getOptimizedMediaUrl } from "@/lib/media/cloudinary-delivery";
 
 interface FeedPostProps {
   post: FeedPostData;
@@ -21,7 +23,16 @@ interface FeedPostProps {
 
 function isValidImageUrl(url?: string | null): boolean {
   if (!url || url === "na" || url.trim() === "") return false;
+  if (isVideoAssetUrl(url)) return false;
   return url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://");
+}
+
+function feedVideoPoster(post: FeedPostData): string | undefined {
+  if (isValidImageUrl(post.image)) return post.image;
+  if (post.videoUrl) {
+    return getOptimizedMediaUrl({ url: post.videoUrl, type: "video" }, "thumb");
+  }
+  return undefined;
 }
 
 export function FeedPost({ post }: FeedPostProps) {
@@ -212,8 +223,8 @@ export function FeedPost({ post }: FeedPostProps) {
         >
           {post.videoOnly && post.videoUrl ? (
             <video
-              src={post.videoUrl}
-              poster={isValidImageUrl(post.image) ? post.image : undefined}
+              src={toPlayableVideoUrl(post.videoUrl)}
+              poster={feedVideoPoster(post)}
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               muted
               loop

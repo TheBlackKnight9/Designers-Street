@@ -3,6 +3,12 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import {
+  AuthBackLink,
+  AuthField,
+  AuthPrimaryButton,
+  AuthScreen,
+} from "@/components/auth/AuthScreen";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -35,59 +41,49 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-white border border-cloud rounded-3xl p-8 shadow-sm">
-        <p className="text-[10px] font-bold tracking-widest uppercase text-stone mb-1">
-          Designer&apos;s Street
-        </p>
-        <h1 className="font-display text-3xl font-bold text-charcoal mb-1">
-          Reset Password
-        </h1>
-        <p className="text-xs text-stone mb-6">
-          Enter your email address to receive password reset instructions.
-        </p>
+    <AuthScreen
+      title="Forgot Password?"
+      subtitle="Enter your email and we'll send reset instructions for your Designer's Street account."
+    >
+      <form onSubmit={onSubmit} className="space-y-3.5">
+        <AuthField
+          type="email"
+          icon="email"
+          placeholder="email@domain.com"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={setEmail}
+        />
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone">
-              Email Address
-            </span>
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
-            />
-          </label>
+        {error && (
+          <p className="text-xs text-red-700 bg-red-50 rounded-2xl px-3 py-2 font-medium">
+            {error}
+          </p>
+        )}
+        {info && (
+          <p className="text-xs text-emerald-800 bg-emerald-50 rounded-2xl px-3 py-2 font-medium">
+            {info}
+          </p>
+        )}
 
-          {error && (
-            <p className="text-xs text-red-700 bg-red-50 rounded-xl px-3 py-2 font-medium">
-              {error}
-            </p>
-          )}
-          {info && (
-            <p className="text-xs text-emerald-800 bg-emerald-50 rounded-xl px-3 py-2 font-medium">
-              {info}
-            </p>
-          )}
+        <AuthPrimaryButton loading={loading}>
+          {loading ? "Sending…" : "Send Reset Link"}
+        </AuthPrimaryButton>
+      </form>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-full bg-charcoal text-paper py-3 text-xs font-bold uppercase tracking-wider disabled:opacity-60 shadow-sm"
+      <div className="mt-7 text-center space-y-3">
+        <p className="text-sm text-stone">
+          Remembered it?{" "}
+          <Link
+            href="/account/login"
+            className="font-extrabold text-[var(--newme-green-dark)] hover:underline"
           >
-            {loading ? "Sending link…" : "Send Reset Link"}
-          </button>
-        </form>
-
-        <div className="mt-6 pt-4 border-t border-cloud/60 text-center text-xs text-stone">
-          <Link href="/account/login" className="text-charcoal font-bold underline">
-            ← Return to Sign In
+            Sign In
           </Link>
-        </div>
+        </p>
+        <AuthBackLink />
       </div>
-    </div>
+    </AuthScreen>
   );
 }

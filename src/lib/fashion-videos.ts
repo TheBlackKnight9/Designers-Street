@@ -1,24 +1,27 @@
 /**
- * Fashion lookbook videos — Pexels editorial / runway clips.
- * Licensed for demo use via Pexels. Replace with atelier uploads in production.
+ * Demo lookbook videos — small progressive MP4s (Cloudinary transforms keep
+ * payloads under ~2MB so reels start quickly). Avoid raw 30MB demo masters.
  */
+const cld = (path: string) =>
+  `https://res.cloudinary.com/demo/video/upload/w_720,c_limit,q_auto:eco,f_mp4,vc_h264/${path}`;
+
 export const FASHION_VIDEOS = {
-  runwayNoir: "https://videos.pexels.com/video-files/6769794/6769794-hd_1080_1920_25fps.mp4",
-  bridalGold: "https://videos.pexels.com/video-files/4058851/4058851-hd_1080_1920_30fps.mp4",
-  atelierSilk: "https://videos.pexels.com/video-files/3771812/3771812-hd_1080_1920_30fps.mp4",
-  streetPulse: "https://videos.pexels.com/video-files/5481720/5481720-hd_1080_1920_25fps.mp4",
-  coutureWaltz: "https://videos.pexels.com/video-files/4058115/4058115-hd_1080_1920_30fps.mp4",
-  heritage: "https://videos.pexels.com/video-files/4761704/4761704-hd_1080_1920_25fps.mp4",
-  tokyoNeon: "https://videos.pexels.com/video-files/6898873/6898873-uhd_1440_2732_24fps.mp4",
-  minimal: "https://videos.pexels.com/video-files/3191909/3191909-hd_1080_1920_30fps.mp4",
-  velvetNight: "https://videos.pexels.com/video-files/6769661/6769661-hd_1080_1920_25fps.mp4",
-  gardenBloom: "https://videos.pexels.com/video-files/3188463/3188463-hd_1080_1920_30fps.mp4",
-  groomEdit: "https://videos.pexels.com/video-files/3254067/3254067-hd_1080_1920_30fps.mp4",
-  festiveSaree: "https://videos.pexels.com/video-files/8679905/8679905-uhd_1440_2732_25fps.mp4",
-  lookbookScored: "https://videos.pexels.com/video-files/6898873/6898873-uhd_1440_2732_24fps.mp4",
-  runwayScored: "https://videos.pexels.com/video-files/6769794/6769794-hd_1080_1920_25fps.mp4",
-  atelierScored: "https://videos.pexels.com/video-files/3771812/3771812-hd_1080_1920_30fps.mp4",
-  coutureScored: "https://videos.pexels.com/video-files/4058115/4058115-hd_1080_1920_30fps.mp4",
+  runwayNoir: cld("ski_jump.mp4"),
+  bridalGold: cld("dog.mp4"),
+  atelierSilk: cld("cld-sample-video.mp4"),
+  streetPulse: cld("samples/cld-sample-video.mp4"),
+  coutureWaltz: cld("ski_jump.mp4"),
+  heritage: cld("dog.mp4"),
+  tokyoNeon: cld("cld-sample-video.mp4"),
+  minimal: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  velvetNight: cld("samples/sea-turtle.mp4"),
+  gardenBloom: cld("sea_turtle.mp4"),
+  groomEdit: "https://www.w3schools.com/html/mov_bbb.mp4",
+  festiveSaree: cld("ski_jump.mp4"),
+  lookbookScored: cld("dog.mp4"),
+  runwayScored: cld("cld-sample-video.mp4"),
+  atelierScored: cld("ski_jump.mp4"),
+  coutureScored: cld("dog.mp4"),
 } as const;
 
 export type FashionVideoKey = keyof typeof FASHION_VIDEOS;
@@ -36,4 +39,34 @@ export function pickFashionVideos(count: number, startIndex = 0): string[] {
 
 export function pickFashionVideo(index: number): string {
   return ALL_FASHION_VIDEO_URLS[index % ALL_FASHION_VIDEO_URLS.length];
+}
+
+/** True when a URL is a direct video asset (not a still poster). */
+export function isVideoAssetUrl(url?: string | null): boolean {
+  if (!url) return false;
+  const clean = url.trim().toLowerCase();
+  if (/\/video\/upload\//i.test(clean)) return true;
+  return /\.(mp4|webm|mov|m3u8)(\?|#|$)/i.test(clean);
+}
+
+/**
+ * Prefer a lightweight progressive MP4 for <video> playback.
+ * Fake seed publicIds must never override a real delivery URL.
+ */
+export function toPlayableVideoUrl(url: string): string {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    if (!/res\.cloudinary\.com/i.test(parsed.hostname)) return url;
+    // Already transformed
+    if (/\/upload\/(?:[^/]+,)+[^/]+\//.test(parsed.pathname)) return url;
+    // Inject compact progressive delivery after /video/upload/ or /upload/
+    return url.replace(
+      /\/(video\/)?upload\//i,
+      (_m, videoPrefix: string | undefined) =>
+        `/${videoPrefix || ""}upload/w_720,c_limit,q_auto:eco,f_mp4,vc_h264/`
+    );
+  } catch {
+    return url;
+  }
 }

@@ -55,6 +55,20 @@ NEXT_PUBLIC_USE_API=false
 Project **desginer ef** ref: `jwqpqlifszfveuldpujn`  
 URL: `https://jwqpqlifszfveuldpujn.supabase.co`
 
+### Google OAuth setup (required once — not stored in `.env`)
+
+App code is already wired (`signInWithOAuth` → `/auth/callback` → `/account/oauth-complete` → buyer bootstrap).
+
+1. **Google Cloud** → [Create OAuth client](https://console.cloud.google.com/auth/clients/create) (type: **Web application**)
+   - Authorized JavaScript origins: `http://localhost:3000` (plus your production origin)
+   - Authorized redirect URIs: `https://jwqpqlifszfveuldpujn.supabase.co/auth/v1/callback`
+2. **Supabase Dashboard** → [Google provider](https://supabase.com/dashboard/project/jwqpqlifszfveuldpujn/auth/providers?provider=Google)
+   - Enable Google, paste **Client ID** + **Client Secret**
+3. **URL Configuration** → [Auth URLs](https://supabase.com/dashboard/project/jwqpqlifszfveuldpujn/auth/url-configuration)
+   - Site URL: `http://localhost:3000`
+   - Redirect URLs include: `http://localhost:3000/auth/callback**` (and production equivalents)
+4. Test at `/account/login` → **Sign in with Google**
+
 ---
 
 ## Cloudinary
