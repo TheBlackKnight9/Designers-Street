@@ -122,6 +122,7 @@ export function toFeedPost(row: DbPost): FeedPostData {
     likesCount: row.likesCount,
     commentsCount: row.commentsCount,
     productTag: productTag ?? undefined,
+    allowLeads: row.allowLeads,
   };
 }
 

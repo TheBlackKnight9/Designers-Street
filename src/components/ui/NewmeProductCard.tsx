@@ -42,11 +42,7 @@ export function NewmeProductCard({ product }: NewmeProductCardProps) {
           )}
         </Link>
 
-        {discount && (
-          <span className="absolute top-2 left-2 px-1.5 py-0.5 bg-[var(--newme-green)] text-charcoal text-[9px] font-extrabold rounded">
-            {discount}% OFF
-          </span>
-        )}
+
 
         <button
           type="button"
@@ -85,16 +81,11 @@ export function NewmeProductCard({ product }: NewmeProductCardProps) {
           </svg>
         </button>
 
-        <div className="absolute bottom-2 left-2 flex items-center gap-0.5 px-1.5 py-0.5 bg-paper/95 rounded-full text-[10px] font-bold">
-          <span className="text-amber-500">★</span>
-          {(product.rating ?? 4.8).toFixed(1)}
-        </div>
+
       </div>
 
       <div className="mt-2 px-0.5">
-        <p className="text-[9px] font-bold uppercase tracking-wider text-silver truncate">
-          {product.designerName}
-        </p>
+
         <Link
           href={`/product/${product.id}`}
           className="text-xs font-semibold text-charcoal leading-tight line-clamp-2 hover:underline"
@@ -105,17 +96,7 @@ export function NewmeProductCard({ product }: NewmeProductCardProps) {
           <span className="text-sm font-extrabold text-charcoal">
             {formatPrice(product.price)}
           </span>
-          {product.mrp && product.mrp > product.price && (
-            <span className="text-[10px] text-silver line-through">
-              {formatPrice(product.mrp)}
-            </span>
-          )}
         </div>
-        {product.deliveryText && (
-          <p className="text-[10px] font-bold text-[var(--newme-green-dark)] mt-0.5">
-            ⚡ {product.deliveryText}
-          </p>
-        )}
       </div>
     </div>
   );

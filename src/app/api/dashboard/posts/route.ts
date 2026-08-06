@@ -52,6 +52,8 @@ export async function POST(request: Request) {
     const caption = String(body.caption || "").trim();
     const type = body.type === "category" ? "category" : "designer_spotlight";
     const tag = typeof body.tag === "string" ? body.tag.trim() : "Editorial";
+    const allowLeads = Boolean(body.allowLeads);
+
     const rawProductTag = body.productTag
       ? (body.productTag as Record<string, unknown>)
       : null;
@@ -102,6 +104,7 @@ export async function POST(request: Request) {
       likesCount: 0,
       commentsCount: 0,
       productTag: productTag as any,
+      allowLeads,
       createdAt: new Date().toISOString(),
     };
 
@@ -121,6 +124,7 @@ export async function POST(request: Request) {
           caption,
           link,
           productTag: productTag as any,
+          allowLeads,
         },
       });
     } catch {

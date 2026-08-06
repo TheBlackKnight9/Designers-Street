@@ -17,6 +17,7 @@ const QUICK_ACTIONS = [
   { label: "Products Catalog", icon: "👗", href: "/admin/products", desc: "All products across houses" },
   { label: "Orders", icon: "📦", href: "/admin/orders", desc: "Track all platform orders" },
   { label: "Content Studio", icon: "🎬", href: "/dashboard/posts", desc: "Posts, stories & lookbooks" },
+  { label: "Concept Leads", icon: "🎨", href: "/admin/concept-leads", desc: "Bespoke & concept inquiries" },
   { label: "Payouts", icon: "💳", href: "/admin/payouts", desc: "Manage designer earnings" },
   { label: "Applications", icon: "📋", href: "/admin/applications", desc: "Designer applications" },
 ];

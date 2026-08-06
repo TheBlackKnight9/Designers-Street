@@ -12,8 +12,10 @@ type ConceptLead = {
   budgetRange?: string | null;
   notes?: string | null;
   status: string;
+  sourceType: string;
   createdAt: string;
-  product: { id: string; name: string; designerName: string; category: string; images: string[] };
+  product?: { id: string; name: string; designerName: string; category: string; images: string[] };
+  post?: { id: string; caption: string; designerName: string; image: string; tag: string };
 };
 
 export default function AdminConceptLeadsPage() {
@@ -102,7 +104,7 @@ export default function AdminConceptLeadsPage() {
               <thead className="bg-mist text-[10px] font-bold uppercase tracking-wider text-stone border-b border-cloud">
                 <tr>
                   <th className="p-3.5">Date</th>
-                  <th className="p-3.5">Designer / Prototype Item</th>
+                  <th className="p-3.5">Source &amp; Content</th>
                   <th className="p-3.5">Customer Contact</th>
                   <th className="p-3.5">Budget Range</th>
                   <th className="p-3.5">Sizing &amp; Notes</th>
@@ -117,8 +119,19 @@ export default function AdminConceptLeadsPage() {
                       {new Date(lead.createdAt).toLocaleDateString("en-IN")}
                     </td>
                     <td className="p-3.5">
-                      <p className="font-bold text-charcoal">{lead.product?.name}</p>
-                      <span className="text-[10px] uppercase font-bold text-stone">House: {lead.product?.designerName}</span>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                          lead.sourceType === "POST" ? "bg-amber-100 text-amber-900" : "bg-charcoal text-white"
+                        }`}>
+                          {lead.sourceType}
+                        </span>
+                      </div>
+                      <p className="font-bold text-charcoal truncate max-w-[200px]">
+                        {lead.sourceType === "POST" ? lead.post?.caption : lead.product?.name}
+                      </p>
+                      <span className="text-[10px] uppercase font-bold text-stone">
+                        House: {lead.sourceType === "POST" ? lead.post?.designerName : lead.product?.designerName}
+                      </span>
                     </td>
                     <td className="p-3.5">
                       <p className="font-bold text-charcoal">{lead.name}</p>
@@ -134,9 +147,9 @@ export default function AdminConceptLeadsPage() {
                     <td className="p-3.5">
                       <span
                         className={`px-2.5 py-1 text-[9px] font-extrabold uppercase rounded-full ${
-                          lead.status === "converted"
+                          lead.status === "CONFIRMED"
                             ? "bg-emerald-100 text-emerald-900"
-                            : lead.status === "contacted"
+                            : lead.status === "DESIGNER_CONTACTED"
                             ? "bg-blue-100 text-blue-900"
                             : "bg-amber-100 text-amber-900"
                         }`}
@@ -145,21 +158,21 @@ export default function AdminConceptLeadsPage() {
                       </span>
                     </td>
                     <td className="p-3.5 text-right space-x-1">
-                      {lead.status === "new" && (
+                      {lead.status === "NEW" && (
                         <button
                           type="button"
                           disabled={updatingId === lead.id}
-                          onClick={() => handleStatusChange(lead.id, "contacted")}
+                          onClick={() => handleStatusChange(lead.id, "DESIGNER_CONTACTED")}
                           className="px-3 py-1 bg-blue-900 text-white text-[10px] font-bold uppercase rounded-full"
                         >
                           Mark Contacted
                         </button>
                       )}
-                      {lead.status !== "converted" && (
+                      {lead.status !== "CONFIRMED" && (
                         <button
                           type="button"
                           disabled={updatingId === lead.id}
-                          onClick={() => handleStatusChange(lead.id, "converted")}
+                          onClick={() => handleStatusChange(lead.id, "CONFIRMED")}
                           className="px-3 py-1 bg-emerald-800 text-white text-[10px] font-bold uppercase rounded-full"
                         >
                           Mark Converted

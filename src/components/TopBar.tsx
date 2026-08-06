@@ -44,7 +44,7 @@ export function TopBar() {
       >
         <div className="h-[var(--top-bar-height)] flex items-center justify-between px-3 gap-2">
           <Link href="/" className="flex items-center gap-1.5 min-w-0 flex-shrink-0">
-            <span className="w-8 h-8 rounded-lg bg-charcoal flex items-center justify-center text-paper text-[10px] font-black tracking-wider">
+            <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-charcoal flex items-center justify-center text-paper text-xs font-black tracking-wider">
               DS
             </span>
             <span className="font-sans text-sm font-black uppercase tracking-tight text-charcoal hidden sm:inline">

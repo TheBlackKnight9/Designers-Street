@@ -27,6 +27,7 @@ export default function NewPostPage() {
     caption: "",
     tag: "Product Showcase",
     status: "published",
+    allowLeads: false,
   });
 
   useEffect(() => {
@@ -217,11 +218,11 @@ export default function NewPostPage() {
           </h2>
 
           <div className="grid grid-cols-3 gap-2">
-            {["Product Showcase", "Behind the Scenes", "Collection Drop"].map((t) => (
+            {["Product Showcase", "Story", "Behind the Scenes", "Collection Drop", "Announcement", "Concept Design ✨"].map((t) => (
               <button
                 key={t}
                 type="button"
-                onClick={() => setForm({ ...form, tag: t })}
+                onClick={() => setForm({ ...form, tag: t, allowLeads: t === "Concept Design ✨" ? form.allowLeads : false })}
                 className={`py-2.5 text-xs font-bold uppercase rounded-xl border transition-colors ${
                   form.tag === t
                     ? "bg-charcoal text-paper border-charcoal"
@@ -232,6 +233,22 @@ export default function NewPostPage() {
               </button>
             ))}
           </div>
+
+          {form.tag === "Concept Design ✨" && (
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 mt-3 space-y-2">
+              <h3 className="text-xs font-bold uppercase text-amber-900 tracking-wider">Lead Generation</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.allowLeads}
+                  onChange={(e) => setForm({ ...form, allowLeads: e.target.checked })}
+                  className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-amber-300"
+                />
+                <span className="text-sm font-medium text-amber-900">Allow customers to express interest</span>
+              </label>
+              <p className="text-xs text-amber-700/80 mt-1">If enabled, a &quot;❤️ I Want This Design&quot; button will appear below this post on the feed to generate Concept Leads.</p>
+            </div>
+          )}
 
           <label className="block">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone">

@@ -11,8 +11,10 @@ type Lead = {
   budgetRange: string | null;
   notes: string | null;
   status: string;
+  sourceType: string;
   createdAt: string;
   product?: { name: string };
+  post?: { caption: string };
 };
 
 export default function DesignerConceptLeadsPage() {
@@ -21,7 +23,7 @@ export default function DesignerConceptLeadsPage() {
 
   async function fetchLeads() {
     try {
-      const res = await fetch("/api/concept-interest");
+      const res = await fetch("/api/concept-interest?context=dashboard");
       const data = await res.json();
       if (data?.ok && Array.isArray(data.data?.leads)) {
         setLeads(data.data.leads);
@@ -65,7 +67,7 @@ export default function DesignerConceptLeadsPage() {
               <thead className="bg-mist text-[10px] font-bold uppercase tracking-wider text-stone border-b border-cloud">
                 <tr>
                   <th className="p-3.5">Date</th>
-                  <th className="p-3.5">Product Title</th>
+                  <th className="p-3.5">Source / Content</th>
                   <th className="p-3.5">Customer</th>
                   <th className="p-3.5">Contact</th>
                   <th className="p-3.5">Est. Budget</th>
@@ -77,7 +79,18 @@ export default function DesignerConceptLeadsPage() {
                 {leads.map((lead) => (
                   <tr key={lead.id} className="hover:bg-mist/30">
                     <td className="p-3.5 font-mono text-stone">{new Date(lead.createdAt).toLocaleDateString()}</td>
-                    <td className="p-3.5 font-bold">{lead.product?.name || "Concept Showcase"}</td>
+                    <td className="p-3.5">
+                      <div className="flex flex-col gap-1">
+                        <span className={`self-start px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                          lead.sourceType === "POST" ? "bg-amber-100 text-amber-900" : "bg-cloud text-charcoal"
+                        }`}>
+                          {lead.sourceType}
+                        </span>
+                        <span className="font-bold max-w-[200px] truncate">
+                          {lead.sourceType === "POST" ? lead.post?.caption : lead.product?.name || "Concept Showcase"}
+                        </span>
+                      </div>
+                    </td>
                     <td className="p-3.5 font-bold">{lead.name}</td>
                     <td className="p-3.5 font-mono">
                       <div>{lead.email}</div>
@@ -86,7 +99,13 @@ export default function DesignerConceptLeadsPage() {
                     <td className="p-3.5 font-mono font-bold text-emerald-800">{lead.budgetRange || "Flexible"}</td>
                     <td className="p-3.5 text-stone max-w-xs truncate">{lead.notes || "No notes"}</td>
                     <td className="p-3.5">
-                      <span className="px-2.5 py-0.5 text-[9px] font-bold uppercase rounded-md bg-amber-100 text-amber-900">
+                      <span className={`px-2.5 py-0.5 text-[9px] font-bold uppercase rounded-md ${
+                        lead.status === "CONFIRMED" || lead.status === "COMPLETED"
+                          ? "bg-emerald-100 text-emerald-900"
+                          : lead.status === "DESIGNER_CONTACTED" || lead.status === "QUOTE_SENT"
+                          ? "bg-blue-100 text-blue-900"
+                          : "bg-amber-100 text-amber-900"
+                      }`}>
                         {lead.status}
                       </span>
                     </td>

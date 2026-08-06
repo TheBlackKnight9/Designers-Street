@@ -93,6 +93,7 @@ export function AdminHouseSwitcher() {
           { label: "Houses", href: "/admin/designers" },
           { label: "Catalog", href: "/admin/products" },
           { label: "Orders", href: "/admin/orders" },
+          { label: "Leads", href: "/admin/concept-leads" },
           { label: "Payouts", href: "/admin/payouts" },
           { label: "Studio", href: "/dashboard" },
         ].map((item) => {

@@ -14,11 +14,11 @@ export async function PATCH(
     const { id } = await params;
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
 
-    const status = String(body.status || "contacted").trim();
+    const status = String(body.status || "DESIGNER_CONTACTED").trim();
 
     const lead = await prisma.conceptInterest.update({
       where: { id },
-      data: { status },
+      data: { status: status as any },
     });
 
     return ok({ lead });

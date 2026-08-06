@@ -304,10 +304,12 @@ model Post {
   likesCount       Int       @default(0) @map("likes_count")
   commentsCount    Int       @default(0) @map("comments_count")
   productTag       Json?     @map("product_tag")
+  allowLeads       Boolean   @default(false) @map("allow_leads")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
   designer DesignerHouse? @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  conceptInterests ConceptInterest[]
   likes    Like[]
   comments Comment[]
   mediaAssets MediaAsset[]
@@ -1064,6 +1066,39 @@ model BusinessVerification {
 enum ProductListingType {
   COMMERCIAL
   CONCEPT_ART
+  LIMITED_EDITION
+  BESPOKE_ONLY
+  PREORDER
+  DIGITAL_PATTERN
+  LOOKBOOK
+  RUNWAY
+  COLLABORATION
+}
+
+enum CustomerIntent {
+  RECREATE
+  CUSTOMIZE
+  INSPIRED_BY
+  CONSULTATION
+  WHOLESALE
+  LICENSE
+  COLLABORATION
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  UNDER_REVIEW
+  DESIGNER_CONTACTED
+  CONSULTATION_BOOKED
+  QUOTE_SENT
+  NEGOTIATION
+  PAYMENT_PENDING
+  CONFIRMED
+  IN_PRODUCTION
+  COMPLETED
+  CLOSED
+  REJECTED
 }
 
 enum ConceptActionCTA {
@@ -1098,21 +1133,34 @@ model ProductVariant {
   @@map("product_variants")
 }
 
+enum LeadSourceType {
+  PRODUCT
+  POST
+  LOOKBOOK
+  COLLECTION
+}
+
 model ConceptInterest {
   id          String   @id @default(cuid())
-  productId   String   @map("product_id")
+  sourceType  LeadSourceType @default(PRODUCT) @map("source_type")
+  productId   String?  @map("product_id")
+  postId      String?  @map("post_id")
   userId      String?  @map("user_id")
   name        String
   email       String
   phone       String?
-  budgetRange String?  @map("budget_range")
-  notes       String?  @db.Text
-  status      String   @default("new")
-  createdAt   DateTime @default(now()) @map("created_at")
+  budgetRange      String?         @map("budget_range")
+  notes            String?         @db.Text
+  intent           CustomerIntent?
+  consultationDate DateTime?       @map("consultation_date")
+  status           LeadStatus      @default(NEW)
+  createdAt        DateTime        @default(now()) @map("created_at")
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+  @@index([postId])
   @@map("concept_interests")
 }
 
