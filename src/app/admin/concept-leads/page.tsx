@@ -14,8 +14,10 @@ type ConceptLead = {
   budgetRange?: string | null;
   notes?: string | null;
   status: string;
+  sourceType: string;
   createdAt: string;
-  product: { id: string; name: string; designerName: string; category: string; images: string[] };
+  product?: { id: string; name: string; designerName: string; category: string; images: string[] };
+  post?: { id: string; caption: string; designerName: string; image: string; tag: string };
 };
 
 export default function AdminConceptLeadsPage() {
@@ -96,13 +98,13 @@ export default function AdminConceptLeadsPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-[#ECE8DC] text-[11px] font-bold uppercase tracking-wider text-[#8A8A8A] bg-[#FAF8F5]">
-                  <th className="py-3 px-4">Concept Piece</th>
+                  <th className="py-3 px-4">Source & Content</th>
                   <th className="py-3 px-4">Client Name</th>
                   <th className="py-3 px-4">Contact</th>
-                  <th className="py-3 px-4">Budget Segment</th>
+                  <th className="py-3 px-4">Budget Range</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Update Status</th>
+                  <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ECE8DC]">
@@ -110,13 +112,29 @@ export default function AdminConceptLeadsPage() {
                   <tr key={l.id} className="hover:bg-[#FAF8F5] transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        {l.product?.images?.[0] && (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={l.product.images[0]} alt="" className="w-10 h-12 object-cover rounded-none flex-shrink-0" />
+                        {l.sourceType === "POST" ? (
+                          l.post?.image ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={l.post.image} alt="" className="w-10 h-12 object-cover rounded-none flex-shrink-0" />
+                          ) : null
+                        ) : (
+                          l.product?.images?.[0] && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={l.product.images[0]} alt="" className="w-10 h-12 object-cover rounded-none flex-shrink-0" />
+                          )
                         )}
                         <div>
-                          <p className="text-xs font-bold text-[#1A1A1A] truncate max-w-[160px]">{l.product?.name || "Concept Item"}</p>
-                          <p className="text-[10px] text-[#8A8A8A]">{l.product?.designerName}</p>
+                          <span className={`inline-block px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded-none mb-0.5 ${
+                            l.sourceType === "POST" ? "bg-amber-100 text-amber-900" : "bg-[#1A1A1A] text-white"
+                          }`}>
+                            {l.sourceType}
+                          </span>
+                          <p className="text-xs font-bold text-[#1A1A1A] truncate max-w-[160px]">
+                            {l.sourceType === "POST" ? l.post?.caption || "Lookbook Post" : l.product?.name || "Concept Item"}
+                          </p>
+                          <p className="text-[10px] text-[#8A8A8A]">
+                            {l.sourceType === "POST" ? l.post?.designerName : l.product?.designerName}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -155,11 +173,11 @@ export default function AdminConceptLeadsPage() {
                           onChange={(e) => handleStatusChange(l.id, e.target.value)}
                           className="appearance-none bg-[#F4F0E5] border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-3 py-1.5 pr-7 rounded-none outline-none cursor-pointer hover:border-[#17181D]"
                         >
-                          <option value="new">New</option>
-                          <option value="contacted">Contacted</option>
-                          <option value="quoted">Quoted</option>
-                          <option value="converted">Converted</option>
-                          <option value="closed">Closed</option>
+                          <option value="NEW">New</option>
+                          <option value="DESIGNER_CONTACTED">Designer Contacted</option>
+                          <option value="QUOTED">Quoted</option>
+                          <option value="CONFIRMED">Confirmed / Converted</option>
+                          <option value="CLOSED">Closed</option>
                         </select>
                         <ChevronDown className="w-3 h-3 text-[#8A8A8A] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>

@@ -14,6 +14,7 @@ import {
   FileText,
   Sparkles,
   ArrowRight,
+  Palette,
 } from "lucide-react";
 
 type Stat = {
@@ -30,6 +31,7 @@ const QUICK_ACTIONS = [
   { label: "Products Catalog", icon: <ShoppingBag className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/products", desc: "Global product verification, prices & stock" },
   { label: "Orders & Shipping", icon: <Package className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/orders", desc: "Track platform orders, dispatch & delivery" },
   { label: "Content Studio", icon: <Clapperboard className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/dashboard/posts", desc: "Reels, stories, lookbooks & social posts" },
+  { label: "Concept Leads", icon: <Palette className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/concept-leads", desc: "Bespoke inquiries & prototype concept interest" },
   { label: "Payouts & Earnings", icon: <CreditCard className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/payouts", desc: "Manage house revenue splits & payouts" },
   { label: "Applications", icon: <FileText className="w-5 h-5 stroke-[1.8] text-[#1A1A1A]" />, href: "/admin/applications", desc: "Review incoming designer house applications" },
 ];
@@ -123,7 +125,7 @@ export default function AdminDashboardPage() {
           <h2 className="font-display text-lg font-bold uppercase tracking-tight text-[#1A1A1A]">
             Quick Action Hubs
           </h2>
-          <span className="text-xs text-[#8A8A8A] font-medium">6 Management Modules</span>
+          <span className="text-xs text-[#8A8A8A] font-medium">{QUICK_ACTIONS.length} Management Modules</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

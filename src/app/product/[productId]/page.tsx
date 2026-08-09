@@ -199,13 +199,34 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   const toggleSection = (s: string) => setOpenSection(openSection === s ? null : s);
 
-  const isConcept = (product as { listingType?: string }).listingType === "CONCEPT_ART";
-  const conceptLabel =
-    (product as { conceptCta?: string }).conceptCta === "EXPRESS_INTEREST"
-      ? "Express Interest"
-      : (product as { conceptCta?: string }).conceptCta === "PRE_ORDER_DEPOSIT"
-        ? "Pre-Order Sample"
-        : "Request Bespoke Quote";
+  const lType = (product as { listingType?: string }).listingType || "COMMERCIAL";
+  const isConcept = lType !== "COMMERCIAL";
+
+  let conceptLabel = "Request Quote";
+  switch (lType) {
+    case "CONCEPT_ART":
+      conceptLabel = "Request Design";
+      break;
+    case "LIMITED_EDITION":
+      conceptLabel = "Reserve Piece";
+      break;
+    case "BESPOKE_ONLY":
+      conceptLabel = "Book Consultation";
+      break;
+    case "PREORDER":
+      conceptLabel = "Pre-order";
+      break;
+    case "DIGITAL_PATTERN":
+      conceptLabel = "Request License";
+      break;
+    case "LOOKBOOK":
+    case "RUNWAY":
+    case "COLLABORATION":
+      conceptLabel = "Express Interest";
+      break;
+    default:
+      conceptLabel = "Request Quote";
+  }
   const rating = product.rating ?? 4.5;
 
   return (
@@ -260,9 +281,13 @@ export default function ProductDetailPage({ params }: PageProps) {
                 title={product.name}
                 text={`${product.designerName} — ${product.name}`}
                 path={`/product/${product.id}`}
-                label="⋯"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-cloud bg-paper text-charcoal text-lg leading-none"
-              />
+                label="Share"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-cloud bg-paper text-charcoal"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                </svg>
+              </ShareButton>
             </div>
           </div>
 

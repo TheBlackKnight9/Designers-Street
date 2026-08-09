@@ -131,6 +131,7 @@ export interface FeedPostData {
     price: number;
     productId?: string;
   };
+  allowLeads?: boolean;
 }
 
 // ── Cart ─────────────────────────────────

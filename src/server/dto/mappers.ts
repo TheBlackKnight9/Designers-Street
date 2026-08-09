@@ -167,6 +167,7 @@ export function toFeedPostDTO(row: ProductWithDesigner): FeedPostDTO {
       name: row.name,
       price: row.price,
     },
+    allowLeads: (row as any).allowLeads ?? false,
   };
 }
 

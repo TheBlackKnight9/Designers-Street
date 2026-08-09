@@ -9,6 +9,7 @@ type ShareButtonProps = {
   path: string;
   className?: string;
   label?: string;
+  children?: React.ReactNode;
 };
 
 export function ShareButton({
@@ -17,6 +18,7 @@ export function ShareButton({
   path,
   className = "",
   label = "Share",
+  children,
 }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
 
@@ -28,7 +30,7 @@ export function ShareButton({
         className={className}
         aria-label={label}
       >
-        {label}
+        {children || label}
       </button>
       <ShareSheet
         open={open}

@@ -47,11 +47,9 @@ export function AdminHouseSwitcher() {
     if (!houseId) return;
     document.cookie = `admin_active_designer_id=${houseId}; path=/; max-age=86400`;
     setActiveId(houseId);
-    push("✅ Active house switched for Studio", "ok");
+    push("Active house switched for Studio", "ok");
     router.refresh();
   }
-
-  const activeHouse = houses.find((h) => h.id === activeId);
 
   if (loading || houses.length === 0) return null;
 

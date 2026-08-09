@@ -109,13 +109,6 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
           <Maximize2 className="w-4 h-4 text-white" />
         </button>
 
-        {/* Free Shipping Badge */}
-        {(product as { listingType?: string }).listingType !== "CONCEPT_ART" && (
-          <span className="absolute top-2 left-2 z-10 bg-[var(--accent-sale)] text-white font-sans text-[8px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wider">
-            FREE SHIP
-          </span>
-        )}
-
         {product.videos && product.videos.length > 0 ? (
           <span className="absolute top-2 left-16 z-10 flex h-7 items-center gap-1 rounded-full bg-black/55 px-2 text-[9px] font-bold uppercase tracking-wider text-white pointer-events-none">
             <Play className="w-3 h-3 fill-white text-white" />
@@ -131,15 +124,17 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
           </span>
         </div>
 
-        {/* Quick add bag */}
-        <button
-          type="button"
-          onClick={handleQuickAdd}
-          className="absolute bottom-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-charcoal rounded-full text-paper active:scale-90 transition-transform cursor-pointer shadow-md"
-          aria-label="Quick Add to Bag"
-        >
-          <ShoppingBag className="w-4 h-4 text-paper stroke-[1.8]" />
-        </button>
+        {/* Quick add bag - Hidden for Concept Art */}
+        {(product as any).listingType !== "CONCEPT_ART" && (
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className="absolute bottom-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-charcoal rounded-full text-paper active:scale-90 transition-transform cursor-pointer shadow-md"
+            aria-label="Quick Add to Bag"
+          >
+            <ShoppingBag className="w-4 h-4 text-paper stroke-[1.8]" />
+          </button>
+        )}
 
         {/* Double-tap heart overlay animation */}
         {showHeart && (
@@ -151,10 +146,6 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
 
       {/* Product details */}
       <div className="mt-2 flex flex-col gap-0.5">
-        <p className="font-sans text-[9px] font-extrabold uppercase tracking-widest text-silver">
-          {product.designerName}
-        </p>
-
         <div className="flex items-start justify-between gap-2">
           <Link
             href={`/product/${product.id}`}
@@ -184,37 +175,7 @@ export function ProductCard({ product, className = "", id }: ProductCardProps) {
           <span className="font-sans text-sm font-extrabold text-charcoal">
             {formatPrice(product.price)}
           </span>
-          {product.mrp && product.mrp > product.price && (
-            <span className="font-sans text-[10px] text-silver line-through">
-              {formatPrice(product.mrp)}
-            </span>
-          )}
         </div>
-
-        {product.bestPrice && (
-          <div className="mt-1 self-start bg-mist px-1.5 py-0.5 rounded text-[9px] font-extrabold text-charcoal tracking-wide uppercase">
-            Best: {formatPrice(product.bestPrice)}*
-          </div>
-        )}
-
-        {product.deliveryText && (
-          <p className="text-[10px] text-[var(--accent-sale)] font-bold mt-1 flex items-center gap-1">
-            <span>⚡</span> {product.deliveryText}
-          </p>
-        )}
-
-        {/* Color swatches */}
-        {product.colors && product.colors.length > 0 && (
-          <div className="flex gap-1.5 mt-1.5">
-            {product.colors.map((c) => (
-              <span
-                key={c}
-                className="w-3 h-3 rounded-full border border-gray-200 block shadow-xs"
-                style={{ backgroundColor: c }}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

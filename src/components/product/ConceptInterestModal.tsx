@@ -14,6 +14,8 @@ export function ConceptInterestModal({
     email: "",
     phone: "",
     budgetRange: "₹50,000 – ₹1,00,000",
+    intent: "CONSULTATION",
+    consultationDate: "",
     chest: "",
     waist: "",
     hip: "",
@@ -118,6 +120,32 @@ export function ConceptInterestModal({
               <option value="₹2,50,000+">₹2,50,000+</option>
             </select>
           </label>
+
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Request Intent</span>
+            <select value={form.intent} onChange={(e) => setForm({ ...form, intent: e.target.value })} className={field}>
+              <option value="CONSULTATION">Book a Consultation</option>
+              <option value="RECREATE">Recreate exactly</option>
+              <option value="CUSTOMIZE">Customize (Color/Fabric)</option>
+              <option value="INSPIRED_BY">Inspired by this</option>
+              <option value="COLLABORATION">Designer Collaboration</option>
+              <option value="WHOLESALE">Wholesale Inquiry</option>
+              <option value="LICENSE">License Pattern</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </label>
+
+          {form.intent === "CONSULTATION" && (
+            <label className="block p-3 bg-mist/60 border border-cloud rounded-xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone">Preferred Consultation Date & Time</span>
+              <input 
+                type="datetime-local" 
+                value={form.consultationDate} 
+                onChange={(e) => setForm({ ...form, consultationDate: e.target.value })} 
+                className={`${field} mt-1`} 
+              />
+            </label>
+          )}
 
           {/* Saved Measurement Profile Checkbox */}
           {savedProfile && (

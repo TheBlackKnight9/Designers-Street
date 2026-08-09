@@ -16,6 +16,7 @@ import { getDesignerUrl } from "@/lib/routes";
 import { resolvePostProductId } from "@/lib/feed-product";
 import { isVideoAssetUrl, toPlayableVideoUrl } from "@/lib/fashion-videos";
 import { getOptimizedMediaUrl } from "@/lib/media/cloudinary-delivery";
+import { ConceptLeadPopup } from "./ConceptLeadPopup";
 
 interface FeedPostProps {
   post: FeedPostData;
@@ -57,6 +58,7 @@ export function FeedPost({ post }: FeedPostProps) {
   const [shareOpen, setShareOpen] = useState(false);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const [showTagPopover, setShowTagPopover] = useState(false);
+  const [showConceptLeadPopup, setShowConceptLeadPopup] = useState(false);
   const [authHint, setAuthHint] = useState<string | null>(null);
   const lastTapRef = useRef(0);
   const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -184,7 +186,11 @@ export function FeedPost({ post }: FeedPostProps) {
 
         {/* Follow Tag / Button */}
         <div className="flex items-center gap-2">
-          {post.tag && (
+          {post.tag === "Concept Design ✨" ? (
+            <span className="px-2.5 py-1 bg-amber-50 font-sans text-[10px] font-extrabold uppercase tracking-wider text-amber-900 rounded-full border border-amber-200 shadow-sm flex items-center gap-1">
+              <span>✨ Concept Design</span>
+            </span>
+          ) : post.tag && (
             <span className="px-2 py-0.5 bg-white/80 font-sans text-[9px] font-bold uppercase tracking-wider text-[#4A4A4A] rounded-full border border-gray-200">
               {post.tag}
             </span>
@@ -353,7 +359,15 @@ export function FeedPost({ post }: FeedPostProps) {
 
           <div className="flex-1" />
 
-          {commerceProductId ? (
+          {post.tag === "Concept Design ✨" && post.allowLeads ? (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowConceptLeadPopup(true); }}
+              className="pointer-events-auto flex items-center gap-1.5 px-4 py-2 bg-charcoal text-paper rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md active:scale-95 transition-all cursor-pointer"
+            >
+              <span>❤️ I Want This Design</span>
+            </button>
+          ) : commerceProductId ? (
             <button
               type="button"
               onClick={handleAddToCart}
@@ -408,6 +422,15 @@ export function FeedPost({ post }: FeedPostProps) {
         text={post.caption}
         url={post.link || "/feed"}
       />
+
+      {showConceptLeadPopup && (
+        <ConceptLeadPopup
+          postId={post.id}
+          designerName={post.designerName}
+          captionSnippet={post.caption}
+          onClose={() => setShowConceptLeadPopup(false)}
+        />
+      )}
     </article>
   );
 }
