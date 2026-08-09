@@ -142,22 +142,32 @@ export class PublicCatalogService {
       };
     }
 
-    const { rows, nextCursor } = await this.products.findPublicPage({
-      limit,
-      cursor: options.cursor,
-      filters,
-    });
+    try {
+      const { rows, nextCursor } = await this.products.findPublicPage({
+        limit,
+        cursor: options.cursor,
+        filters,
+      });
 
-    return {
-      items: rows.map(toProductCardDTO),
-      nextCursor,
-    };
+      return {
+        items: rows.map(toProductCardDTO),
+        nextCursor,
+      };
+    } catch (err) {
+      console.error("[PublicCatalogService] listProducts DB error, falling back to mock:", err);
+      const filtered = applyMockFilters(PRODUCTS, filters);
+      const page = mockCursorPage(filtered, limit, options.cursor);
+      return {
+        items: page.items.map(mockCardFromProduct),
+        nextCursor: page.nextCursor,
+      };
+    }
   }
 
   async getProduct(id: string): Promise<ProductDetailDTO> {
     trackPublicEvent("product_viewed", { productId: id });
 
-    if (!isDatabaseEnabled()) {
+    const getMockDetail = () => {
       const p = getProductById(id);
       if (!p) throw new NotFoundError(`Product ${id} not found`);
       const designer = getDesignerById(p.designerId);
@@ -182,11 +192,20 @@ export class PublicCatalogService {
           verified: Boolean(designer?.verified),
         },
       };
+    };
+
+    if (!isDatabaseEnabled()) {
+      return getMockDetail();
     }
 
-    const row = await this.products.findPublicById(id);
-    if (!row) throw new NotFoundError(`Product ${id} not found`);
-    return toProductDetailDTO(row);
+    try {
+      const row = await this.products.findPublicById(id);
+      if (!row) return getMockDetail();
+      return toProductDetailDTO(row);
+    } catch (err) {
+      console.error("[PublicCatalogService] getProduct DB error, falling back to mock:", err);
+      return getMockDetail();
+    }
   }
 
   async listFeed(options: {
@@ -200,7 +219,7 @@ export class PublicCatalogService {
     const limit = options.limit ?? 10;
     const sort = options.sort ?? "recent";
 
-    if (!isDatabaseEnabled()) {
+    const getMockFeed = async () => {
       let filtered = FEED_POSTS;
       if (options.designerId) {
         const dId = options.designerId.toLowerCase();
@@ -213,47 +232,56 @@ export class PublicCatalogService {
       const page = mockCursorPage(filtered, limit, options.cursor);
       const items = await this.enrichFeedProductTags(page.items);
       return { items, nextCursor: page.nextCursor };
+    };
+
+    if (!isDatabaseEnabled()) {
+      return getMockFeed();
     }
 
-    let followingDesignerIds: string[] | undefined;
-    if (sort === "following" && options.viewerUserId) {
-      const { FollowRepository } = await import(
-        "@/server/repositories/follow-repository"
-      );
-      followingDesignerIds = await new FollowRepository().listFollowingDesignerIds(
-        options.viewerUserId
-      );
-    }
+    try {
+      let followingDesignerIds: string[] | undefined;
+      if (sort === "following" && options.viewerUserId) {
+        const { FollowRepository } = await import(
+          "@/server/repositories/follow-repository"
+        );
+        followingDesignerIds = await new FollowRepository().listFollowingDesignerIds(
+          options.viewerUserId
+        );
+      }
 
-    const postPage = await this.feed.findFeedPage({
-      limit,
-      cursor: options.cursor,
-      sort: sort === "following" && !followingDesignerIds?.length ? "recent" : sort,
-      followingDesignerIds,
-      designerId: options.designerId ?? undefined,
-    });
+      const postPage = await this.feed.findFeedPage({
+        limit,
+        cursor: options.cursor,
+        sort: sort === "following" && !followingDesignerIds?.length ? "recent" : sort,
+        followingDesignerIds,
+        designerId: options.designerId ?? undefined,
+      });
 
-    if (postPage.items.length > 0 || options.cursor) {
+      if (postPage.items.length > 0 || options.cursor) {
+        const hydrated = await this.hydrateFeedEngagement(
+          postPage.items,
+          options.viewerUserId
+        );
+        const items = await this.enrichFeedProductTags(hydrated);
+        return { items, nextCursor: postPage.nextCursor };
+      }
+
+      const { rows, nextCursor } = await this.products.findPublicPage({
+        limit,
+        cursor: options.cursor,
+        filters: { sort: "newest" },
+      });
+
       const hydrated = await this.hydrateFeedEngagement(
-        postPage.items,
+        rows.map(toFeedPostDTO),
         options.viewerUserId
       );
       const items = await this.enrichFeedProductTags(hydrated);
-      return { items, nextCursor: postPage.nextCursor };
+      return { items, nextCursor };
+    } catch (err) {
+      console.error("[PublicCatalogService] listFeed DB error, falling back to mock:", err);
+      return getMockFeed();
     }
-
-    const { rows, nextCursor } = await this.products.findPublicPage({
-      limit,
-      cursor: options.cursor,
-      filters: { sort: "newest" },
-    });
-
-    const hydrated = await this.hydrateFeedEngagement(
-      rows.map(toFeedPostDTO),
-      options.viewerUserId
-    );
-    const items = await this.enrichFeedProductTags(hydrated);
-    return { items, nextCursor };
   }
 
   /**
@@ -288,16 +316,20 @@ export class PublicCatalogService {
 
     if (designerIds.length > 0) {
       if (isDatabaseEnabled()) {
-        for (const designerId of designerIds) {
-          const products = await this.products.findByDesignerId(designerId);
-          const first = products[0];
-          if (first) {
-            fallbackByDesigner.set(designerId, {
-              id: first.id,
-              name: first.name,
-              price: first.price,
-            });
+        try {
+          for (const designerId of designerIds) {
+            const products = await this.products.findByDesignerId(designerId);
+            const first = products[0];
+            if (first) {
+              fallbackByDesigner.set(designerId, {
+                id: first.id,
+                name: first.name,
+                price: first.price,
+              });
+            }
           }
+        } catch {
+          /* ignore */
         }
       } else {
         for (const designerId of designerIds) {
@@ -355,33 +387,37 @@ export class PublicCatalogService {
   ): Promise<FeedPostDTO[]> {
     if (!viewerUserId || items.length === 0) return items;
 
-    const { LikeRepository } = await import(
-      "@/server/repositories/like-repository"
-    );
-    const { FollowRepository } = await import(
-      "@/server/repositories/follow-repository"
-    );
-    const likes = new LikeRepository();
-    const follows = new FollowRepository();
+    try {
+      const { LikeRepository } = await import(
+        "@/server/repositories/like-repository"
+      );
+      const { FollowRepository } = await import(
+        "@/server/repositories/follow-repository"
+      );
+      const likes = new LikeRepository();
+      const follows = new FollowRepository();
 
-    const postIds = items.map((i) => i.id);
-    const designerIds = items
-      .map((i) => i.designerId)
-      .filter((id): id is string => Boolean(id));
+      const postIds = items.map((i) => i.id);
+      const designerIds = items
+        .map((i) => i.designerId)
+        .filter((id): id is string => Boolean(id));
 
-    const [likedPosts, likedProducts, followed] = await Promise.all([
-      likes.listLikedPostIds(viewerUserId, postIds),
-      likes.listLikedProductIds(viewerUserId, postIds),
-      follows.listFollowedAmong(viewerUserId, designerIds),
-    ]);
+      const [likedPosts, likedProducts, followed] = await Promise.all([
+        likes.listLikedPostIds(viewerUserId, postIds),
+        likes.listLikedProductIds(viewerUserId, postIds),
+        follows.listFollowedAmong(viewerUserId, designerIds),
+      ]);
 
-    return items.map((item) => ({
-      ...item,
-      likedByMe: likedPosts.has(item.id) || likedProducts.has(item.id),
-      followingDesigner: item.designerId
-        ? followed.has(item.designerId)
-        : false,
-    }));
+      return items.map((item) => ({
+        ...item,
+        likedByMe: likedPosts.has(item.id) || likedProducts.has(item.id),
+        followingDesigner: item.designerId
+          ? followed.has(item.designerId)
+          : false,
+      }));
+    } catch {
+      return items;
+    }
   }
 
   async listCategories(): Promise<CategoryDTO[]> {
@@ -389,7 +425,12 @@ export class PublicCatalogService {
     if (!isDatabaseEnabled()) {
       return CATEGORIES.map(toCategoryDTO);
     }
-    const tree = await this.feed.findCategoryTree();
-    return tree.map(toCategoryDTO);
+    try {
+      const tree = await this.feed.findCategoryTree();
+      return tree.map(toCategoryDTO);
+    } catch (err) {
+      console.error("[PublicCatalogService] listCategories DB error, falling back to mock:", err);
+      return CATEGORIES.map(toCategoryDTO);
+    }
   }
 }
