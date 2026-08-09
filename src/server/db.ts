@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import dns from "node:dns";
 
 try {
-  // Force ipv4first to prevent Windows TCP socket drops on Supabase direct connections
+  // Force ipv4first to prevent Windows & Serverless TCP socket drops on Supabase connections
   dns.setDefaultResultOrder("ipv4first");
 } catch {
   /* ignore */
@@ -23,13 +23,11 @@ function createPrismaClient() {
 
 /**
  * Production-safe Prisma singleton.
- * Reuses one client in development to avoid exhausting connections on HMR.
+ * Reuses one client across HMR and serverless warm invocations to avoid exhausting connections.
  */
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;
 
 export async function checkDatabaseConnection(): Promise<boolean> {
   if (!process.env.DATABASE_URL) return false;

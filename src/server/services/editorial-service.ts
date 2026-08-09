@@ -29,35 +29,36 @@ export class EditorialService {
       };
     }
 
-    const [activeCampaign, collections, articles, sections] = await Promise.all([
-      this.repo.findActiveCampaign(),
-      this.repo.listCollections(),
-      this.repo.listArticles(6),
-      this.repo.listActiveFeaturedSections(),
-    ]);
+    try {
+      const [activeCampaign, collections, articles, sections] = await Promise.all([
+        this.repo.findActiveCampaign(),
+        this.repo.listCollections(),
+        this.repo.listArticles(6),
+        this.repo.listActiveFeaturedSections(),
+      ]);
 
-    const mappedCampaign: EditorialCampaignData | null = activeCampaign
-      ? {
-          id: activeCampaign.id,
-          title: activeCampaign.title,
-          slug: activeCampaign.slug,
-          subtitle: activeCampaign.subtitle ?? undefined,
-          heroImage: activeCampaign.heroImage,
-          heroVideoUrl: activeCampaign.heroVideoUrl ?? undefined,
-          headline: activeCampaign.headline,
-          body: activeCampaign.body,
-          badge: activeCampaign.badge ?? undefined,
-          featuredDesignerId: activeCampaign.featuredDesignerId ?? undefined,
-          featuredDesignerName: activeCampaign.featuredDesigner?.name ?? undefined,
-          ctaLabel: activeCampaign.ctaLabel ?? undefined,
-          ctaLink: activeCampaign.ctaLink ?? undefined,
-          sortOrder: activeCampaign.sortOrder,
-        }
-      : DEMO_CAMPAIGNS[0] ?? null;
+      const mappedCampaign: EditorialCampaignData | null = activeCampaign
+        ? {
+            id: activeCampaign.id,
+            title: activeCampaign.title,
+            slug: activeCampaign.slug,
+            subtitle: activeCampaign.subtitle ?? undefined,
+            heroImage: activeCampaign.heroImage,
+            heroVideoUrl: activeCampaign.heroVideoUrl ?? undefined,
+            headline: activeCampaign.headline,
+            body: activeCampaign.body,
+            badge: activeCampaign.badge ?? undefined,
+            featuredDesignerId: activeCampaign.featuredDesignerId ?? undefined,
+            featuredDesignerName: activeCampaign.featuredDesigner?.name ?? undefined,
+            ctaLabel: activeCampaign.ctaLabel ?? undefined,
+            ctaLink: activeCampaign.ctaLink ?? undefined,
+            sortOrder: activeCampaign.sortOrder,
+          }
+        : DEMO_CAMPAIGNS[0] ?? null;
 
-    const mappedCollections: EditorialCollectionData[] = collections.length
-      ? collections.map((c) => ({
-          id: c.id,
+      const mappedCollections: EditorialCollectionData[] = collections.length
+        ? collections.map((c) => ({
+            id: c.id,
           title: c.title,
           slug: c.slug,
           tagline: c.tagline ?? undefined,
@@ -103,12 +104,21 @@ export class EditorialService {
         }))
       : DEMO_FEATURED_SECTIONS;
 
-    return {
-      campaign: mappedCampaign,
-      collections: mappedCollections,
-      articles: mappedArticles,
-      sections: mappedSections,
-    };
+      return {
+        campaign: mappedCampaign,
+        collections: mappedCollections,
+        articles: mappedArticles,
+        sections: mappedSections,
+      };
+    } catch (err) {
+      console.error("[EditorialService] Database query error, falling back to demo editorial:", err);
+      return {
+        campaign: DEMO_CAMPAIGNS[0] ?? null,
+        collections: DEMO_COLLECTIONS,
+        articles: DEMO_ARTICLES,
+        sections: DEMO_FEATURED_SECTIONS,
+      };
+    }
   }
 
   async getCollectionBySlug(slug: string): Promise<EditorialCollectionData> {

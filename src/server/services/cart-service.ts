@@ -47,16 +47,24 @@ export class CartService {
     userId?: string | null;
     guestToken?: string | null;
   }): Promise<{ items: UiCartItem[]; total: number; itemCount: number }> {
-    this.requireDb();
-    let cart: CartWithItems | null = null;
-    if (opts.userId) cart = await this.carts.findByUserId(opts.userId);
-    else if (opts.guestToken)
-      cart = await this.carts.findByGuestToken(opts.guestToken);
+    if (!isDatabaseEnabled()) {
+      return { items: [], total: 0, itemCount: 0 };
+    }
 
-    const items = cart ? toUiItems(cart) : [];
-    const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
-    const itemCount = items.reduce((s, i) => s + i.quantity, 0);
-    return { items, total, itemCount };
+    try {
+      let cart: CartWithItems | null = null;
+      if (opts.userId) cart = await this.carts.findByUserId(opts.userId);
+      else if (opts.guestToken)
+        cart = await this.carts.findByGuestToken(opts.guestToken);
+
+      const items = cart ? toUiItems(cart) : [];
+      const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+      const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+      return { items, total, itemCount };
+    } catch (err) {
+      console.error("[CartService] Error fetching cart from database:", err);
+      return { items: [], total: 0, itemCount: 0 };
+    }
   }
 
   private async validateProductLine(input: {

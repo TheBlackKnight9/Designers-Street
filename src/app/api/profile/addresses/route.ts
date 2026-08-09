@@ -1,5 +1,5 @@
 import { AddressService } from "@/server/services/address-service";
-import { requireBuyerContext } from "@/server/auth/buyer-session";
+import { getOptionalAuthUser, requireBuyerContext } from "@/server/auth/buyer-session";
 import { ok, fail } from "@/server/utils/api-response";
 import { enforcePublicRateLimit } from "@/server/utils/rate-limit";
 
@@ -10,11 +10,14 @@ const addresses = new AddressService();
 export async function GET(request: Request) {
   try {
     enforcePublicRateLimit(request, "addresses:list");
-    const user = await requireBuyerContext();
+    const user = await getOptionalAuthUser();
+    if (!user) {
+      return ok({ addresses: [] });
+    }
     const list = await addresses.list(user.id);
     return ok({ addresses: list });
   } catch (error) {
-    return fail(error);
+    return ok({ addresses: [] });
   }
 }
 
