@@ -50,7 +50,7 @@ const SECONDARY_NAV: NavItem[] = [
 const BOTTOM_NAV: NavItem[] = [
   { label: "Notification", href: "/notifications", icon: Bell },
   { label: "Help", href: "/seller-terms", icon: HelpCircle },
-  { label: "Settings", href: "/account/settings", icon: Settings },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
   { label: "Log out", href: "/login", icon: LogOut },
 ];
 
