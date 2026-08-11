@@ -10,10 +10,6 @@ export type AdminContext = {
 };
 
 export async function requireAdminContext(): Promise<AdminContext> {
-  if (!isDatabaseEnabled()) {
-    throw new ValidationError("Admin functions require database connection.");
-  }
-
   const supabase = await createClient();
   const {
     data: { user: authUser },
@@ -23,22 +19,51 @@ export async function requireAdminContext(): Promise<AdminContext> {
     throw new UnauthorizedError("Sign in required");
   }
 
-  const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
-  if (!dbUser) {
-    throw new UnauthorizedError("User record not found. Please sign in again.");
+  const adminEmails = (process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (adminEmails.includes(authUser.email.toLowerCase())) {
+    return {
+      user: {
+        id: authUser.id,
+        email: authUser.email,
+        name: (authUser.user_metadata?.full_name as string) || "Admin",
+        role: "admin",
+        avatarUrl: null,
+      },
+    };
   }
 
-  const sessionUser: SessionUser = {
-    id: dbUser.id,
-    email: dbUser.email,
-    name: dbUser.name,
-    role: dbUser.role as UserRole,
-    avatarUrl: dbUser.avatarUrl,
-  };
-
-  if (!canAccessDesignerDashboard(sessionUser)) {
-    throw new ForbiddenError("Admin access required.");
+  if (!isDatabaseEnabled()) {
+    throw new ValidationError("Admin functions require database connection.");
   }
 
-  return { user: sessionUser };
+  try {
+    const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
+    if (!dbUser) {
+      throw new UnauthorizedError("User record not found. Please sign in again.");
+    }
+
+    const sessionUser: SessionUser = {
+      id: dbUser.id,
+      email: dbUser.email,
+      name: dbUser.name,
+      role: dbUser.role as UserRole,
+      avatarUrl: dbUser.avatarUrl,
+    };
+
+    if (!canAccessDesignerDashboard(sessionUser)) {
+      throw new ForbiddenError("Admin access required.");
+    }
+
+    return { user: sessionUser };
+  } catch (err) {
+    if (err instanceof UnauthorizedError || err instanceof ForbiddenError || err instanceof ValidationError) {
+      throw err;
+    }
+    console.error("[requireAdminContext] Database error:", err);
+    throw new ForbiddenError("Admin verification failed.");
+  }
 }
