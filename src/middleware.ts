@@ -8,9 +8,16 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Refresh Supabase session on app navigations; gate protected routes.
-     * Skip static assets and Next internals.
+     * Run middleware ONLY on routes that require authentication gating or session updates.
+     * Public routes (home, catalog, product details, feed, static files) bypass Edge Auth network calls
+     * to prevent Vercel 504 MIDDLEWARE_INVOCATION_TIMEOUT.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm)$).*)",
+    "/admin/:path*",
+    "/dashboard/:path*",
+    "/account/:path*",
+    "/checkout/:path*",
+    "/orders/:path*",
+    "/profile/:path*",
+    "/wishlist",
   ],
 };

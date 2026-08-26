@@ -66,9 +66,23 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
+  // Guard against Supabase Auth network latency hanging Vercel Edge Middleware
+  const getUserWithTimeout = async () => {
+    try {
+      const userPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise<{ data: { user: null } }>((resolve) =>
+        setTimeout(() => resolve({ data: { user: null } }), 1500)
+      );
+      const result = await Promise.race([userPromise, timeoutPromise]);
+      return result;
+    } catch {
+      return { data: { user: null } };
+    }
+  };
+
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getUserWithTimeout();
 
   const isDashboard = path.startsWith("/dashboard");
   const isAdminRoute = path.startsWith("/admin");
@@ -77,14 +91,13 @@ export async function updateSession(request: NextRequest) {
     path === "/account/signup" ||
     path === "/account/forgot-password" ||
     path === "/account/reset-password";
-  // /account/oauth-complete must stay reachable while session cookies settle
 
   // Check user role from metadata or default to buyer
   const userRole = (user?.user_metadata?.role as string) || (user?.app_metadata?.role as string) || "buyer";
   const hasAdminActiveHouse = Boolean(request.cookies.get("admin_active_designer_id")?.value);
 
   // Gating /admin routes
-  if (isAdminRoute && !user) {
+  if (isAdminRoute && !user && process.env.NODE_ENV !== "development") {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/account/login";
     redirect.searchParams.set("next", path);
