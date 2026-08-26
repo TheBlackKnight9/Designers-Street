@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ensureBuyerAccount } from "@/server/auth/buyer-session";
 import { ok, fail } from "@/server/utils/api-response";
+import { isDatabaseEnabled } from "@/server/utils/env";
 
 export const runtime = "nodejs";
 
@@ -30,13 +31,40 @@ export async function POST(request: Request) {
       (user.user_metadata?.name as string | undefined) ||
       null;
 
-    const sessionUser = await ensureBuyerAccount({
-      authUserId: user.id,
-      email: user.email,
-      name,
-    });
+    if (!isDatabaseEnabled()) {
+      return ok({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: name || user.email,
+          role: (user.user_metadata?.role as string) || "buyer",
+          avatarUrl: null,
+        },
+        designer: null,
+      });
+    }
 
-    return ok({ user: sessionUser, designer: null });
+    try {
+      const sessionUser = await ensureBuyerAccount({
+        authUserId: user.id,
+        email: user.email,
+        name,
+      });
+
+      return ok({ user: sessionUser, designer: null });
+    } catch (dbErr) {
+      console.error("[bootstrap] DB error, serving fallback user:", dbErr);
+      return ok({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: name || user.email,
+          role: (user.user_metadata?.role as string) || "buyer",
+          avatarUrl: null,
+        },
+        designer: null,
+      });
+    }
   } catch (error) {
     return fail(error);
   }

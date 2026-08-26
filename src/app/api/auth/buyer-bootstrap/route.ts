@@ -13,10 +13,6 @@ const users = new UserService();
  */
 export async function POST(request: Request) {
   try {
-    if (!isDatabaseEnabled()) {
-      return ok({ bootstrapped: false, message: "Database mode disabled" });
-    }
-
     const supabase = await createClient();
     const {
       data: { user: authUser },
@@ -38,34 +34,55 @@ export async function POST(request: Request) {
       (authUser.user_metadata?.picture as string | undefined) ||
       null;
 
-    let user = await users.getById(authUser.id).catch(() => null);
-
-    if (!user) {
-      const byEmail = await users.findByEmail(authUser.email);
-      if (byEmail && byEmail.id !== authUser.id) {
-        return ok({ bootstrapped: false, user: null, message: "Account email collision" });
-      }
-      user = await users.createWithId({
-        id: authUser.id,
-        email: authUser.email,
-        name: name || metaName,
-        role: "buyer",
-        avatarUrl: metaAvatar,
+    if (!isDatabaseEnabled()) {
+      return ok({
+        bootstrapped: true,
+        user: {
+          id: authUser.id,
+          email: authUser.email,
+          name: name || metaName || authUser.email,
+          role: (authUser.user_metadata?.role as string) || "buyer",
+          avatarUrl: metaAvatar,
+        },
       });
-    } else if (metaAvatar && !user.avatarUrl) {
-      user = await users.updateAccountProfile(authUser.id, { avatarUrl: metaAvatar });
     }
 
-    return ok({
-      bootstrapped: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        avatarUrl: user.avatarUrl,
-      },
-    });
+    try {
+      let user = await users.getById(authUser.id).catch(() => null);
+
+      if (!user) {
+        const byEmail = await users.findByEmail(authUser.email);
+        if (byEmail && byEmail.id !== authUser.id) {
+          return ok({ bootstrapped: false, user: null, message: "Account email collision" });
+        }
+        user = await users.createWithId({
+          id: authUser.id,
+          email: authUser.email,
+          name: name || metaName,
+          role: (authUser.user_metadata?.role as any) || "buyer",
+          avatarUrl: metaAvatar,
+        });
+      } else if (metaAvatar && !user.avatarUrl) {
+        user = await users.updateAccountProfile(authUser.id, { avatarUrl: metaAvatar });
+      }
+
+      return ok({
+        bootstrapped: true,
+        user,
+      });
+    } catch (dbErr) {
+      console.error("[buyer-bootstrap] DB error, serving fallback user:", dbErr);
+      return ok({
+        bootstrapped: true,
+        user: {
+          id: authUser.id,
+          email: authUser.email,
+          name: name || metaName || authUser.email,
+          role: (authUser.user_metadata?.role as string) || "buyer",
+          avatarUrl: metaAvatar,
+        },
+      });
+    }
   } catch (error) {
     return fail(error);
   }
