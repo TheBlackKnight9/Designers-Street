@@ -105,16 +105,18 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirect);
   }
 
+  const isDevMode = process.env.NODE_ENV === "development";
+
   // 1. Gating Designer Dashboard (/dashboard/*)
   if (isDashboard) {
-    if (!user) {
+    if (!user && !isDevMode) {
       const redirect = request.nextUrl.clone();
       redirect.pathname = "/account/login";
       redirect.searchParams.set("next", path);
       return NextResponse.redirect(redirect);
     }
-    // Allow access if user is admin OR has an active admin house cookie set
-    if (userRole === "buyer" && !hasAdminActiveHouse) {
+    // Allow access if user is admin OR has an active admin house cookie set OR in development
+    if (userRole === "buyer" && !hasAdminActiveHouse && !isDevMode) {
       const redirect = request.nextUrl.clone();
       redirect.pathname = "/designer-portal";
       redirect.searchParams.set("notice", "designers_only");

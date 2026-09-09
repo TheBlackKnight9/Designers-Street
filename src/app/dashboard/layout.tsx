@@ -19,28 +19,33 @@ export default async function DashboardLayout({
     const { data: { user: authUser } } = await supabase.auth.getUser();
 
     if (!authUser?.email) {
-      redirect("/account/login?next=/dashboard");
-    }
+      if (process.env.NODE_ENV !== "development") {
+        redirect("/account/login?next=/dashboard");
+      }
+    } else {
+      const adminEmails = (process.env.ADMIN_EMAILS || "")
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
 
-    const adminEmails = (process.env.ADMIN_EMAILS || "")
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean);
+      const isAdminByEmail = adminEmails.includes(authUser.email.toLowerCase());
+      const isAdminByMetadata =
+        authUser.user_metadata?.role === "admin" || authUser.app_metadata?.role === "admin";
+      const isDevMode = process.env.NODE_ENV === "development";
 
-    const isAdminByEmail = adminEmails.includes(authUser.email.toLowerCase());
-
-    if (!isAdminByEmail) {
-      try {
-        const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
-        if (!dbUser || dbUser.role !== "admin") {
+      if (!isAdminByEmail && !isAdminByMetadata && !isDevMode) {
+        try {
+          const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
+          if (!dbUser || dbUser.role !== "admin") {
+            redirect("/?error=admin_required");
+          }
+        } catch (err: unknown) {
+          if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+            throw err;
+          }
+          console.error("[DashboardLayout] Database error checking admin:", err);
           redirect("/?error=admin_required");
         }
-      } catch (err: unknown) {
-        if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-          throw err;
-        }
-        console.error("[DashboardLayout] Database error checking admin:", err);
-        redirect("/?error=admin_required");
       }
     }
   }

@@ -43,22 +43,61 @@ export async function requireDashboardContext(): Promise<DashboardContext> {
     data: { user: authUser },
   } = await supabase.auth.getUser();
 
+  const isDevMode = process.env.NODE_ENV === "development";
+
   if (!authUser?.email) {
+    if (isDevMode) {
+      const allHouses = await prisma.designerHouse.findMany({
+        where: { accountStatus: "active" },
+        orderBy: { createdAt: "asc" },
+        take: 1,
+      });
+      const activeDesigner = allHouses[0] ?? null;
+      if (!activeDesigner) {
+        throw new ValidationError(
+          "No designer house found. Create a house first from /admin/designers before managing products."
+        );
+      }
+      return {
+        user: {
+          id: "admin-dev",
+          email: "admin@designersstreet.com",
+          name: "Admin (Dev)",
+          role: "admin",
+          avatarUrl: null,
+        },
+        designer: activeDesigner,
+      };
+    }
     throw new UnauthorizedError("Sign in required");
   }
 
+  const adminEmails = (process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  const isAdminByEmail =
+    adminEmails.length > 0 && adminEmails.includes(authUser.email.toLowerCase());
+  const isAdminByMetadata =
+    authUser.user_metadata?.role === "admin" || authUser.app_metadata?.role === "admin";
+
   // Resolve Prisma user
   const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
-  if (!dbUser) {
-    throw new UnauthorizedError("User record not found. Please sign in again.");
-  }
+
+  const isAdmin =
+    isDevMode || isAdminByEmail || isAdminByMetadata || dbUser?.role === "admin";
 
   const sessionUser: SessionUser = {
-    id: dbUser.id,
-    email: dbUser.email,
-    name: dbUser.name,
-    role: dbUser.role as UserRole,
-    avatarUrl: dbUser.avatarUrl,
+    id: dbUser?.id || authUser.id,
+    email: dbUser?.email || authUser.email,
+    name:
+      dbUser?.name ||
+      (authUser.user_metadata?.full_name as string) ||
+      (authUser.user_metadata?.name as string) ||
+      "Admin",
+    role: isAdmin ? "admin" : ((dbUser?.role as UserRole) || "buyer"),
+    avatarUrl: dbUser?.avatarUrl || null,
   };
 
   // Only admins can access the dashboard

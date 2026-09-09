@@ -19,25 +19,6 @@ export async function GET() {
       throw new ForbiddenError("Designer dashboard requires database mode");
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user?.email) {
-      return NextResponse.json(
-        { ok: false, error: { code: "UNAUTHORIZED", message: "Not signed in" } },
-        { status: 401 }
-      );
-    }
-
-    const existing = await users.getById(user.id);
-    if (existing?.role === "buyer") {
-      throw new ForbiddenError(
-        "Buyer accounts cannot access the designer dashboard. Use /account or designer signup."
-      );
-    }
-
     const ctx = await requireDashboardContext();
 
     return ok({
