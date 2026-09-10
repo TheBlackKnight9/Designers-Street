@@ -76,18 +76,8 @@ export default function CategoryIndexPage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-28 bg-transparent">
-        <header className="px-5 pt-8 pb-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-stone mb-2">
-            Browse
-          </p>
-          <h1 className="font-sans text-[1.75rem] font-extrabold text-charcoal tracking-tight leading-none">
-            Categories
-          </h1>
-          <p className="mt-2 text-[13px] text-stone leading-relaxed max-w-sm">
-            Start with Women or Men, then open the edit you want.
-          </p>
-        </header>
+      <main className="min-h-screen pb-28 bg-transparent pt-[92px]">
+        <h1 className="sr-only">Categories — Designer&apos;s Street</h1>
 
         {/* Primary access: Women / Men / Limited / Latest */}
         <div

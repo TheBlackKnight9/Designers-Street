@@ -1,12 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/mock-data";
 import { AdminTopBar } from "@/components/admin/AdminTopBar";
 import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
-import { Download, Zap, CreditCard, X } from "lucide-react";
+import {
+  Download,
+  Zap,
+  CreditCard,
+  X,
+  Search,
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
+  Receipt,
+  FileSpreadsheet,
+} from "lucide-react";
 
 type PayoutBatch = {
   id: string;
@@ -37,6 +48,8 @@ export default function AdminPayoutsPage() {
   const [metrics, setMetrics] = useState<PayoutMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "pending">("all");
 
   // UTR Modal state
   const [selectedPayout, setSelectedPayout] = useState<PayoutBatch | null>(null);
@@ -64,7 +77,7 @@ export default function AdminPayoutsPage() {
   }, []);
 
   async function executeBatch() {
-    if (!confirm("Run settlement engine for 1st-15th or 16th-End cycle for all active houses?")) return;
+    if (!confirm("Run settlement engine for 1st-15th or 16th-End cycle for all active designer houses?")) return;
     setExecuting(true);
     try {
       const res = await fetch("/api/admin/payouts", {
@@ -74,7 +87,7 @@ export default function AdminPayoutsPage() {
       });
       const data = await res.json();
       if (res.ok && data?.ok) {
-        alert(`Payout Batch generated successfully for ${data.data.createdCount} designer houses!`);
+        alert(`Payout batch generated successfully for ${data.data.createdCount} designer houses.`);
         await fetchPayouts();
       } else {
         alert(data?.error?.message || "Failed to execute payout batch");
@@ -163,8 +176,29 @@ export default function AdminPayoutsPage() {
     }
   }
 
+  const filteredPayouts = useMemo(() => {
+    return payouts.filter((p) => {
+      const matchesSearch =
+        p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.designer?.name && p.designer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.bankUtrNumber && p.bankUtrNumber.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesStatus =
+        statusFilter === "all" ? true : statusFilter === "completed" ? p.status === "completed" : p.status !== "completed";
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [payouts, searchQuery, statusFilter]);
+
   if (loading) {
-    return <div className="py-12 text-center text-xs text-[#8A8A8A] font-bold animate-pulse">Loading payout ledger...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
+          <p className="text-xs font-medium text-zinc-500">Loading payout ledger...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -172,146 +206,194 @@ export default function AdminPayoutsPage() {
       {/* Top Header Bar */}
       <AdminTopBar
         title="Payout Ledger & GST TCS"
-        subtitle="Automated 1st & 15th cycle payouts, Sec 52 TCS, GSTR-8 exports & NEFT Bank transfers"
+        subtitle="Automated 1st & 15th settlement cycles, Sec 52 TCS compliance, and NEFT bank transfers"
+        actionButton={{
+          label: executing ? "Executing Batch..." : "Run Settlement Cycle",
+          onClick: executeBatch,
+          icon: Zap,
+        }}
       />
-
-      {/* Action Controls Row */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={handleExportNeft}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-none shadow-2xs hover:bg-white/80"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>NEFT Bank CSV</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleExportGstr8}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-[#ECE8DC] text-[#1A1A1A] text-xs font-bold rounded-none shadow-2xs hover:bg-white/80"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-600" />
-            <span>GSTR-8 Report</span>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          disabled={executing}
-          onClick={executeBatch}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none shadow-2xs disabled:opacity-60 hover:bg-[#F6D746]/90 active:scale-95 cursor-pointer"
-        >
-          <Zap className="w-4 h-4 stroke-[2]" />
-          {executing ? "Processing Batch…" : "Execute Payout Ledger"}
-        </button>
-      </div>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatCard
           label="Total Gross Sales"
           value={formatPrice((metrics?.totalGrossSales || 0) / 100)}
-          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
-          badgeBg="bg-[#F4F0E5] text-[#1A1A1A]"
+          icon={<CreditCard className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
         />
         <AdminStatCard
           label="10% Platform Comm."
           value={formatPrice((metrics?.totalCommission || 0) / 100)}
-          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
-          badgeBg="bg-[#F6D746] text-[#1A1A1A]"
+          icon={<Receipt className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
         />
         <AdminStatCard
           label="1% GST TCS (Sec 52)"
           value={formatPrice((metrics?.totalTcs || 0) / 100)}
-          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
-          badgeBg="bg-[#F3B383] text-[#1A1A1A]"
+          icon={<FileSpreadsheet className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
         />
         <AdminStatCard
-          label="Net Paid to Designers"
+          label="Net Disbursed"
           value={formatPrice((metrics?.totalNetPaid || 0) / 100)}
-          icon={<CreditCard className="w-5 h-5 stroke-[1.8]" />}
-          badgeBg="bg-[#A9E4B0] text-[#1A1A1A]"
+          icon={<CheckCircle2 className="w-4 h-4 text-zinc-900" />}
+          badgeBg="bg-zinc-950 text-white"
         />
       </div>
 
-      {/* Executed Payout Batches Table */}
-      <div className="bg-white rounded-none border border-[#ECE8DC] overflow-hidden shadow-2xs">
-        <div className="p-4 border-b border-[#ECE8DC] flex justify-between items-center bg-[#FAF8F5]">
-          <h2 className="font-display text-sm font-bold uppercase text-[#1A1A1A]">
-            Payout Ledger Batches
-          </h2>
-          <span className="text-xs font-mono font-bold text-[#8A8A8A]">
-            Total Batches: {payouts.length}
-          </span>
+      {/* Main Ledger Section */}
+      <div className="bg-white rounded-xl border border-zinc-200/90 shadow-2xs overflow-hidden">
+        {/* Controls header */}
+        <div className="p-4 border-b border-zinc-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Status Tabs */}
+            <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-0.5 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("all")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "all" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                All Batches ({payouts.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("completed")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "completed" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                Completed
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("pending")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "pending" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                Pending
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search house, batch ID, or UTR..."
+                className="pl-8 pr-3 py-1.5 text-xs bg-zinc-50 border border-zinc-200 rounded-lg w-56 sm:w-64 focus:outline-none focus:ring-1 focus:ring-zinc-950 text-zinc-900 placeholder:text-zinc-400"
+              />
+            </div>
+          </div>
+
+          {/* Export Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportNeft}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-zinc-200 text-zinc-800 text-xs font-medium rounded-lg hover:bg-zinc-50 transition-colors shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-zinc-500" />
+              <span>NEFT CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportGstr8}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-zinc-200 text-zinc-800 text-xs font-medium rounded-lg hover:bg-zinc-50 transition-colors shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-zinc-500" />
+              <span>GSTR-8 Report</span>
+            </button>
+          </div>
         </div>
 
-        {payouts.length === 0 ? (
-          <div className="p-12 text-center text-xs font-bold text-[#8A8A8A]">
-            No payout ledger batches generated yet. Click &quot;Execute Payout Ledger&quot; to run cycle.
+        {/* Table Content */}
+        {filteredPayouts.length === 0 ? (
+          <div className="p-12 text-center text-xs text-zinc-500">
+            {payouts.length === 0
+              ? "No settlement batches generated yet. Click \"Run Settlement Cycle\" to compute current settlements."
+              : "No payout batches match your search criteria."}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#ECE8DC] text-[11px] font-bold uppercase tracking-wider text-[#8A8A8A] bg-[#FAF8F5]">
-                  <th className="py-3 px-4">Batch ID</th>
-                  <th className="py-3 px-4">Designer House</th>
-                  <th className="py-3 px-4">Gross Sales</th>
-                  <th className="py-3 px-4">10% Comm.</th>
-                  <th className="py-3 px-4">18% GST</th>
-                  <th className="py-3 px-4">1% TCS</th>
-                  <th className="py-3 px-4">Net Payout</th>
-                  <th className="py-3 px-4">Bank UTR</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                <tr className="border-b border-zinc-200/80 bg-zinc-50/75 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="py-3 px-4 font-semibold">Batch ID</th>
+                  <th className="py-3 px-4 font-semibold">Designer House</th>
+                  <th className="py-3 px-4 font-semibold text-right">Gross Sales</th>
+                  <th className="py-3 px-4 font-semibold text-right">10% Comm.</th>
+                  <th className="py-3 px-4 font-semibold text-right">18% GST</th>
+                  <th className="py-3 px-4 font-semibold text-right">1% TCS</th>
+                  <th className="py-3 px-4 font-semibold text-right">Net Payout</th>
+                  <th className="py-3 px-4 font-semibold">Bank UTR</th>
+                  <th className="py-3 px-4 font-semibold">Status</th>
+                  <th className="py-3 px-4 font-semibold text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#ECE8DC]">
-                {payouts.map((p) => (
-                  <tr key={p.id} className="hover:bg-[#FAF8F5] transition-colors">
-                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
+              <tbody className="divide-y divide-zinc-200/70 text-xs">
+                {filteredPayouts.map((p) => (
+                  <tr key={p.id} className="hover:bg-zinc-50/60 transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-medium text-zinc-900">
                       #{p.id.slice(-6)}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-xs">
-                      <Link href={`/admin/designers/${p.designerId}/analytics`} className="hover:underline text-[#1A1A1A]">
-                        {p.designer?.name || "Designer House"}
+                    <td className="py-3.5 px-4">
+                      <Link
+                        href={`/admin/designers/${p.designerId}/analytics`}
+                        className="font-medium text-zinc-900 hover:text-zinc-600 inline-flex items-center gap-1 group"
+                      >
+                        <span>{p.designer?.name || "Designer House"}</span>
+                        <ArrowUpRight className="w-3 h-3 text-zinc-400 group-hover:text-zinc-600 transition-transform" />
                       </Link>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#1A1A1A]">
+                    <td className="py-3.5 px-4 font-mono text-right font-medium text-zinc-900">
                       {formatPrice(p.grossSales / 100)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-red-600 font-medium">
+                    <td className="py-3.5 px-4 font-mono text-right text-zinc-600">
                       -{formatPrice(p.totalCommission / 100)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-red-600 font-medium">
+                    <td className="py-3.5 px-4 font-mono text-right text-zinc-600">
                       -{formatPrice(p.totalCommissionGst / 100)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-amber-700 font-medium">
+                    <td className="py-3.5 px-4 font-mono text-right text-zinc-600">
                       -{formatPrice(p.totalTcsDeducted / 100)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-700">
+                    <td className="py-3.5 px-4 font-mono text-right font-semibold text-zinc-950">
                       {formatPrice(p.netAmount / 100)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-[#8A8A8A]">
-                      {p.bankUtrNumber || "Pending"}
+                    <td className="py-3.5 px-4 font-mono text-xs text-zinc-500">
+                      {p.bankUtrNumber ? (
+                        <span className="text-zinc-800 font-medium">{p.bankUtrNumber}</span>
+                      ) : (
+                        <span className="text-zinc-400 italic">Unassigned</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4">
                       <AdminStatusBadge status={p.status} />
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      {p.status !== "completed" && (
+                      {p.status !== "completed" ? (
                         <button
                           type="button"
                           onClick={() => {
                             setSelectedPayout(p);
                             setUtrNumber(p.bankUtrNumber || "");
                           }}
-                          className="px-3.5 py-1.5 bg-[#F6D746] text-[#1A1A1A] text-[11px] font-bold uppercase rounded-none shadow-2xs hover:bg-[#F6D746]/90 cursor-pointer"
+                          className="px-3 py-1.5 bg-zinc-950 text-white hover:bg-zinc-800 text-xs font-medium rounded-lg shadow-2xs transition-colors"
                         >
                           Mark Paid
                         </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-500">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-zinc-900" />
+                          Settled
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -324,50 +406,72 @@ export default function AdminPayoutsPage() {
 
       {/* Enter UTR Modal */}
       {selectedPayout && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-none p-6 max-w-md w-full space-y-4 shadow-xl border border-[#ECE8DC]">
-            <div className="flex justify-between items-center border-b border-[#ECE8DC] pb-3">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl border border-zinc-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center border-b border-zinc-100 pb-3">
               <div>
-                <span className="text-[9px] font-bold uppercase tracking-wider text-[#8A8A8A] block">
-                  NEFT / Corporate Net Banking
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
+                  NEFT / Net Banking Settlement
                 </span>
-                <h3 className="font-display text-base font-bold uppercase text-[#1A1A1A]">
+                <h3 className="text-base font-semibold text-zinc-950">
                   Finalize Payout #{selectedPayout.id.slice(-6)}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedPayout(null)}
-                className="w-7 h-7 rounded-none bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
+                className="w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 flex items-center justify-center transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-[#F4F0E5]/60 p-4 rounded-none border border-[#ECE8DC] text-xs space-y-1">
-              <p><strong>Beneficiary:</strong> {selectedPayout.designer?.name}</p>
-              <p><strong>Net Amount:</strong> <span className="font-mono font-bold text-emerald-700">{formatPrice(selectedPayout.netAmount / 100)}</span></p>
+            <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200/70 text-xs space-y-1.5 text-zinc-700">
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Beneficiary:</span>
+                <span className="font-semibold text-zinc-900">{selectedPayout.designer?.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Net Payable Amount:</span>
+                <span className="font-mono font-bold text-zinc-950 text-sm">
+                  {formatPrice(selectedPayout.netAmount / 100)}
+                </span>
+              </div>
             </div>
 
-            <form onSubmit={handleMarkPaidWithUTR} className="space-y-3">
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A8A]">Bank UTR Reference Number *</span>
+            <form onSubmit={handleMarkPaidWithUTR} className="space-y-4 pt-1">
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 mb-1.5">
+                  Bank UTR Reference Number <span className="text-rose-500">*</span>
+                </label>
                 <input
                   required
                   value={utrNumber}
                   onChange={(e) => setUtrNumber(e.target.value)}
                   placeholder="e.g. N214260018472"
-                  className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] p-3 text-xs font-mono font-bold outline-none"
+                  className="w-full rounded-lg border border-zinc-200 bg-zinc-50/50 px-3 py-2 text-xs font-mono font-medium text-zinc-900 outline-none focus:bg-white focus:ring-1 focus:ring-zinc-950 focus:border-zinc-950 transition-colors"
                 />
-              </label>
+                <p className="text-[11px] text-zinc-500 mt-1">
+                  Provided by your corporate banking portal upon successful NEFT transfer.
+                </p>
+              </div>
 
-              <button
-                type="submit"
-                disabled={submittingUtr}
-                className="w-full py-3.5 bg-[#A9E4B0] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none shadow-md hover:bg-[#A9E4B0]/90 disabled:opacity-60 cursor-pointer"
-              >
-                {submittingUtr ? "Finalizing Payout…" : "Confirm & Complete Payout →"}
-              </button>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPayout(null)}
+                  className="px-4 py-2 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingUtr}
+                  className="px-4 py-2 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-medium transition-colors disabled:opacity-50"
+                >
+                  {submittingUtr ? "Recording Settlement..." : "Confirm & Mark Settled"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

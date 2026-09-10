@@ -9,28 +9,34 @@ interface AdminTopBarProps {
   subtitle?: string;
   actionButton?: {
     label: string;
-    href: string;
-    onClick?: () => void;
+    href?: string;
+    onClick?: () => void | Promise<void>;
+    icon?: React.ElementType;
   };
+  children?: React.ReactNode;
 }
 
-export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps) {
+export function AdminTopBar({ title, subtitle, actionButton, children }: AdminTopBarProps) {
+  const ActionIcon = actionButton?.icon || Plus;
+
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#ECE8DC]">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-zinc-200/80 mb-6">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="font-display text-2xl md:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-950">
           {title}
         </h1>
         {subtitle && (
-          <p className="font-sans text-xs text-[#8A8A8A] mt-1 font-medium">
+          <p className="text-xs text-zinc-500 mt-1 font-normal">
             {subtitle}
           </p>
         )}
       </div>
 
       {/* Utilities & User Actions */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2.5">
+        {children}
+
         {/* Active House Switcher */}
         <div className="hidden sm:block">
           <AdminHouseSwitcher />
@@ -41,67 +47,50 @@ export function AdminTopBar({ title, subtitle, actionButton }: AdminTopBarProps)
           actionButton.href ? (
             <Link
               href={actionButton.href}
-              className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95"
+              className="inline-flex items-center gap-2 bg-zinc-950 text-white text-xs font-medium px-3.5 py-2 rounded-lg hover:bg-zinc-800 transition-colors shadow-xs active:scale-[0.98]"
             >
-              <Plus className="w-4 h-4 stroke-[2]" />
+              <ActionIcon className="w-3.5 h-3.5" />
               {actionButton.label}
             </Link>
           ) : (
             <button
               type="button"
               onClick={actionButton.onClick}
-              className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-zinc-950 text-white text-xs font-medium px-3.5 py-2 rounded-lg hover:bg-zinc-800 transition-colors shadow-xs active:scale-[0.98] cursor-pointer"
             >
-              <Plus className="w-4 h-4 stroke-[2]" />
+              <ActionIcon className="w-3.5 h-3.5" />
               {actionButton.label}
             </button>
           )
         ) : (
           <Link
             href="/admin/designers"
-            className="inline-flex items-center gap-2 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs active:scale-95"
+            className="inline-flex items-center gap-2 bg-zinc-950 text-white text-xs font-medium px-3.5 py-2 rounded-lg hover:bg-zinc-800 transition-colors shadow-xs active:scale-[0.98]"
           >
-            <Plus className="w-4 h-4 stroke-[2]" />
+            <Plus className="w-3.5 h-3.5" />
             New House
           </Link>
         )}
 
-        {/* Icon Action Buttons */}
-        <button
-          type="button"
-          className="w-9 h-9 rounded-none bg-white border border-[#ECE8DC] flex items-center justify-center text-[#1A1A1A] hover:bg-[#F4F0E5] transition-colors shadow-2xs cursor-pointer"
-          aria-label="Messages"
-        >
-          <Mail className="w-4 h-4 stroke-[1.8]" />
-        </button>
-
-        <button
-          type="button"
-          className="w-9 h-9 rounded-none bg-white border border-[#ECE8DC] flex items-center justify-center text-[#1A1A1A] hover:bg-[#F4F0E5] transition-colors shadow-2xs cursor-pointer"
-          aria-label="Notifications"
-        >
-          <Bell className="w-4 h-4 stroke-[1.8]" />
-        </button>
-
         {/* Studio Link */}
         <Link
           href="/dashboard"
-          className="w-9 h-9 rounded-none bg-[#17181D] text-white flex items-center justify-center hover:bg-black transition-colors shadow-2xs"
+          className="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-200 border border-zinc-200 flex items-center justify-center transition-colors shadow-2xs"
           title="Open Designer Studio"
         >
-          <ExternalLink className="w-4 h-4 stroke-[1.8]" />
+          <ExternalLink className="w-3.5 h-3.5" />
         </Link>
 
         {/* Admin Avatar Chip */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-[#ECE8DC]">
-          <div className="w-9 h-9 rounded-none bg-[#F6D746] text-[#1A1A1A] font-bold text-xs flex items-center justify-center border border-[#ECE8DC] shadow-2xs">
+        <div className="flex items-center gap-2 pl-2 border-l border-zinc-200">
+          <div className="w-8 h-8 rounded-lg bg-zinc-950 text-white font-semibold text-xs flex items-center justify-center shadow-2xs">
             AD
           </div>
           <div className="hidden xl:block text-left">
-            <span className="font-sans text-xs font-bold text-[#1A1A1A] block leading-tight">
+            <span className="text-xs font-medium text-zinc-900 block leading-tight">
               Super Admin
             </span>
-            <span className="font-sans text-[10px] text-[#8A8A8A] block leading-tight">
+            <span className="text-[10px] text-zinc-500 block leading-tight">
               admin@designersstreet.in
             </span>
           </div>

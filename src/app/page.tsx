@@ -7,7 +7,7 @@ import { CatalogStatus } from "@/components/ui/CatalogStatus";
 import { NewmeProductCard } from "@/components/ui/NewmeProductCard";
 import { NewmeHeroCarousel, type HeroSlide } from "@/components/newme/NewmeHeroCarousel";
 import { NewmeFeaturedRail } from "@/components/newme/NewmeFeaturedRail";
-import { NewmeCategoryMegaCard } from "@/components/newme/NewmeCategoryMegaCard";
+import { EditorialCollectionCard } from "@/components/editorial/EditorialCollectionCard";
 import { flattenBrowseCategories } from "@/lib/category-tree";
 import { NewmeDesignerHousesRail } from "@/components/newme/NewmeDesignerHousesRail";
 import { useEditorialHome } from "@/hooks/useEditorial";
@@ -82,19 +82,19 @@ export default function HomePage() {
         <div className="px-4 py-3 flex gap-2 overflow-x-auto hide-scrollbar border-b border-[var(--border-subtle)]">
           <Link
             href="/designers"
-            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip-feature"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-[0.1em] ds-chip-feature"
           >
             Houses
           </Link>
           <Link
             href="/feed"
-            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-[0.1em] ds-chip"
           >
             Feed
           </Link>
           <Link
             href="/bespoke"
-            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip"
+            className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-[0.1em] ds-chip"
           >
             Bespoke
           </Link>
@@ -103,7 +103,7 @@ export default function HomePage() {
               key={g}
               type="button"
               onClick={() => setActiveGender(g)}
-              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${
+              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-[0.1em] transition-colors ${
                 activeGender === g ? "ds-chip-active" : "ds-chip"
               }`}
             >
@@ -122,7 +122,7 @@ export default function HomePage() {
 
         <NewmeDesignerHousesRail designers={designers} />
 
-        {/* Category mega cards — framed editorial scrapbook style */}
+        {/* Editorial collection cards — replacing pixel sticker mega cards */}
         {flattenBrowseCategories(categories, 2)
           .filter((cat) => !cat.slug.endsWith("-latest-drop") && !cat.slug.endsWith("-limited-design"))
           .slice(0, 6)
@@ -146,7 +146,7 @@ export default function HomePage() {
             designers[i % designers.length]?.name;
 
           return (
-            <NewmeCategoryMegaCard
+            <EditorialCollectionCard
               key={cat.slug}
               category={cat}
               index={i}
@@ -157,67 +157,32 @@ export default function HomePage() {
         })}
 
         {/* Invite / referral */}
-        <section className="mx-4 my-8 p-6 rounded-[1.5rem] bg-charcoal text-paper">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-2">
+        <section className="mx-4 my-8 p-6 rounded-xl bg-[var(--charcoal)] text-white">
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40 mb-2">
             Private Access
           </p>
-          <h3 className="text-lg font-extrabold tracking-tight leading-tight">
+          <h3 className="font-display text-lg font-semibold tracking-wide leading-tight">
             Invite friends to the atelier
           </h3>
-          <p className="text-[13px] text-white/70 mt-2 mb-4 leading-relaxed">
+          <p className="text-[13px] text-white/60 mt-2 mb-4 leading-relaxed">
             Share Designer&apos;s Street — exclusive house access for both of you.
           </p>
           <Link
             href="/profile/following"
-            className="inline-block px-5 py-2.5 rounded-full bg-bronze text-[#1A120C] text-[11px] font-extrabold uppercase tracking-[0.12em] shadow-[0_2px_10px_rgba(166,124,82,0.35)]"
+            className="inline-block px-5 py-2.5 rounded-full bg-white text-[var(--charcoal)] text-[11px] font-semibold uppercase tracking-[0.1em]"
           >
-            Invite friends
+            Invite Friends
           </Link>
         </section>
 
-        <section className="px-4 py-4 border-t border-[var(--border-subtle)]">
-          <h3 className="text-sm font-black uppercase text-charcoal mb-3">Explore</h3>
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-[11px] font-semibold text-stone">
-            {[
-              { label: "Designer Houses", href: "/designers" },
-              { label: "Feed", href: "/feed" },
-              { label: "Search", href: "/search" },
-              { label: "Wishlist", href: "/wishlist" },
-              { label: "Orders", href: "/orders" },
-              { label: "Addresses", href: "/profile/addresses" },
-            ].map((link, i) => (
-              <span key={link.href} className="inline-flex items-center gap-1">
-                {i > 0 && <span className="text-silver">|</span>}
-                <Link href={link.href} className="hover:text-charcoal underline-offset-2 hover:underline">
-                  {link.label}
-                </Link>
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* Shop For — pipe-separated links */}
-        <section className="px-4 py-4 border-t border-[var(--border-subtle)]">
-          <h3 className="text-sm font-black uppercase text-charcoal mb-3">Shop For</h3>
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-[11px] font-semibold text-stone">
-            {categories.map((cat, i) => (
-              <span key={cat.slug} className="inline-flex items-center gap-1">
-                {i > 0 && <span className="text-silver">|</span>}
-                <Link href={`/category/${cat.slug}`} className="hover:text-charcoal underline-offset-2 hover:underline">
-                  {cat.label}
-                </Link>
-              </span>
-            ))}
-          </div>
-        </section>
 
         {/* Product feed grid */}
         <section className="px-4 py-4 border-t border-[var(--border-subtle)]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-black uppercase text-charcoal">
-              Trending <span className="text-[var(--newme-green-dark)]">Now</span>
+            <h2 className="font-display text-base font-semibold text-[var(--charcoal)] tracking-wide">
+              Trending Now
             </h2>
-            <Link href="/store" className="text-[11px] font-bold uppercase underline text-charcoal">
+            <Link href="/store" className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--stone)] hover:text-[var(--charcoal)]">
               View All
             </Link>
           </div>
@@ -229,9 +194,9 @@ export default function HomePage() {
         </section>
 
         {/* Footer links */}
-        <footer className="px-4 pt-6 pb-8 border-t border-[var(--border-subtle)] text-[11px] text-stone space-y-4">
+        <footer className="px-4 pt-6 pb-8 border-t border-[var(--border-subtle)] text-[11px] text-[var(--stone)] space-y-4">
           <div>
-            <p className="font-black uppercase text-charcoal mb-2">Customer Policies</p>
+            <p className="font-semibold uppercase tracking-wider text-[var(--charcoal)] mb-2">Customer Policies</p>
             <div className="flex flex-wrap gap-x-1 gap-y-1">
               {[
                 { label: "Terms", href: "/terms" },
@@ -240,13 +205,13 @@ export default function HomePage() {
                 { label: "Seller Terms", href: "/seller-terms" },
               ].map((link, i) => (
                 <span key={link.href} className="inline-flex items-center gap-1">
-                  {i > 0 && <span>|</span>}
-                  <Link href={link.href} className="hover:text-charcoal">{link.label}</Link>
+                  {i > 0 && <span>·</span>}
+                  <Link href={link.href} className="hover:text-[var(--charcoal)]">{link.label}</Link>
                 </span>
               ))}
             </div>
           </div>
-          <p className="text-[10px] text-silver">
+          <p className="text-[10px] text-[var(--silver)]">
             Designer&apos;s Street — Exclusive limited-edition collections from India&apos;s celebrated houses.
           </p>
         </footer>

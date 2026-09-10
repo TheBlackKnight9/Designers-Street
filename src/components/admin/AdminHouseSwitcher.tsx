@@ -54,15 +54,15 @@ export function AdminHouseSwitcher() {
   if (loading || houses.length === 0) return null;
 
   return (
-    <div className="relative flex items-center gap-1.5 bg-white border border-[#ECE8DC] px-3 py-1.5 rounded-none shadow-2xs hover:border-[#17181D] transition-colors">
-      <Store className="w-3.5 h-3.5 text-[#8A8A8A]" />
-      <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8A8A]">House:</span>
+    <div className="relative flex items-center gap-2 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs hover:border-zinc-300 transition-colors">
+      <Store className="w-3.5 h-3.5 text-zinc-500" />
+      <span className="text-[11px] font-medium text-zinc-500">House:</span>
       <div className="relative flex items-center">
         <select
           value={activeId}
           onChange={(e) => handleSelectHouse(e.target.value)}
           aria-label="Select active designer house"
-          className="appearance-none bg-transparent text-[#1A1A1A] font-sans text-xs font-bold pr-5 outline-none cursor-pointer"
+          className="appearance-none bg-transparent text-zinc-900 font-sans text-xs font-semibold pr-5 outline-none cursor-pointer"
         >
           <option value="">Select House…</option>
           {houses.map((h) => (
@@ -71,7 +71,7 @@ export function AdminHouseSwitcher() {
             </option>
           ))}
         </select>
-        <ChevronDown className="w-3 h-3 text-[#8A8A8A] absolute right-0 pointer-events-none" />
+        <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-0 pointer-events-none" />
       </div>
     </div>
   );

@@ -2,98 +2,68 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import type { Product } from "@/lib/types";
 import { formatPrice } from "@/lib/mock-data";
+import { Heart } from "lucide-react";
 
 type NewmeProductCardProps = {
   product: Product;
 };
 
-function discountPercent(price: number, mrp?: number) {
-  if (!mrp || mrp <= price) return null;
-  return Math.round(((mrp - price) / mrp) * 100);
-}
-
 export function NewmeProductCard({ product }: NewmeProductCardProps) {
-  const { addItem } = useCart();
   const { isWished, toggle } = useWishlist();
   const wished = isWished(product.id);
-  const discount = discountPercent(product.price, product.mrp);
   const cover = product.images[0];
 
   return (
     <div className="flex flex-col">
-      <div className="relative aspect-[3/4] rounded-md overflow-hidden bg-mist">
+      <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-[var(--mist)] group">
         <Link href={`/product/${product.id}`} className="absolute inset-0">
           {cover ? (
             <Image
               src={cover}
               alt={product.name}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="50vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-xs text-stone font-bold">
+            <div className="w-full h-full flex items-center justify-center text-xs text-[var(--stone)] font-medium">
               {product.name.slice(0, 12)}
             </div>
           )}
         </Link>
 
-
-
+        {/* Discreet wishlist heart */}
         <button
           type="button"
-          onClick={() => toggle(product.id)}
-          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-paper/90 rounded-full shadow-sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle(product.id);
+          }}
+          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full active:scale-90 transition-transform z-10"
           aria-label="Wishlist"
         >
-          <svg
-            className={`w-4 h-4 ${wished ? "fill-charcoal text-charcoal" : "text-charcoal"}`}
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            fill={wished ? "currentColor" : "none"}
-          >
-            <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-          </svg>
+          <Heart
+            className={`w-4 h-4 transition-colors ${wished ? "fill-[var(--charcoal)] text-[var(--charcoal)]" : "text-[var(--charcoal)] stroke-[1.5]"}`}
+          />
         </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            addItem({
-              productId: product.id,
-              name: product.name,
-              brand: product.designerName,
-              price: product.price,
-              size: product.sizes[0] || "M",
-              image: product.images[0],
-            })
-          }
-          className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center bg-charcoal text-paper rounded-full shadow-md active:scale-95"
-          aria-label="Add to bag"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-          </svg>
-        </button>
-
-
       </div>
 
-      <div className="mt-2 px-0.5">
-
+      <div className="mt-2.5 px-0.5">
+        <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--stone)] truncate mb-0.5">
+          {product.designerName}
+        </p>
         <Link
           href={`/product/${product.id}`}
-          className="text-xs font-semibold text-charcoal leading-tight line-clamp-2 hover:underline"
+          className="text-xs font-medium text-[var(--charcoal)] leading-tight line-clamp-2 hover:underline underline-offset-2"
         >
           {product.name}
         </Link>
         <div className="flex items-baseline gap-2 mt-1">
-          <span className="text-sm font-extrabold text-charcoal">
+          <span className="font-mono text-sm font-semibold text-[var(--charcoal)]">
             {formatPrice(product.price)}
           </span>
         </div>

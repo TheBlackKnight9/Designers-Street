@@ -232,19 +232,8 @@ export default function ProductDetailPage({ params }: PageProps) {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-10 bg-paper">
+      <main className="min-h-screen pb-24 md:pb-10">
         <div className="px-4 pt-2 max-w-3xl mx-auto">
-          {/* Sticky primary commerce actions — always visible while scrolling */}
-          <ProductStickyActions
-            isConcept={isConcept}
-            conceptLabel={conceptLabel}
-            inBag={inBag}
-            bagQty={bagQty}
-            error={error}
-            onAddToBag={handleAddToBag}
-            onBuyNow={handleBuyNow}
-            onConcept={() => setShowConceptModal(true)}
-          />
 
           {/* Product toolbar */}
           <div className="flex items-center justify-between mb-3">
@@ -391,7 +380,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <svg
                       key={i}
-                      className={`h-3.5 w-3.5 ${i < Math.round(rating) ? "text-[var(--newme-green-dark)]" : "text-cloud"}`}
+                      className={`h-3.5 w-3.5 ${i < Math.round(rating) ? "text-amber-500" : "text-[var(--cloud)]"}`}
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       aria-hidden
@@ -696,9 +685,21 @@ export default function ProductDetailPage({ params }: PageProps) {
           <ConceptInterestModal product={product} onClose={() => setShowConceptModal(false)} />
         )}
 
+        {/* Bottom-docked purchase bar (mobile only) */}
+        <ProductStickyActions
+          isConcept={isConcept}
+          conceptLabel={conceptLabel}
+          inBag={inBag}
+          bagQty={bagQty}
+          error={error}
+          onAddToBag={handleAddToBag}
+          onBuyNow={handleBuyNow}
+          onConcept={() => setShowConceptModal(true)}
+        />
+
         {showSizeGuide && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[85vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-xl max-h-[85vh] overflow-y-auto">
               <div className="flex justify-between items-center border-b border-cloud pb-3">
                 <div>
                   <span className="text-[9px] font-bold uppercase tracking-wider text-stone block">Garment Measurement Guide</span>

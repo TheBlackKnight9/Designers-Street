@@ -2,14 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useCallback } from "react";
 import { useWishlist } from "@/context/WishlistContext";
-import { useCart } from "@/context/CartContext";
-import { useOpenMediaViewer } from "@/context/MediaViewerContext";
 import type { Product } from "@/lib/types";
-import { productToViewerMedia } from "@/lib/media";
 import { formatPrice } from "@/lib/mock-data";
-import { Heart, ShoppingBag, Maximize2, Play, Star } from "lucide-react";
+import { Heart } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -24,158 +20,74 @@ function isValidImageUrl(url?: string | null): boolean {
 
 export function ProductCard({ product, className = "", id }: ProductCardProps) {
   const { isWished, toggle } = useWishlist();
-  const { addItem } = useCart();
-  const { openMediaViewer } = useOpenMediaViewer();
   const wished = isWished(product.id);
-  const [showHeart, setShowHeart] = useState(false);
-  const lastTapRef = useRef(0);
-
-  const handleDoubleTap = useCallback(() => {
-    if (!wished) toggle(product.id);
-    setShowHeart(true);
-    setTimeout(() => setShowHeart(false), 800);
-  }, [product.id, toggle, wished]);
-
-  const handleImageTap = (e: React.MouseEvent) => {
-    const now = Date.now();
-    if (now - lastTapRef.current < 300) {
-      e.preventDefault();
-      handleDoubleTap();
-    }
-    lastTapRef.current = now;
-  };
-
-  const handleQuickAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addItem({
-      productId: product.id,
-      name: product.name,
-      brand: product.designerName,
-      price: product.price,
-      size: product.sizes[0] || "M",
-      image: product.images[0],
-    });
-  };
 
   const coverImg = product.images[0];
   const isValidImage = isValidImageUrl(coverImg);
 
   return (
     <div id={id} className={`group relative flex flex-col ${className}`}>
-      {/* Product Image Box */}
-      <div
-        className="relative aspect-[3/4] w-full overflow-hidden bg-mist rounded-xl active:scale-[0.99] transition-transform"
-        onClick={handleImageTap}
-      >
-        {isValidImage ? (
-          <Image
-            src={coverImg}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center bg-[#F3F0E9]">
-            <span className="font-sans text-[10px] font-extrabold uppercase tracking-wider text-charcoal/60">
-              {product.designerName}
-            </span>
-            <span className="font-sans text-[11px] font-extrabold text-charcoal line-clamp-2 mt-1">
-              {product.name}
-            </span>
-          </div>
-        )}
+      {/* Product Image Box — links directly to product page */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--mist)] rounded-lg active:scale-[0.99] transition-transform">
+        <Link
+          href={`/product/${product.id}`}
+          className="block w-full h-full"
+          aria-label={product.name}
+        >
+          {isValidImage ? (
+            <Image
+              src={coverImg}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center bg-[var(--mist)]">
+              <span className="font-sans text-[10px] font-medium uppercase tracking-wider text-[var(--stone)]">
+                {product.designerName}
+              </span>
+              <span className="font-sans text-[11px] font-semibold text-[var(--charcoal)] line-clamp-2 mt-1">
+                {product.name}
+              </span>
+            </div>
+          )}
+        </Link>
 
-        {/* Media Viewer expand launcher button */}
+        {/* Discreet wishlist heart in top-right corner */}
         <button
           type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            const media = productToViewerMedia(product);
-            const firstVideo = media.findIndex((m) => m.type === "video");
-            openMediaViewer({
-              media,
-              initialIndex: firstVideo >= 0 ? firstVideo : 0,
-              continuous: firstVideo >= 0 ? true : undefined,
-              source: "product-card",
-            });
+            toggle(product.id);
           }}
-          className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-black/50 backdrop-blur-xs rounded-full text-white active:scale-90 transition-transform"
-          aria-label="Open media viewer"
+          className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-white/80 backdrop-blur-sm rounded-full active:scale-90 transition-transform"
+          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <Maximize2 className="w-4 h-4 text-white" />
+          <Heart
+            className={`h-4 w-4 transition-colors duration-200 ${
+              wished ? "fill-[var(--charcoal)] text-[var(--charcoal)]" : "text-[var(--charcoal)] stroke-[1.5]"
+            }`}
+          />
         </button>
-
-        {product.videos && product.videos.length > 0 ? (
-          <span className="absolute top-2 left-16 z-10 flex h-7 items-center gap-1 rounded-full bg-black/55 px-2 text-[9px] font-bold uppercase tracking-wider text-white pointer-events-none">
-            <Play className="w-3 h-3 fill-white text-white" />
-            Video
-          </span>
-        ) : null}
-
-        {/* Rating badge */}
-        <div className="absolute bottom-2 left-2 z-10 flex items-center gap-0.5 px-1.5 py-0.5 bg-paper/95 rounded-md shadow-sm">
-          <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-          <span className="font-sans text-[10px] font-extrabold text-charcoal">
-            {(product.rating ?? 4.8).toFixed(1)}
-          </span>
-        </div>
-
-        {/* Quick add bag - Hidden for Concept Art */}
-        {(product as any).listingType !== "CONCEPT_ART" && (
-          <button
-            type="button"
-            onClick={handleQuickAdd}
-            className="absolute bottom-2 right-2 z-10 flex h-8 w-8 items-center justify-center bg-charcoal rounded-full text-paper active:scale-90 transition-transform cursor-pointer shadow-md"
-            aria-label="Quick Add to Bag"
-          >
-            <ShoppingBag className="w-4 h-4 text-paper stroke-[1.8]" />
-          </button>
-        )}
-
-        {/* Double-tap heart overlay animation */}
-        {showHeart && (
-          <div className="heart-overlay" style={{ animation: "heart-pop 0.8s cubic-bezier(0.17,0.89,0.32,1.28) forwards" }}>
-            <Heart className="w-16 h-16 text-white fill-white drop-shadow-lg" />
-          </div>
-        )}
       </div>
 
-      {/* Product details */}
-      <div className="mt-2 flex flex-col gap-0.5">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            href={`/product/${product.id}`}
-            className="font-sans text-xs font-semibold text-charcoal leading-tight line-clamp-2 hover:text-stone transition-colors"
-          >
-            {product.name}
-          </Link>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggle(product.id);
-            }}
-            className="flex-shrink-0 pt-0.5 text-charcoal active:scale-95 transition-transform cursor-pointer"
-            aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <Heart
-              className={`h-4 w-4 transition-colors duration-200 ${
-                wished ? "fill-charcoal text-charcoal" : "text-charcoal stroke-[1.8]"
-              }`}
-            />
-          </button>
-        </div>
-
-        <div className="flex items-baseline gap-2 mt-0.5">
-          <span className="font-sans text-sm font-extrabold text-charcoal">
-            {formatPrice(product.price)}
-          </span>
-        </div>
+      {/* Product details — designer name + product name + price */}
+      <div className="mt-2.5 flex flex-col gap-0.5">
+        <p className="font-sans text-[9px] font-medium uppercase tracking-[0.12em] text-[var(--stone)] truncate">
+          {product.designerName}
+        </p>
+        <Link
+          href={`/product/${product.id}`}
+          className="font-sans text-xs font-medium text-[var(--charcoal)] leading-tight line-clamp-2 hover:underline underline-offset-2 transition-colors"
+        >
+          {product.name}
+        </Link>
+        <span className="font-mono text-sm font-semibold text-[var(--charcoal)] mt-0.5">
+          {formatPrice(product.price)}
+        </span>
       </div>
     </div>
   );

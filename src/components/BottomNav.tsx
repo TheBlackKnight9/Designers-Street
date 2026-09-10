@@ -17,34 +17,34 @@ const BUYER_ITEMS: NavItem[] = [
     label: "Home",
     href: "/",
     icon: (active) => (
-      <Home className={`w-5 h-5 ${active ? "text-charcoal fill-charcoal" : "text-stone stroke-[1.8]"}`} />
+      <Home className={`w-5 h-5 ${active ? "text-charcoal fill-charcoal" : "text-stone stroke-[1.5]"}`} />
     ),
   },
   {
     label: "Shop",
     href: "/store",
     icon: (active) => (
-      <Store className={`w-5 h-5 ${active ? "text-charcoal stroke-[2.2]" : "text-stone stroke-[1.8]"}`} />
+      <Store className={`w-5 h-5 ${active ? "text-charcoal stroke-[2]" : "text-stone stroke-[1.5]"}`} />
     ),
   },
   {
     label: "Feed",
     href: "/feed",
     isCenter: true,
-    icon: () => <Compass className="w-6 h-6 text-[#FF4D9A] stroke-[2]" />,
+    icon: (active) => <Compass className={`w-6 h-6 ${active ? "text-white" : "text-white"} stroke-[1.8]`} />,
   },
   {
     label: "Category",
     href: "/category",
     icon: (active) => (
-      <LayoutGrid className={`w-5 h-5 ${active ? "text-charcoal stroke-[2.2]" : "text-stone stroke-[1.8]"}`} />
+      <LayoutGrid className={`w-5 h-5 ${active ? "text-charcoal stroke-[2]" : "text-stone stroke-[1.5]"}`} />
     ),
   },
   {
     label: "Wishlist",
     href: "/wishlist",
     icon: (active) => (
-      <Heart className={`w-5 h-5 ${active ? "text-[var(--newme-pink)] fill-[var(--newme-pink)]" : "text-stone stroke-[1.8]"}`} />
+      <Heart className={`w-5 h-5 ${active ? "text-charcoal fill-charcoal" : "text-stone stroke-[1.5]"}`} />
     ),
   },
 ];
@@ -58,7 +58,7 @@ const DESIGNER_ITEMS: NavItem[] = [
     label: "Studio",
     href: "/dashboard",
     icon: (active) => (
-      <Sparkles className={`w-5 h-5 ${active ? "text-charcoal stroke-[2.2]" : "text-stone stroke-[1.8]"}`} />
+      <Sparkles className={`w-5 h-5 ${active ? "text-charcoal stroke-[2]" : "text-stone stroke-[1.5]"}`} />
     ),
   },
 ];
@@ -67,7 +67,13 @@ export function BottomNav() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard")) {
+  // Hide on admin, dashboard, product detail, and checkout routes
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/product/") ||
+    pathname.startsWith("/checkout")
+  ) {
     return null;
   }
 
@@ -88,7 +94,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-paper border-t border-[var(--border-subtle)] shadow-[0_-2px_10px_rgba(0,0,0,0.06)]"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 backdrop-blur-md border-t border-[var(--border-default)]"
       style={{ paddingBottom: "var(--safe-area-bottom)" }}
     >
       <div className="relative flex items-end justify-around h-[var(--bottom-nav-height)] px-1">
@@ -109,15 +115,15 @@ export function BottomNav() {
                 aria-current={isActive ? "page" : undefined}
               >
                 <div
-                  className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-paper active:scale-95 transition-transform ${
-                    isActive ? "bg-[var(--newme-green-dark)] text-paper" : "bg-charcoal text-paper"
+                  className={`w-12 h-12 rounded-full flex items-center justify-center border-[3px] border-white active:scale-95 transition-transform shadow-sm ${
+                    isActive ? "bg-charcoal" : "bg-charcoal"
                   }`}
                 >
                   {item.icon(isActive)}
                 </div>
                 <span
-                  className={`text-[10px] font-semibold mt-1 ${
-                    isActive ? "font-extrabold text-[var(--newme-green-dark)]" : "text-stone"
+                  className={`text-[9px] font-medium mt-1 tracking-wide ${
+                    isActive ? "text-charcoal" : "text-stone"
                   }`}
                 >
                   {item.label}
@@ -136,8 +142,8 @@ export function BottomNav() {
             >
               {item.icon(isActive)}
               <span
-                className={`text-[10px] font-semibold mt-1 tracking-tight ${
-                  isActive ? "font-extrabold text-charcoal" : "text-stone"
+                className={`text-[9px] mt-1 tracking-wide ${
+                  isActive ? "font-semibold text-charcoal" : "font-medium text-stone"
                 }`}
               >
                 {item.label}

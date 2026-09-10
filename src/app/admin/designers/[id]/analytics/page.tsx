@@ -3,6 +3,20 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/mock-data";
+import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
+import {
+  ArrowLeft,
+  DollarSign,
+  Truck,
+  Percent,
+  Receipt,
+  FileSpreadsheet,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+} from "lucide-react";
 
 type AnalyticsData = {
   designer: {
@@ -62,131 +76,177 @@ export default function DesignerAnalyticsPage({
   }, [id]);
 
   if (loading) {
-    return <div className="py-12 text-center text-sm text-stone animate-pulse">Loading designer payment analytics...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
+          <p className="text-xs font-medium text-zinc-500">Loading house financial ledger...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!data) {
-    return <div className="py-12 text-center text-sm text-stone">Designer analytics not found</div>;
+    return (
+      <div className="p-12 text-center rounded-xl border border-zinc-200 bg-white">
+        <p className="text-sm font-semibold text-zinc-950">Designer analytics not found</p>
+        <Link href="/admin/payouts" className="text-xs font-medium text-zinc-600 hover:text-zinc-950 mt-2 inline-block">
+          ← Back to Payout Ledger
+        </Link>
+      </div>
+    );
   }
 
   const { designer, summary, orders } = data;
 
   return (
-    <main className="min-h-screen bg-paper pb-24 px-4 pt-6 max-w-6xl mx-auto space-y-6">
+    <div className="space-y-6 font-sans">
+      {/* Back Link */}
       <div>
-        <Link href="/admin/payouts" className="text-xs font-bold text-stone hover:text-charcoal">
-          ← Back to Payout Ledger
+        <Link
+          href="/admin/payouts"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-950 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Payout Ledger</span>
         </Link>
-        <div className="flex items-center justify-between mt-2">
-          <div>
-            <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-charcoal">
-              Financial Analytics: {designer.name}
-            </h1>
-            <p className="text-xs text-stone mt-0.5 font-mono">
-              Handle: @{designer.handle} · GSTIN: {designer.gstin || "URP"}
-            </p>
-          </div>
-          <span className="px-3 py-1 bg-charcoal text-paper text-xs font-mono font-bold rounded-full">
-            {summary.totalOrdersCount} Orders
-          </span>
-        </div>
       </div>
 
+      {/* Top Header Bar */}
+      <AdminTopBar
+        title={`Financial Ledger: ${designer.name}`}
+        subtitle={`Handle: @${designer.handle} · GSTIN: ${designer.gstin || "URP (Unregistered)"} · Bank IFSC: ${designer.bankIfsc || "Pending"}`}
+        actionButton={{
+          label: "View Public Store",
+          href: `/designers/${designer.handle}`,
+          icon: ExternalLink,
+        }}
+      />
+
       {/* Financial Overview Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Total Gross Revenue</span>
-          <p className="font-mono text-xl font-bold text-charcoal">{formatPrice(summary.totalGrossSales)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Base Garment Revenue</span>
-          <p className="font-mono text-xl font-bold text-charcoal">{formatPrice(summary.totalBaseGarment)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Shipping Fees Collected</span>
-          <p className="font-mono text-xl font-bold text-emerald-800">{formatPrice(summary.totalShippingFee)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">10% Platform Commission</span>
-          <p className="font-mono text-xl font-bold text-red-700">-{formatPrice(summary.totalPlatformCommission)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">1% GST TCS (Sec 52)</span>
-          <p className="font-mono text-xl font-bold text-amber-700">-{formatPrice(summary.totalTcs)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Total Net Payable</span>
-          <p className="font-mono text-xl font-bold text-emerald-900">{formatPrice(summary.totalNetPayable)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Net Paid (Completed)</span>
-          <p className="font-mono text-xl font-bold text-blue-900">{formatPrice(summary.netPaid)}</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-cloud space-y-1 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-stone">Net Pending (Unsettled)</span>
-          <p className="font-mono text-xl font-bold text-amber-900">{formatPrice(summary.netPending)}</p>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <AdminStatCard
+          label="Gross Revenue"
+          value={formatPrice(summary.totalGrossSales)}
+          icon={<DollarSign className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="Base Garment Value"
+          value={formatPrice(summary.totalBaseGarment)}
+          icon={<Receipt className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="Shipping Fees"
+          value={formatPrice(summary.totalShippingFee)}
+          icon={<Truck className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="10% Commission"
+          value={`-${formatPrice(summary.totalPlatformCommission)}`}
+          icon={<Percent className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="1% TCS (Sec 52)"
+          value={`-${formatPrice(summary.totalTcs)}`}
+          icon={<FileSpreadsheet className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="Total Net Payable"
+          value={formatPrice(summary.totalNetPayable)}
+          icon={<CheckCircle2 className="w-4 h-4 text-zinc-950" />}
+          badgeBg="bg-zinc-950 text-white"
+        />
+        <AdminStatCard
+          label="Settled & Disbursed"
+          value={formatPrice(summary.netPaid)}
+          icon={<CheckCircle2 className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="Pending Escrow Hold"
+          value={formatPrice(summary.netPending)}
+          icon={<Clock className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
       </div>
 
       {/* Orders Breakdown Table */}
-      <div className="bg-white rounded-3xl border border-cloud shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-cloud">
-          <h2 className="font-display text-sm font-bold uppercase text-charcoal">Sub-Order Financial Breakdown</h2>
+      <div className="bg-white rounded-xl border border-zinc-200/90 shadow-2xs overflow-hidden">
+        <div className="p-4 border-b border-zinc-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-zinc-950">
+            Order-Level Financial Settlements
+          </h2>
+          <span className="text-xs font-mono font-medium text-zinc-500">
+            {orders.length} order(s)
+          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-mist text-[10px] font-bold uppercase tracking-wider text-stone border-b border-cloud">
-              <tr>
-                <th className="p-3.5">Order ID</th>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5">Base Garment</th>
-                <th className="p-3.5">Shipping Fee</th>
-                <th className="p-3.5">10% Comm.</th>
-                <th className="p-3.5">1% TCS</th>
-                <th className="p-3.5">Designer Net</th>
-                <th className="p-3.5 text-right">Invoice</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-cloud text-charcoal font-medium">
-              {orders.map((ord) => (
-                <tr key={ord.id} className="hover:bg-mist/30">
-                  <td className="p-3.5 font-mono font-bold">#{ord.id.slice(-6)}</td>
-                  <td className="p-3.5">
-                    <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase rounded bg-mist text-charcoal">
-                      {ord.status}
-                    </span>
-                  </td>
-                  <td className="p-3.5 font-mono">{formatPrice((ord.baseGarmentPrice || ord.subtotal) / 100)}</td>
-                  <td className="p-3.5 font-mono text-emerald-800">+{formatPrice((ord.builtInShippingFee || 0) / 100)}</td>
-                  <td className="p-3.5 font-mono text-red-700">-{formatPrice((ord.platformCommission || 0) / 100)}</td>
-                  <td className="p-3.5 font-mono text-amber-700">-{formatPrice((ord.tcsDeducted || 0) / 100)}</td>
-                  <td className="p-3.5 font-mono font-bold text-emerald-900">
-                    {formatPrice((ord.designerNetPayable || 0) / 100)}
-                  </td>
-                  <td className="p-3.5 text-right">
-                    <a
-                      href={`/api/orders/${ord.id}/invoice`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1 bg-mist text-charcoal font-sans text-[10px] font-bold uppercase rounded-full border border-cloud hover:bg-cloud"
-                    >
-                      PDF Invoice ↗
-                    </a>
-                  </td>
+        {orders.length === 0 ? (
+          <div className="p-12 text-center text-xs text-zinc-500">
+            No sales or orders recorded for this designer house yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-zinc-200/80 bg-zinc-50/75 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="py-3 px-4 font-semibold">Order ID</th>
+                  <th className="py-3 px-4 font-semibold">Status</th>
+                  <th className="py-3 px-4 font-semibold text-right">Base Garment</th>
+                  <th className="py-3 px-4 font-semibold text-right">Shipping</th>
+                  <th className="py-3 px-4 font-semibold text-right">10% Comm.</th>
+                  <th className="py-3 px-4 font-semibold text-right">1% TCS</th>
+                  <th className="py-3 px-4 font-semibold text-right">Designer Net</th>
+                  <th className="py-3 px-4 font-semibold text-right">Tax Invoice</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-200/70 text-xs">
+                {orders.map((ord) => (
+                  <tr key={ord.id} className="hover:bg-zinc-50/60 transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-medium text-zinc-900">
+                      #{ord.id.slice(-6)}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <AdminStatusBadge status={ord.status} />
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-right font-medium text-zinc-900">
+                      {formatPrice((ord.baseGarmentPrice || ord.subtotal) / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-right text-zinc-600">
+                      +{formatPrice((ord.builtInShippingFee || 0) / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-right text-zinc-600">
+                      -{formatPrice((ord.platformCommission || 0) / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-right text-zinc-600">
+                      -{formatPrice((ord.tcsDeducted || 0) / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-right font-semibold text-zinc-950">
+                      {formatPrice((ord.designerNetPayable || 0) / 100)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <a
+                        href={`/api/orders/${ord.id}/invoice`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-zinc-700 hover:text-zinc-950 px-2.5 py-1 rounded-md border border-zinc-200 hover:bg-zinc-50 transition-colors"
+                      >
+                        <span>PDF</span>
+                        <ExternalLink className="w-3 h-3 text-zinc-400" />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }

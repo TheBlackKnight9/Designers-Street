@@ -202,10 +202,29 @@ export class DashboardProductService {
   ): Promise<DashboardProductDetail> {
     const input = parseProductInput(body);
     const id = createId("prod");
+    let designerId = ctx.designer.id;
+    let designerName = ctx.designer.name;
+
+    if (
+      ctx.user.role === "admin" &&
+      typeof body.designerId === "string" &&
+      body.designerId.trim()
+    ) {
+      const chosenDesigner = await this.designers.findRecordById(body.designerId.trim());
+      if (chosenDesigner) {
+        designerId = chosenDesigner.id;
+        designerName = chosenDesigner.name;
+      }
+    }
+
+    const rawImages = Array.isArray(body.images)
+      ? (body.images as unknown[]).filter((x): x is string => typeof x === "string" && Boolean(x.trim()))
+      : [];
+
     await this.products.create({
       id,
-      designerId: ctx.designer.id,
-      designerName: ctx.designer.name,
+      designerId,
+      designerName,
       name: input.name,
       description: input.description,
       category: input.category,
@@ -229,7 +248,7 @@ export class DashboardProductService {
       customizable: input.customizable,
       deliveryText: input.deliveryText,
       status: input.status ?? "draft",
-      images: [],
+      images: rawImages,
       listingType: input.listingType,
       conceptCta: input.conceptCta,
       estimatedLaunch: input.estimatedLaunch,
@@ -240,6 +259,22 @@ export class DashboardProductService {
       countryOfOrigin: input.countryOfOrigin,
       sizeChart: input.sizeChart,
     });
+
+    if (rawImages.length > 0) {
+      for (let i = 0; i < rawImages.length; i++) {
+        const imgUrl = rawImages[i];
+        await this.media.create({
+          productId: id,
+          designerId,
+          type: "image",
+          cloudinaryPublicId: `prod_img_${id}_${i}`,
+          secureUrl: imgUrl,
+          displayOrder: i,
+          uploadedById: ctx.user.id,
+        });
+      }
+    }
+
     return this.get(ctx, id);
   }
 
@@ -253,7 +288,29 @@ export class DashboardProductService {
     this.assertOwned(raw.designerId, ctx);
     const input = parseProductInput({ ...raw, ...body, name: body.name ?? raw.name });
 
+    let updatedDesignerId = raw.designerId;
+    let updatedDesignerName = raw.designerName;
+    if (
+      ctx.user.role === "admin" &&
+      typeof body.designerId === "string" &&
+      body.designerId.trim()
+    ) {
+      const chosenDesigner = await this.designers.findRecordById(body.designerId.trim());
+      if (chosenDesigner) {
+        updatedDesignerId = chosenDesigner.id;
+        updatedDesignerName = chosenDesigner.name;
+      }
+    }
+
+    const rawImages = Array.isArray(body.images)
+      ? (body.images as unknown[]).filter((x): x is string => typeof x === "string" && Boolean(x.trim()))
+      : undefined;
+
     await this.products.update(productId, {
+      ...(updatedDesignerId && updatedDesignerId !== raw.designerId
+        ? { designer: { connect: { id: updatedDesignerId } } }
+        : {}),
+      designerName: updatedDesignerName,
       name: input.name,
       description: input.description,
       category: input.category,
@@ -276,8 +333,8 @@ export class DashboardProductService {
       limitedEdition: input.limitedEdition ?? false,
       customizable: input.customizable ?? false,
       deliveryText: input.deliveryText,
+      ...(rawImages ? { images: rawImages } : {}),
       ...(input.status ? { status: input.status } : {}),
-      designerName: ctx.designer.name,
       listingType: input.listingType,
       conceptCta: input.conceptCta,
       estimatedLaunch: input.estimatedLaunch,

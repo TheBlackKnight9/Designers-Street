@@ -54,34 +54,36 @@ export default function AdminDashboardPage() {
           const s = body.data.stats;
           setStats([
             {
-              label: "Active Houses",
+              label: "Active Atelier Houses",
               value: String(s.totalHouses),
-              icon: <Store className="w-5 h-5 stroke-[1.8]" />,
+              sub: "Registered brands",
+              icon: <Store className="w-4 h-4" />,
               href: "/admin/designers",
-              badgeBg: "bg-[#F6D746] text-[#1A1A1A]",
+              badgeBg: "",
             },
             {
-              label: "Published Products",
+              label: "Published Catalog",
               value: String(s.totalProducts),
-              icon: <ShoppingBag className="w-5 h-5 stroke-[1.8]" />,
+              sub: "Live storefront items",
+              icon: <ShoppingBag className="w-4 h-4" />,
               href: "/admin/products",
-              badgeBg: "bg-[#F4F0E5] text-[#1A1A1A]",
+              badgeBg: "",
             },
             {
               label: "Orders This Month",
               value: fmt(s.ordersThisMonth.amount),
-              sub: `${s.ordersThisMonth.count} orders`,
-              icon: <Package className="w-5 h-5 stroke-[1.8]" />,
+              sub: `${s.ordersThisMonth.count} orders placed`,
+              icon: <Package className="w-4 h-4" />,
               href: "/admin/orders",
-              badgeBg: "bg-[#F3B383] text-[#1A1A1A]",
+              badgeBg: "",
             },
             {
               label: "Pending Payouts",
               value: fmt(s.pendingPayouts.amount),
-              sub: `${s.pendingPayouts.count} pending`,
-              icon: <CreditCard className="w-5 h-5 stroke-[1.8]" />,
+              sub: `${s.pendingPayouts.count} awaiting settlement`,
+              icon: <CreditCard className="w-4 h-4" />,
               href: "/admin/payouts",
-              badgeBg: "bg-[#A9E4B0] text-[#1A1A1A]",
+              badgeBg: "",
             },
           ]);
         }
@@ -95,7 +97,7 @@ export default function AdminDashboardPage() {
       {/* Top Header Bar */}
       <AdminTopBar
         title="Admin Command Center"
-        subtitle="Platform-wide control panel for Designer's Street"
+        subtitle="Platform-wide control panel & ecommerce management"
       />
 
       {/* Metric Stat Cards */}
@@ -103,7 +105,7 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-32 rounded-none bg-white/60 animate-pulse border border-[#ECE8DC]" />
+                <div key={i} className="h-28 rounded-xl bg-white animate-pulse border border-zinc-200" />
               ))
             : stats.map((s) => (
                 <AdminStatCard
@@ -113,19 +115,25 @@ export default function AdminDashboardPage() {
                   sub={s.sub}
                   icon={s.icon}
                   href={s.href}
-                  badgeBg={s.badgeBg}
                 />
               ))}
         </div>
       </section>
 
       {/* Quick Actions Grid */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-lg font-bold uppercase tracking-tight text-[#1A1A1A]">
-            Quick Action Hubs
-          </h2>
-          <span className="text-xs text-[#8A8A8A] font-medium">{QUICK_ACTIONS.length} Management Modules</span>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold tracking-tight text-zinc-950">
+              Management Modules
+            </h2>
+            <p className="text-xs text-zinc-500 font-normal">
+              Quick access to core platform operations
+            </p>
+          </div>
+          <span className="text-xs text-zinc-500 font-medium">
+            {QUICK_ACTIONS.length} modules
+          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -142,28 +150,26 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* Studio Banner Shortcut */}
-      <section className="bg-[#17181D] text-white rounded-none p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-md border border-black">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#F6D746]" />
-            <span className="text-[#F6D746] font-bold text-xs uppercase tracking-widest">
-              Designer Studio Launcher
-            </span>
+      <section className="bg-zinc-950 text-white rounded-xl p-6 md:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm border border-zinc-800">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 text-[11px] font-medium border border-zinc-700">
+            <Sparkles className="w-3 h-3 text-white" />
+            <span>Designer Studio Launcher</span>
           </div>
-          <h3 className="font-display text-xl font-bold text-white">
+          <h3 className="text-lg font-semibold text-white tracking-tight">
             Manage Active Designer House
           </h3>
-          <p className="text-xs text-[#A0A5B5]">
+          <p className="text-xs text-zinc-400 max-w-xl leading-relaxed">
             Switch house from the top bar dropdown chip to view or edit inventory, orders, and lookbooks.
           </p>
         </div>
 
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F6D746] text-[#1A1A1A] font-sans text-xs font-bold uppercase tracking-wider rounded-none hover:bg-[#F6D746]/90 transition-all shadow-sm whitespace-nowrap active:scale-95"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-zinc-950 text-xs font-medium rounded-lg hover:bg-zinc-100 transition-all shadow-xs whitespace-nowrap active:scale-[0.98]"
         >
           Open Studio
-          <ArrowRight className="w-4 h-4 stroke-[2]" />
+          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </section>
     </div>

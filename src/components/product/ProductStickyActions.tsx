@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 type ProductStickyActionsProps = {
   isConcept?: boolean;
   conceptLabel?: string;
@@ -14,8 +12,9 @@ type ProductStickyActionsProps = {
 };
 
 /**
- * Floating commerce pill — sticks under the fixed app header so Add to Cart / Buy
- * stay primary and visible while scrolling the product page.
+ * Luxury bottom-docked purchase bar — pins to the thumb zone at the bottom
+ * of the mobile viewport for easy one-handed commerce. Hides on desktop
+ * where the inline CTA is visible in the right column.
  */
 export function ProductStickyActions({
   isConcept,
@@ -27,68 +26,43 @@ export function ProductStickyActions({
   onBuyNow,
   onConcept,
 }: ProductStickyActionsProps) {
-  const [topOffset, setTopOffset] = useState(0);
-
-  useEffect(() => {
-    const measure = () => {
-      const header = document.querySelector("header");
-      const appBanner = document.querySelector('[class*="z-[60]"]');
-      let top = 0;
-      if (header) top = Math.max(top, header.getBoundingClientRect().bottom);
-      if (appBanner) top = Math.max(top, appBanner.getBoundingClientRect().bottom);
-      // If nothing measured yet (hydration), fall back under typical chrome
-      setTopOffset(top > 0 ? top : 120);
-    };
-
-    measure();
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, { passive: true });
-    const id = window.setInterval(measure, 800);
-    return () => {
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure);
-      window.clearInterval(id);
-    };
-  }, []);
-
   return (
     <div
-      className="sticky z-40 -mx-4 mb-3 px-4 pt-2 pb-2 bg-paper/95 backdrop-blur-md border-b border-cloud/60"
-      style={{ top: topOffset }}
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[var(--border-default)] px-4 pt-3 shadow-[0_-2px_16px_rgba(0,0,0,0.06)] md:hidden"
+      style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="rounded-full bg-espresso p-1.5 shadow-[0_10px_32px_rgba(42,31,24,0.35)]">
-        {isConcept ? (
-          <button
-            type="button"
-            onClick={onConcept}
-            className="flex h-12 w-full items-center justify-center rounded-full bg-bronze text-[#1A120C] font-sans text-xs font-extrabold uppercase tracking-wider active:scale-[0.98] transition-transform"
-          >
-            {conceptLabel}
-          </button>
-        ) : (
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              type="button"
-              onClick={onAddToBag}
-              className="flex h-12 items-center justify-center rounded-full bg-white/10 text-chip font-sans text-[11px] font-extrabold uppercase tracking-wider active:scale-[0.98] transition-transform hover:bg-white/15"
-            >
-              {inBag ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓` : "Add to Cart"}
-            </button>
-            <button
-              type="button"
-              onClick={onBuyNow}
-              className="flex h-12 items-center justify-center rounded-full bg-bronze text-[#1A120C] font-sans text-[11px] font-extrabold uppercase tracking-wider active:scale-[0.98] transition-transform"
-            >
-              Buy Now
-            </button>
-          </div>
-        )}
-      </div>
-      {error ? (
-        <p className="mt-2 px-2 font-sans text-[11px] font-semibold text-[var(--accent-hot)]">
+      {error && (
+        <p className="mb-2 font-sans text-[11px] font-medium text-[var(--accent-hot)] text-center">
           {error}
         </p>
-      ) : null}
+      )}
+
+      {isConcept ? (
+        <button
+          type="button"
+          onClick={onConcept}
+          className="flex h-12 w-full items-center justify-center rounded-lg bg-[var(--charcoal)] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.1em] active:scale-[0.98] transition-transform"
+        >
+          {conceptLabel}
+        </button>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={onAddToBag}
+            className="flex h-12 items-center justify-center rounded-lg border border-[var(--charcoal)] text-[var(--charcoal)] font-sans text-[12px] font-semibold uppercase tracking-[0.08em] active:scale-[0.98] transition-transform hover:bg-[var(--mist)]"
+          >
+            {inBag ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓` : "Add to Bag"}
+          </button>
+          <button
+            type="button"
+            onClick={onBuyNow}
+            className="flex h-12 items-center justify-center rounded-lg bg-[var(--charcoal)] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.08em] active:scale-[0.98] transition-transform"
+          >
+            Buy Now
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -45,21 +45,13 @@ export default function FeedPage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-28 bg-transparent">
-        <header className="px-5 pt-8 pb-4 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-stone mb-2">
-              Editorial
-            </p>
-            <h1 className="font-sans text-[1.75rem] font-extrabold text-charcoal tracking-tight leading-none">
-              Feed
-            </h1>
-            <p className="mt-2 text-[13px] text-stone leading-relaxed">
-              Runway drops, house stories &amp; atelier films.
-            </p>
-          </div>
-          <span className="mb-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ds-chip text-[9px] font-bold uppercase tracking-[0.14em]">
-            <span className="h-1.5 w-1.5 rounded-full bg-bronze animate-pulse" />
+      <main className="min-h-screen pb-28 bg-transparent pt-[84px]">
+        <header className="px-5 pt-4 pb-3 flex items-center justify-between gap-4">
+          <h1 className="font-display text-xl font-semibold text-[var(--charcoal)] tracking-tight">
+            Feed
+          </h1>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--border-subtle)] text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--charcoal)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--charcoal)]" />
             Live
           </span>
         </header>

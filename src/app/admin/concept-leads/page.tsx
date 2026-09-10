@@ -1,10 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { AdminTopBar } from "@/components/admin/AdminTopBar";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
-import { Sparkles, Mail, Phone, ChevronDown } from "lucide-react";
+import {
+  Sparkles,
+  Mail,
+  Phone,
+  ChevronDown,
+  Search,
+  MessageSquareQuote,
+  Clock,
+  CheckCircle2,
+  DollarSign,
+  Layers,
+} from "lucide-react";
 
 type ConceptLead = {
   id: string;
@@ -24,8 +36,11 @@ export default function AdminConceptLeadsPage() {
   const [loading, setLoading] = useState(true);
   const [leads, setLeads] = useState<ConceptLead[]>([]);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function fetchLeads() {
+    setLoading(true);
     try {
       const res = await fetch("/api/concept-interest");
       const data = await res.json();
@@ -64,106 +79,245 @@ export default function AdminConceptLeadsPage() {
     }
   }
 
+  const filteredLeads = useMemo(() => {
+    return leads.filter((l) => {
+      const matchesSearch =
+        l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (l.phone && l.phone.includes(searchQuery)) ||
+        (l.product?.designerName && l.product.designerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (l.post?.designerName && l.post.designerName.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      const matchesStatus = statusFilter === "ALL" ? true : l.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [leads, searchQuery, statusFilter]);
+
+  const newCount = leads.filter((l) => l.status === "NEW").length;
+  const inProgressCount = leads.filter((l) => ["DESIGNER_CONTACTED", "QUOTED"].includes(l.status)).length;
+  const confirmedCount = leads.filter((l) => l.status === "CONFIRMED").length;
+
   return (
     <div className="space-y-6 font-sans">
       {/* Top Header Bar */}
       <AdminTopBar
-        title="Concept Art & Bespoke Leads"
-        subtitle="Manage high-value bespoke inquiries, custom quotes & prototype concept interest leads"
+        title="Bespoke & Prototype Inquiries"
+        subtitle="Manage custom commission requests, high-value atelier consultations, and prototype buyer interest"
       />
 
-      {loading ? (
-        <div className="space-y-3">
-          <div className="h-28 bg-white/70 rounded-none animate-pulse border border-[#ECE8DC]" />
-          <div className="h-28 bg-white/70 rounded-none animate-pulse border border-[#ECE8DC]" />
-        </div>
-      ) : leads.length === 0 ? (
-        <div className="p-12 text-center rounded-none border border-[#ECE8DC] bg-white space-y-1">
-          <Sparkles className="w-8 h-8 text-[#F6D746] mx-auto mb-2" />
-          <p className="text-sm font-bold text-[#1A1A1A]">No concept art leads received yet</p>
-          <p className="text-xs text-[#8A8A8A] font-medium">Inquiries submitted on prototype concept listings will appear here.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-none border border-[#ECE8DC] overflow-hidden shadow-2xs">
-          <div className="p-4 border-b border-[#ECE8DC] flex justify-between items-center bg-[#FAF8F5]">
-            <h2 className="font-display text-sm font-bold uppercase text-[#1A1A1A]">
-              Inquiry Leads Queue
-            </h2>
-            <span className="text-xs font-mono font-bold text-[#8A8A8A]">
-              Total Leads: {leads.length}
-            </span>
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <AdminStatCard
+          label="Total Leads"
+          value={String(leads.length)}
+          icon={<MessageSquareQuote className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="New Inquiries"
+          value={String(newCount)}
+          icon={<Sparkles className="w-4 h-4 text-zinc-900" />}
+          badgeBg="bg-zinc-950 text-white"
+        />
+        <AdminStatCard
+          label="In Negotiation"
+          value={String(inProgressCount)}
+          icon={<Clock className="w-4 h-4 text-zinc-600" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+        <AdminStatCard
+          label="Confirmed Bespoke"
+          value={String(confirmedCount)}
+          icon={<CheckCircle2 className="w-4 h-4 text-zinc-900" />}
+          badgeBg="bg-zinc-100 text-zinc-900"
+        />
+      </div>
+
+      {/* Main Table Card */}
+      <div className="bg-white rounded-xl border border-zinc-200/90 shadow-2xs overflow-hidden">
+        {/* Table Controls */}
+        <div className="p-4 border-b border-zinc-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Status Tabs */}
+            <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-0.5 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("ALL")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "ALL" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                All ({leads.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("NEW")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "NEW" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                New ({newCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("QUOTED")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "QUOTED" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                Quoted
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("CONFIRMED")}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  statusFilter === "CONFIRMED" ? "bg-white text-zinc-950 shadow-2xs font-semibold" : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                Confirmed
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search lead, designer, or email..."
+                className="pl-8 pr-3 py-1.5 text-xs bg-zinc-50 border border-zinc-200 rounded-lg w-56 sm:w-64 focus:outline-none focus:ring-1 focus:ring-zinc-950 text-zinc-900 placeholder:text-zinc-400"
+              />
+            </div>
           </div>
 
+          <span className="text-xs text-zinc-500 font-medium">
+            Showing <strong className="text-zinc-900">{filteredLeads.length}</strong> inquiries
+          </span>
+        </div>
+
+        {/* Content */}
+        {loading ? (
+          <div className="p-12 text-center text-xs text-zinc-500 animate-pulse">
+            Loading bespoke inquiries...
+          </div>
+        ) : filteredLeads.length === 0 ? (
+          <div className="p-12 text-center text-xs text-zinc-500">
+            {leads.length === 0
+              ? "No concept art or bespoke leads received yet. Client inquiries on concept listings will appear here."
+              : "No inquiry records match your search filter."}
+          </div>
+        ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#ECE8DC] text-[11px] font-bold uppercase tracking-wider text-[#8A8A8A] bg-[#FAF8F5]">
-                  <th className="py-3 px-4">Source & Content</th>
-                  <th className="py-3 px-4">Client Name</th>
-                  <th className="py-3 px-4">Contact</th>
-                  <th className="py-3 px-4">Budget Range</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                <tr className="border-b border-zinc-200/80 bg-zinc-50/75 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+                  <th className="py-3 px-4 font-semibold">Source & Reference</th>
+                  <th className="py-3 px-4 font-semibold">Client Name</th>
+                  <th className="py-3 px-4 font-semibold">Contact Details</th>
+                  <th className="py-3 px-4 font-semibold">Target Budget</th>
+                  <th className="py-3 px-4 font-semibold">Submitted</th>
+                  <th className="py-3 px-4 font-semibold">Status</th>
+                  <th className="py-3 px-4 font-semibold text-right">Workflow Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#ECE8DC]">
-                {leads.map((l) => (
-                  <tr key={l.id} className="hover:bg-[#FAF8F5] transition-colors">
+              <tbody className="divide-y divide-zinc-200/70 text-xs">
+                {filteredLeads.map((l) => (
+                  <tr key={l.id} className="hover:bg-zinc-50/60 transition-colors">
+                    {/* Source Item */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         {l.sourceType === "POST" ? (
                           l.post?.image ? (
                             /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={l.post.image} alt="" className="w-10 h-12 object-cover rounded-none flex-shrink-0" />
+                            <img
+                              src={l.post.image}
+                              alt=""
+                              className="w-10 h-12 object-cover rounded-lg border border-zinc-200 shrink-0 bg-zinc-100"
+                            />
                           ) : null
                         ) : (
                           l.product?.images?.[0] && (
                             /* eslint-disable-next-line @next/next/no-img-element */
-                            <img src={l.product.images[0]} alt="" className="w-10 h-12 object-cover rounded-none flex-shrink-0" />
+                            <img
+                              src={l.product.images[0]}
+                              alt=""
+                              className="w-10 h-12 object-cover rounded-lg border border-zinc-200 shrink-0 bg-zinc-100"
+                            />
                           )
                         )}
                         <div>
-                          <span className={`inline-block px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded-none mb-0.5 ${
-                            l.sourceType === "POST" ? "bg-amber-100 text-amber-900" : "bg-[#1A1A1A] text-white"
-                          }`}>
-                            {l.sourceType}
+                          <span
+                            className={`inline-block px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-md mb-1 ${
+                              l.sourceType === "POST"
+                                ? "bg-zinc-100 text-zinc-800 border border-zinc-200"
+                                : "bg-zinc-950 text-white"
+                            }`}
+                          >
+                            {l.sourceType === "POST" ? "Editorial Post" : "Concept Prototype"}
                           </span>
-                          <p className="text-xs font-bold text-[#1A1A1A] truncate max-w-[160px]">
-                            {l.sourceType === "POST" ? l.post?.caption || "Lookbook Post" : l.product?.name || "Concept Item"}
+                          <p className="font-semibold text-zinc-950 truncate max-w-[170px]">
+                            {l.sourceType === "POST"
+                              ? l.post?.caption || "Lookbook Feature"
+                              : l.product?.name || "Bespoke Prototype"}
                           </p>
-                          <p className="text-[10px] text-[#8A8A8A]">
+                          <p className="text-[11px] text-zinc-500">
                             {l.sourceType === "POST" ? l.post?.designerName : l.product?.designerName}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-xs text-[#1A1A1A]">
+
+                    {/* Client Name */}
+                    <td className="py-3.5 px-4 font-semibold text-zinc-950">
                       {l.name}
                     </td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-[#1A1A1A]">
-                      <div className="flex flex-col gap-0.5">
-                        <a href={`mailto:${l.email}`} className="hover:underline flex items-center gap-1">
-                          <Mail className="w-3 h-3 text-[#8A8A8A]" />
-                          {l.email}
+
+                    {/* Contact Details */}
+                    <td className="py-3.5 px-4">
+                      <div className="space-y-0.5">
+                        <a
+                          href={`mailto:${l.email}`}
+                          className="text-zinc-900 hover:text-zinc-600 font-medium inline-flex items-center gap-1.5 group"
+                        >
+                          <Mail className="w-3 h-3 text-zinc-400 group-hover:text-zinc-600" />
+                          <span>{l.email}</span>
                         </a>
                         {l.phone && (
-                          <a href={`tel:${l.phone}`} className="hover:underline flex items-center gap-1 text-[#8A8A8A]">
-                            <Phone className="w-3 h-3" />
-                            {l.phone}
-                          </a>
+                          <div>
+                            <a
+                              href={`tel:${l.phone}`}
+                              className="text-zinc-500 hover:text-zinc-800 inline-flex items-center gap-1.5 group"
+                            >
+                              <Phone className="w-3 h-3 text-zinc-400 group-hover:text-zinc-600" />
+                              <span className="font-mono">{l.phone}</span>
+                            </a>
+                          </div>
                         )}
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-700">
+
+                    {/* Budget Range */}
+                    <td className="py-3.5 px-4 font-mono font-medium text-zinc-950">
                       {l.budgetRange || "Standard Quote"}
                     </td>
-                    <td className="py-3.5 px-4 text-xs text-[#8A8A8A] font-medium">
-                      {new Date(l.createdAt).toLocaleDateString("en-IN")}
+
+                    {/* Date */}
+                    <td className="py-3.5 px-4 text-zinc-500 font-mono text-[11px]">
+                      {new Date(l.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </td>
+
+                    {/* Status Badge */}
                     <td className="py-3.5 px-4">
                       <AdminStatusBadge status={l.status} />
                     </td>
+
+                    {/* Workflow Select */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="relative inline-block">
                         <select
@@ -171,7 +325,7 @@ export default function AdminConceptLeadsPage() {
                           value={l.status}
                           aria-label="Update lead status"
                           onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                          className="appearance-none bg-[#F4F0E5] border border-[#ECE8DC] text-[#1A1A1A] font-sans text-xs font-bold px-3 py-1.5 pr-7 rounded-none outline-none cursor-pointer hover:border-[#17181D]"
+                          className="appearance-none bg-zinc-50 border border-zinc-200 text-zinc-900 font-medium text-xs px-3 py-1.5 pr-7 rounded-lg outline-none cursor-pointer hover:bg-white focus:ring-1 focus:ring-zinc-950 focus:border-zinc-950 transition-colors"
                         >
                           <option value="NEW">New</option>
                           <option value="DESIGNER_CONTACTED">Designer Contacted</option>
@@ -179,7 +333,7 @@ export default function AdminConceptLeadsPage() {
                           <option value="CONFIRMED">Confirmed / Converted</option>
                           <option value="CLOSED">Closed</option>
                         </select>
-                        <ChevronDown className="w-3 h-3 text-[#8A8A8A] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                     </td>
                   </tr>
@@ -187,8 +341,8 @@ export default function AdminConceptLeadsPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

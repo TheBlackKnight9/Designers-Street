@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { MediaViewerProvider } from "@/context/MediaViewerContext";
@@ -23,6 +23,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
   display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -49,7 +56,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#E8DFD3",
+  themeColor: "#FAFAF8",
 };
 
 export default function RootLayout({
@@ -58,8 +65,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full antialiased ${inter.variable} ${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
-      <body className={`min-h-full flex flex-col bg-paper text-charcoal pb-24 font-sans ${geistSans.className}`} suppressHydrationWarning>
+    <html lang="en" className={`h-full antialiased ${inter.variable} ${geistSans.variable} ${geistMono.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <body className={`min-h-full flex flex-col font-sans ${geistSans.className}`} suppressHydrationWarning>
         <ToastProvider>
           <CartProvider>
             <WishlistProvider>
@@ -74,3 +81,4 @@ export default function RootLayout({
     </html>
   );
 }
+

@@ -59,7 +59,7 @@ export function AdminSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const renderNavGroup = (items: NavItem[]) => (
-    <ul className="space-y-1">
+    <ul className="space-y-0.5">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive =
@@ -71,16 +71,20 @@ export function AdminSidebar() {
             <Link
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3.5 px-4 py-2.5 rounded-none font-sans text-sm font-medium transition-all ${
+              className={`group flex items-center gap-2.5 px-3 py-1.5 rounded-lg font-sans text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-white text-[#17181D] font-bold shadow-md"
-                  : "text-[#A0A5B5] hover:text-white hover:bg-white/5"
+                  ? "bg-zinc-900 text-zinc-100 shadow-xs border border-zinc-800/90"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50"
               }`}
             >
-              <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-[#17181D]" : "text-[#A0A5B5]"}`} />
-              <span className="truncate">{item.label}</span>
+              <Icon
+                className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                  isActive ? "text-zinc-100" : "text-zinc-400 group-hover:text-zinc-200"
+                }`}
+              />
+              <span className="truncate tracking-tight">{item.label}</span>
               {item.badge && (
-                <span className="ml-auto px-2 py-0.5 text-[10px] font-bold rounded-none bg-[#F6D746] text-[#1A1A1A]">
+                <span className="ml-auto px-1.5 py-0.5 text-[10px] font-mono font-medium rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700/50">
                   {item.badge}
                 </span>
               )}
@@ -97,52 +101,57 @@ export function AdminSidebar() {
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed bottom-4 right-4 z-[90] p-3 rounded-none bg-[#17181D] text-white shadow-xl flex items-center justify-center"
+        className="lg:hidden fixed bottom-5 right-5 z-[90] p-3 rounded-full bg-zinc-950 text-white shadow-xl border border-zinc-800 flex items-center justify-center cursor-pointer hover:bg-zinc-900"
         aria-label="Toggle Navigation Sidebar"
       >
-        {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs"
+          className="lg:hidden fixed inset-0 z-[80] bg-black/70 backdrop-blur-xs"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* Sidebar Panel */}
+      {/* Sidebar Panel - No scrollbar visible */}
       <aside
-        className={`w-64 h-screen sticky top-0 overflow-y-auto bg-[#17181D] text-white flex flex-col justify-between p-6 flex-shrink-0 transition-all duration-300 ${
+        className={`w-64 h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden overscroll-contain bg-zinc-950 text-zinc-300 border-r border-zinc-800/80 flex flex-col justify-between p-4 flex-shrink-0 transition-all duration-300 z-[85] ${
           mobileOpen
-            ? "fixed inset-y-0 left-0 z-[85] shadow-2xl"
+            ? "fixed inset-y-0 left-0 shadow-2xl"
             : "hidden lg:flex"
         }`}
       >
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Brand Logo & Name */}
-          <Link href="/admin" className="flex items-center gap-3 px-2">
-            <div className="w-9 h-9 rounded-none bg-[#F6D746] text-[#17181D] flex items-center justify-center font-black text-sm shadow-sm">
+          <Link href="/admin" className="flex items-center gap-2.5 px-2 py-1 group">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-950 flex items-center justify-center font-bold text-xs shadow-xs group-hover:bg-white transition-colors">
               DS
             </div>
-            <div>
-              <span className="font-display text-base font-bold tracking-tight text-white block leading-none">
+            <div className="leading-none">
+              <span className="text-sm font-semibold tracking-tight text-zinc-100 block">
                 Designer's Street
               </span>
-              <span className="text-[10px] font-semibold text-[#A0A5B5] uppercase tracking-widest block mt-1">
-                Admin Center
+              <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider block mt-1">
+                Admin Panel
               </span>
             </div>
           </Link>
 
           {/* Primary Navigation */}
-          <div>{renderNavGroup(PRIMARY_NAV)}</div>
+          <div className="space-y-1">
+            <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
+              Overview
+            </p>
+            {renderNavGroup(PRIMARY_NAV)}
+          </div>
 
-          <div className="h-[1px] bg-white/10 my-2" />
+          <div className="h-[1px] bg-zinc-900 my-2" />
 
           {/* Secondary Navigation */}
-          <div>
-            <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-[#6B7280] mb-2">
+          <div className="space-y-1">
+            <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
               Management
             </p>
             {renderNavGroup(SECONDARY_NAV)}
@@ -150,7 +159,7 @@ export function AdminSidebar() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="pt-6 border-t border-white/10 space-y-1">
+        <div className="pt-3 border-t border-zinc-900 space-y-1">
           {renderNavGroup(BOTTOM_NAV)}
         </div>
       </aside>

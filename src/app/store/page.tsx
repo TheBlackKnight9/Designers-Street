@@ -58,21 +58,11 @@ export default function StorePage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-28 bg-transparent">
-        <header className="px-5 pt-8 pb-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-stone mb-2">
-            The Atelier
-          </p>
-          <h1 className="font-sans text-[1.75rem] font-extrabold text-charcoal tracking-tight leading-none">
-            Shop
-          </h1>
-          <p className="mt-2 text-[13px] text-stone leading-relaxed max-w-sm">
-            Limited editions and ready-to-wear from India&apos;s most celebrated houses.
-          </p>
-        </header>
+      <main className="min-h-screen pb-28 bg-transparent pt-[84px]">
+        <h1 className="sr-only">Shop Luxury Collections — Designer&apos;s Street</h1>
 
         {/* Refined controls */}
-        <div className="sticky top-[var(--top-bar-height)] z-30 bg-canvas/90 backdrop-blur-md border-y border-[var(--border-subtle)]">
+        <div className="sticky top-[84px] z-30 bg-canvas/90 backdrop-blur-md border-y border-[var(--border-subtle)]">
           <div className="flex items-center divide-x divide-[#ECEAE4]">
             <div className="flex-1 relative">
               <button

@@ -5,11 +5,11 @@ import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { DesignerHouseCard } from "@/components/designer/DesignerHouseCard";
 import { DESIGNERS } from "@/lib/mock-data";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 import { getIndianStates } from "@/lib/data/india-locations";
 
 const CITY_FILTERS = ["All", "Delhi", "Mumbai", "Jaipur", "Kolkata", "Bengaluru"];
-const CATEGORY_FILTERS = ["All Categories", "Lehengas", "Sarees", "Anarkalis", "Kurtas", "Indo-Western", "Accessories"];
 
 export default function DesignersDirectoryPage() {
   const [houses, setHouses] = useState<any[]>([]);
@@ -17,7 +17,7 @@ export default function DesignersDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("All");
   const [selectedState, setSelectedState] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [showFilters, setShowFilters] = useState(false);
 
   const indianStates = getIndianStates();
 
@@ -51,106 +51,109 @@ export default function DesignersDirectoryPage() {
   return (
     <>
       <TopBar />
-      <main className="min-h-screen pb-28 max-w-5xl mx-auto px-4 pt-6 space-y-6 bg-paper">
-        {/* Header Title & Subtitle */}
-        <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-stone block">Designer Directory</span>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-wide text-charcoal">
-            THE ATELIERS
+      <main className="min-h-screen pb-28 max-w-5xl mx-auto px-4 pt-[96px] space-y-5">
+        {/* Header */}
+        <div className="text-center max-w-xl mx-auto">
+          <h1 className="font-display text-xl font-semibold text-[var(--charcoal)] tracking-wide">
+            Designer Houses
           </h1>
-          <p className="text-xs text-stone leading-relaxed">
-            Discover independent luxury designer houses, master artisans, and couture labels crafting India&apos;s finest fashion.
-          </p>
         </div>
 
-        {/* Live Search & State Dropdown Row */}
-        <div className="max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2 relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, technique (Zardozi, Chikankari...)"
-              className="w-full rounded-2xl border border-cloud bg-white px-5 py-3 text-xs outline-none shadow-xs font-medium focus:ring-2 focus:ring-charcoal/20"
-            />
-            {searchQuery && (
+        {/* Compact search bar + city chips in single row */}
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--stone)]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search designers, techniques..."
+                className="w-full rounded-lg border border-[var(--border-default)] bg-white pl-10 pr-8 py-2.5 text-xs outline-none font-medium focus:border-[var(--charcoal)] transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <X className="w-3.5 h-3.5 text-[var(--stone)]" />
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-medium transition-colors ${
+                showFilters || selectedState
+                  ? "bg-[var(--charcoal)] border-[var(--charcoal)] text-white"
+                  : "bg-white border-[var(--border-default)] text-[var(--charcoal)]"
+              }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              Filters
+            </button>
+          </div>
+
+          {/* City chips — horizontal scroll, always visible */}
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+            {CITY_FILTERS.map((city) => (
               <button
+                key={city}
                 type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-3 text-xs text-stone font-bold hover:text-charcoal"
+                onClick={() => {
+                  setSelectedCity(city);
+                  setSelectedState("");
+                }}
+                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-[0.06em] transition-colors ${
+                  selectedCity === city && !selectedState ? "ds-chip-active" : "ds-chip"
+                }`}
               >
-                ✕
+                {city}
               </button>
-            )}
+            ))}
           </div>
-          <div>
-            <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
-              className="w-full h-full rounded-2xl border border-cloud bg-white px-4 py-3 text-xs font-bold outline-none text-charcoal shadow-xs cursor-pointer"
-            >
-              <option value="">36 States &amp; UTs</option>
-              {indianStates.map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
 
-        {/* City Filter Chips */}
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          {CITY_FILTERS.map((city) => (
-            <button
-              key={city}
-              type="button"
-              onClick={() => {
-                setSelectedCity(city);
-                setSelectedState("");
-              }}
-              className={`px-4 py-2 rounded-full text-xs font-bold uppercase transition-colors ${
-                selectedCity === city && !selectedState ? "ds-chip-active" : "ds-chip"
-              }`}
-            >
-              {city}
-            </button>
-          ))}
-        </div>
-
-        {/* Category Chips */}
-        <div className="flex items-center justify-center gap-1.5 flex-wrap pt-1 border-t border-cloud/40">
-          {CATEGORY_FILTERS.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-colors ${
-                selectedCategory === cat ? "ds-chip-active" : "ds-chip"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {/* Expandable filter panel */}
+          {showFilters && (
+            <div className="bg-white border border-[var(--border-default)] rounded-lg p-4 space-y-3 animate-fade-in">
+              <label className="block">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--stone)] mb-1 block">State / UT</span>
+                <select
+                  value={selectedState}
+                  onChange={(e) => setSelectedState(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--border-default)] bg-white px-3 py-2 text-xs font-medium outline-none text-[var(--charcoal)] cursor-pointer focus:border-[var(--charcoal)]"
+                >
+                  <option value="">All States &amp; UTs</option>
+                  {indianStates.map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Designer Grid */}
         {loading ? (
-          <div className="py-16 text-center text-xs text-stone animate-pulse font-bold">
+          <div className="py-16 text-center text-xs text-[var(--stone)] animate-pulse font-medium">
             Loading atelier houses…
           </div>
         ) : houses.length === 0 ? (
-          <div className="bg-white p-12 rounded-3xl border border-cloud text-center space-y-3 shadow-xs">
+          <div className="bg-white p-12 rounded-xl border border-[var(--border-default)] text-center space-y-3">
             <span className="text-3xl block">🏛️</span>
-            <p className="text-sm font-bold text-charcoal">No Designer Houses Found</p>
-            <p className="text-xs text-stone">Try clearing search filters or searching for another location.</p>
+            <p className="text-sm font-semibold text-[var(--charcoal)]">No Designer Houses Found</p>
+            <p className="text-xs text-[var(--stone)]">Try clearing search filters or searching for another location.</p>
             <button
               type="button"
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCity("All");
+                setSelectedState("");
               }}
-              className="px-5 py-2 bg-espresso text-chip text-xs font-bold uppercase rounded-full shadow-[0_2px_8px_rgba(42,31,24,0.25)]"
+              className="px-5 py-2 bg-[var(--charcoal)] text-white text-xs font-medium uppercase tracking-[0.08em] rounded-lg"
             >
               Reset Filters
             </button>

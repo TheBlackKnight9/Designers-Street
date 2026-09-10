@@ -179,27 +179,27 @@ export default function AdminDesignersPage() {
       />
 
       {/* Search + Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="w-4 h-4 text-[#8A8A8A] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="search"
             placeholder="Search by house name or @handle…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-none border border-[#ECE8DC] bg-white pl-10 pr-4 py-2 text-xs outline-none focus:border-[#17181D] font-medium shadow-2xs"
+            className="w-full rounded-lg border border-zinc-200 bg-white pl-9 pr-4 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs transition-colors"
           />
         </div>
 
-        <div className="flex bg-white p-1 rounded-none border border-[#ECE8DC] shadow-2xs">
+        <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200 self-start sm:self-auto">
           {(["active", "suspended"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-none transition-colors ${
+              className={`px-3.5 py-1 text-xs font-medium capitalize rounded-md transition-all ${
                 activeTab === t
-                  ? "bg-[#17181D] text-white shadow-xs"
-                  : "text-[#8A8A8A] hover:text-[#1A1A1A]"
+                  ? "bg-white text-zinc-950 shadow-xs font-semibold"
+                  : "text-zinc-500 hover:text-zinc-900"
               }`}
             >
               {t}
@@ -212,13 +212,13 @@ export default function AdminDesignersPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-48 rounded-none bg-white/70 animate-pulse border border-[#ECE8DC]" />
+            <div key={i} className="h-48 rounded-xl bg-white animate-pulse border border-zinc-200" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-[#ECE8DC] rounded-none bg-white">
-          <p className="text-sm font-bold text-[#1A1A1A]">No designer houses found</p>
-          <p className="text-xs text-[#8A8A8A] mt-1 font-medium">
+        <div className="py-16 text-center border border-dashed border-zinc-200 rounded-xl bg-white">
+          <p className="text-sm font-semibold text-zinc-950">No designer houses found</p>
+          <p className="text-xs text-zinc-500 mt-1 font-normal">
             {activeTab === "active" ? "Click '+ New House' to register your first designer house." : "No suspended designer houses."}
           </p>
         </div>
@@ -227,7 +227,7 @@ export default function AdminDesignersPage() {
           {filtered.map((h) => (
             <div
               key={h.id}
-              className="bg-white border border-[#ECE8DC] rounded-none p-5 space-y-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+              className="bg-white border border-zinc-200/90 rounded-xl p-5 space-y-4 shadow-2xs hover:border-zinc-300 hover:shadow-xs transition-all flex flex-col justify-between"
             >
               <div>
                 {/* House Header */}
@@ -237,57 +237,57 @@ export default function AdminDesignersPage() {
                     <img
                       src={h.logo}
                       alt={h.name}
-                      className="w-12 h-12 rounded-none object-cover border border-[#ECE8DC] shadow-2xs flex-shrink-0"
+                      className="w-11 h-11 rounded-lg object-cover border border-zinc-200 shadow-2xs flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-none bg-[#17181D] text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                    <div className="w-11 h-11 rounded-lg bg-zinc-900 text-white font-semibold text-xs flex items-center justify-center flex-shrink-0">
                       {h.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="font-bold text-sm text-[#1A1A1A] truncate">{h.name}</p>
+                      <p className="font-semibold text-sm text-zinc-950 truncate">{h.name}</p>
                       {h.verified && (
-                        <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-[11px] text-[#8A8A8A] font-mono">@{h.handle}</p>
+                    <p className="text-xs text-zinc-400 font-mono">@{h.handle}</p>
                   </div>
 
                   <AdminStatusBadge status={h.accountStatus} />
                 </div>
 
                 {/* Metrics Bar */}
-                <div className="grid grid-cols-3 gap-2 text-center bg-[#F4F0E5]/60 rounded-none p-2.5 text-xs mt-4 border border-[#ECE8DC]">
+                <div className="grid grid-cols-3 gap-2 text-center bg-zinc-50 rounded-lg p-2.5 text-xs mt-4 border border-zinc-200/70">
                   <div>
-                    <p className="font-bold font-mono text-[#1A1A1A]">{h._count.products}</p>
-                    <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Products</p>
+                    <p className="font-semibold font-mono text-zinc-950">{h._count.products}</p>
+                    <p className="text-[10px] text-zinc-500 uppercase font-medium">Products</p>
                   </div>
                   <div>
-                    <p className="font-bold font-mono text-[#1A1A1A]">{h._count.orders}</p>
-                    <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Orders</p>
+                    <p className="font-semibold font-mono text-zinc-950">{h._count.orders}</p>
+                    <p className="text-[10px] text-zinc-500 uppercase font-medium">Orders</p>
                   </div>
                   <div>
-                    <p className="font-bold font-mono text-[#1A1A1A]">{h.commissionRate ?? 10}%</p>
-                    <p className="text-[10px] text-[#8A8A8A] uppercase font-semibold">Commission</p>
+                    <p className="font-semibold font-mono text-zinc-950">{h.commissionRate ?? 10}%</p>
+                    <p className="text-[10px] text-zinc-500 uppercase font-medium">Commission</p>
                   </div>
                 </div>
 
                 {/* Finance Chips */}
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   {h.gstin && (
-                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-none font-mono text-[#1A1A1A]">
+                    <span className="text-[10px] bg-zinc-100 border border-zinc-200/80 px-2 py-0.5 rounded-md font-mono text-zinc-700">
                       GST: {h.gstin}
                     </span>
                   )}
                   {h.bankAccount && (
-                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-none font-mono text-[#1A1A1A]">
+                    <span className="text-[10px] bg-zinc-100 border border-zinc-200/80 px-2 py-0.5 rounded-md font-mono text-zinc-700">
                       A/C: ****{h.bankAccount.slice(-4)}
                     </span>
                   )}
                   {h.returnPincode && (
-                    <span className="text-[10px] bg-[#F4F0E5] border border-[#ECE8DC] px-2 py-0.5 rounded-none font-mono text-[#1A1A1A]">
+                    <span className="text-[10px] bg-zinc-100 border border-zinc-200/80 px-2 py-0.5 rounded-md font-mono text-zinc-700">
                       PIN: {h.returnPincode}
                     </span>
                   )}
@@ -295,20 +295,20 @@ export default function AdminDesignersPage() {
               </div>
 
               {/* Actions Footer */}
-              <div className="flex items-center gap-2 pt-2 border-t border-[#ECE8DC]">
+              <div className="flex items-center gap-2 pt-3 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => handleSelectHouse(h.id)}
-                  className="flex-1 py-2.5 bg-[#F6D746] text-[#1A1A1A] text-xs font-bold uppercase tracking-wider rounded-none hover:bg-[#F6D746]/90 transition-all shadow-2xs text-center flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
+                  className="flex-1 py-2 bg-zinc-950 text-white text-xs font-medium rounded-lg hover:bg-zinc-800 transition-all shadow-xs text-center flex items-center justify-center gap-1.5 active:scale-[0.98] cursor-pointer"
                 >
-                  Studio
-                  <ExternalLink className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Open Studio</span>
+                  <ExternalLink className="w-3 h-3" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleSuspend(h.id, h.accountStatus === "active")}
-                  className="px-3 py-2.5 border border-[#ECE8DC] text-xs font-bold uppercase rounded-none text-[#8A8A8A] hover:bg-[#F2A6A6]/20 hover:text-red-700 transition-colors"
+                  className="px-3 py-2 border border-zinc-200 text-xs font-medium rounded-lg text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer"
                 >
                   {h.accountStatus === "active" ? "Suspend" : "Activate"}
                 </button>
@@ -321,32 +321,32 @@ export default function AdminDesignersPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-none w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[#ECE8DC]">
-            <div className="sticky top-0 bg-white border-b border-[#ECE8DC] px-6 py-4 flex items-center justify-between">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl border border-zinc-200">
+            <div className="sticky top-0 bg-white border-b border-zinc-100 px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="font-display text-lg font-bold uppercase text-[#1A1A1A]">
+                <h2 className="text-base font-semibold text-zinc-950">
                   Register Designer House
                 </h2>
-                <p className="text-[11px] text-[#8A8A8A]">Fields marked * are required for payouts & onboarding</p>
+                <p className="text-xs text-zinc-500 font-normal">Fields marked * are required for payouts & catalog onboarding</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-none bg-[#F4F0E5] text-[#1A1A1A] flex items-center justify-center"
+                className="w-7 h-7 rounded-lg bg-zinc-100 text-zinc-600 hover:text-zinc-950 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-6 space-y-6 text-xs font-sans">
+            <form onSubmit={handleCreate} className="p-6 space-y-5 text-xs font-sans">
               {/* Brand Identity */}
               <section className="space-y-3">
-                <h3 className="font-bold text-[11px] uppercase tracking-widest text-[#8A8A8A] border-b border-[#ECE8DC] pb-1">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-100 pb-1.5">
                   Brand Identity
                 </h3>
 
                 <label className="block">
-                  <span className="font-bold uppercase text-[#8A8A8A]">Brand Name *</span>
+                  <span className="text-[11px] font-medium text-zinc-700">Brand Name *</span>
                   <input
                     required
                     value={form.name}
@@ -357,65 +357,65 @@ export default function AdminDesignersPage() {
                       }
                     }}
                     placeholder="Noir Structure"
-                    className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-bold"
+                    className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="font-bold uppercase text-[#8A8A8A]">Handle (URL slug) *</span>
+                  <span className="text-[11px] font-medium text-zinc-700">Handle (URL slug) *</span>
                   <div className="mt-1 flex items-center gap-1">
-                    <span className="px-3 py-2.5 bg-[#ECE8DC] rounded-none font-bold text-[#8A8A8A]">@</span>
+                    <span className="px-3 py-2 bg-zinc-100 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-500">@</span>
                     <input
                       required
                       value={form.handle}
                       onChange={(e) => f("handle", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ""))}
                       placeholder="noir-structure"
-                      className="flex-1 rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none font-mono"
+                      className="flex-1 rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-xs font-mono font-medium text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                     />
                   </div>
                 </label>
 
                 <label className="block">
-                  <span className="font-bold uppercase text-[#8A8A8A]">Bio / Description</span>
+                  <span className="text-[11px] font-medium text-zinc-700">Bio / Description</span>
                   <textarea
                     rows={3}
                     value={form.bio}
                     onChange={(e) => f("bio", e.target.value)}
                     placeholder="Luxury Indian couture redefining contemporary bridal fashion…"
-                    className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none resize-none"
+                    className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs resize-none"
                   />
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="font-bold uppercase text-[#8A8A8A]">Logo URL</span>
+                    <span className="text-[11px] font-medium text-zinc-700">Logo URL</span>
                     <input
                       type="url"
                       value={form.logo}
                       onChange={(e) => f("logo", e.target.value)}
                       placeholder="https://…/logo.jpg"
-                      className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
+                      className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                     />
                   </label>
                   <label className="block">
-                    <span className="font-bold uppercase text-[#8A8A8A]">Banner URL</span>
+                    <span className="text-[11px] font-medium text-zinc-700">Banner URL</span>
                     <input
                       type="url"
                       value={form.banner}
                       onChange={(e) => f("banner", e.target.value)}
                       placeholder="https://…/banner.jpg"
-                      className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
+                      className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                     />
                   </label>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="font-bold uppercase text-[#8A8A8A]">State</span>
+                    <span className="text-[11px] font-medium text-zinc-700">State</span>
                     <select
                       value={form.state}
                       onChange={(e) => { f("state", e.target.value); f("city", ""); }}
-                      className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
+                      className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                     >
                       <option value="">Select State…</option>
                       {getIndianStates().map((s) => (
@@ -424,12 +424,12 @@ export default function AdminDesignersPage() {
                     </select>
                   </label>
                   <label className="block">
-                    <span className="font-bold uppercase text-[#8A8A8A]">City</span>
+                    <span className="text-[11px] font-medium text-zinc-700">City</span>
                     {getCitiesForState(form.state).length > 0 ? (
                       <select
                         value={form.city}
                         onChange={(e) => f("city", e.target.value)}
-                        className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-3 py-2.5 outline-none font-bold"
+                        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                       >
                         <option value="">Select City…</option>
                         {getCitiesForState(form.state).map((c) => (
@@ -441,7 +441,7 @@ export default function AdminDesignersPage() {
                         value={form.city}
                         onChange={(e) => f("city", e.target.value)}
                         placeholder="City / District"
-                        className="mt-1 w-full rounded-none border border-[#ECE8DC] bg-[#F4F0E5] px-4 py-2.5 outline-none"
+                        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-900 outline-none focus:border-zinc-900 shadow-2xs"
                       />
                     )}
                   </label>
@@ -450,8 +450,8 @@ export default function AdminDesignersPage() {
 
               {/* Commission Rate */}
               <section className="space-y-3">
-                <h3 className="font-bold text-[11px] uppercase tracking-widest text-[#8A8A8A] border-b border-[#ECE8DC] pb-1">
-                  Commission Rate (%)
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 border-b border-zinc-100 pb-1.5">
+                  Platform Commission (%)
                 </h3>
                 <div className="flex items-center gap-3">
                   <input
@@ -461,27 +461,27 @@ export default function AdminDesignersPage() {
                     step="0.5"
                     value={form.commissionRate}
                     onChange={(e) => f("commissionRate", e.target.value)}
-                    className="flex-1 accent-[#17181D]"
+                    className="flex-1 accent-zinc-950 cursor-pointer"
                   />
-                  <span className="w-14 text-center font-bold font-mono text-[#1A1A1A] bg-[#F4F0E5] border border-[#ECE8DC] rounded-none px-2 py-1">
+                  <span className="w-14 text-center font-mono font-semibold text-zinc-950 bg-zinc-100 border border-zinc-200 rounded-lg px-2.5 py-1 text-xs">
                     {form.commissionRate}%
                   </span>
                 </div>
               </section>
 
               {/* Submit Buttons */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-3 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 border border-[#ECE8DC] text-[#8A8A8A] font-bold uppercase rounded-none"
+                  className="flex-1 py-2.5 border border-zinc-200 text-zinc-700 font-medium text-xs rounded-lg hover:bg-zinc-50 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-3 bg-[#F6D746] text-[#1A1A1A] font-bold uppercase rounded-none shadow-sm hover:bg-[#F6D746]/90 disabled:opacity-60 cursor-pointer"
+                  className="flex-1 py-2.5 bg-zinc-950 text-white font-medium text-xs rounded-lg shadow-xs hover:bg-zinc-800 disabled:opacity-60 cursor-pointer transition-colors"
                 >
                   {saving ? "Registering…" : "Register House →"}
                 </button>

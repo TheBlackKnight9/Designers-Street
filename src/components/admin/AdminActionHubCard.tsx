@@ -15,23 +15,23 @@ export function AdminActionHubCard({ label, desc, icon, href }: AdminActionHubCa
   return (
     <Link
       href={href}
-      className="bg-white rounded-none p-5 border border-[#ECE8DC] shadow-2xs hover:border-[#17181D] hover:shadow-md transition-all group flex flex-col justify-between"
+      className="bg-white rounded-xl p-5 border border-zinc-200/90 shadow-2xs hover:border-zinc-300 hover:shadow-xs transition-all group flex flex-col justify-between"
     >
       <div>
-        <div className="w-10 h-10 rounded-none bg-[#F4F0E5] flex items-center justify-center text-xl mb-3 group-hover:scale-105 transition-transform">
+        <div className="w-9 h-9 rounded-lg bg-zinc-100 text-zinc-800 flex items-center justify-center mb-3 group-hover:bg-zinc-950 group-hover:text-white transition-colors">
           {icon}
         </div>
-        <h4 className="font-sans text-sm font-bold text-[#1A1A1A] group-hover:underline leading-snug">
+        <h4 className="text-sm font-semibold text-zinc-950 tracking-tight">
           {label}
         </h4>
-        <p className="font-sans text-xs text-[#8A8A8A] mt-1 line-clamp-2 leading-relaxed">
+        <p className="text-xs text-zinc-500 mt-1 line-clamp-2 leading-relaxed">
           {desc}
         </p>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-[#ECE8DC] flex items-center justify-between text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
-        <span>Manage</span>
-        <ArrowRight className="w-4 h-4 stroke-[2] group-hover:translate-x-1 transition-transform text-[#1A1A1A]" />
+      <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs font-medium text-zinc-900">
+        <span>Manage module</span>
+        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-zinc-500 group-hover:text-zinc-950" />
       </div>
     </Link>
   );
