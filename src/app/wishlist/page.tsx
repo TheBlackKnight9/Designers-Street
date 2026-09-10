@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -70,14 +71,14 @@ export default function WishlistPage() {
             ))}
           </div>
         ) : (
-          <div className="px-4 py-20 text-center">
-            <div className="mb-4">
+          <div className="px-4 py-20 text-center max-w-sm mx-auto">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#FFF7ED] flex items-center justify-center text-[#FF6B00] shadow-xs">
               <svg
-                className="w-12 h-12 mx-auto text-[#E0E0E0]"
+                className="w-8 h-8"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={1}
+                strokeWidth={1.5}
               >
                 <path
                   strokeLinecap="round"
@@ -86,12 +87,18 @@ export default function WishlistPage() {
                 />
               </svg>
             </div>
-            <h2 className="font-sans text-sm font-semibold text-[#2B2B2B] mb-1">
+            <h2 className="font-sans text-base font-bold text-[#1A1A1A] mb-1">
               Your wishlist is empty
             </h2>
-            <p className="font-sans text-xs text-[#7A7A7A]">
-              Double-tap any piece to save it here.
+            <p className="font-sans text-xs text-stone mb-6">
+              Save couture pieces and designer drops you love to view or order anytime.
             </p>
+            <Link
+              href="/store"
+              className="inline-flex items-center justify-center px-8 py-3.5 bg-[#FF6B00] hover:bg-[#EA580C] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-all"
+            >
+              Explore Runway Catalog
+            </Link>
           </div>
         )}
       </main>

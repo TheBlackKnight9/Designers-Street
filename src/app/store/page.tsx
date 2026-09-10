@@ -93,10 +93,10 @@ export default function StorePage() {
                         setSortBy(opt.value);
                         setShowSortDropdown(false);
                       }}
-                      className={`w-full px-4 py-2.5 text-left text-[12px] ${
+                      className={`w-full px-4 py-2.5 text-left text-xs font-semibold transition-colors ${
                         sortBy === opt.value
-                          ? "bg-charcoal text-paper font-semibold"
-                          : "text-stone hover:bg-mist"
+                          ? "bg-[#FF6B00] text-white font-bold"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {opt.label}
@@ -119,15 +119,15 @@ export default function StorePage() {
                 <span className="text-[9px] text-stone">▾</span>
               </button>
               {showSizeDropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-36 bg-paper border border-[#ECEAE4] rounded-2xl shadow-xl py-2 z-40 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-36 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-40 max-h-64 overflow-y-auto">
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedSize("all");
                       setShowSizeDropdown(false);
                     }}
-                    className={`w-full px-4 py-2.5 text-left text-[12px] ${
-                      selectedSize === "all" ? "bg-charcoal text-paper font-semibold" : "text-stone"
+                    className={`w-full px-4 py-2.5 text-left text-xs font-semibold transition-colors ${
+                      selectedSize === "all" ? "bg-[#FF6B00] text-white font-bold" : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     All
@@ -140,8 +140,8 @@ export default function StorePage() {
                         setSelectedSize(size);
                         setShowSizeDropdown(false);
                       }}
-                      className={`w-full px-4 py-2.5 text-left text-[12px] ${
-                        selectedSize === size ? "bg-charcoal text-paper font-semibold" : "text-stone"
+                      className={`w-full px-4 py-2.5 text-left text-xs font-semibold transition-colors ${
+                        selectedSize === size ? "bg-[#FF6B00] text-white font-bold" : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {size}
@@ -170,7 +170,7 @@ export default function StorePage() {
         <div className="px-5 py-4 flex gap-2 overflow-x-auto hide-scrollbar">
           <Link
             href="/designers"
-            className="flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] ds-chip-feature"
+            className="flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] bg-white border border-gray-200 text-charcoal hover:border-gray-400 transition-all"
           >
             Houses
           </Link>
@@ -187,8 +187,10 @@ export default function StorePage() {
                 key={item.id}
                 type="button"
                 onClick={() => setQuickFilter(item.id as QuickFilterOption)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${
-                  active ? "ds-chip-active" : "ds-chip"
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12em] transition-all ${
+                  active
+                    ? "bg-[#FF6B00] text-white shadow-md shadow-orange-500/25 font-bold"
+                    : "bg-white border border-gray-200 text-stone hover:text-charcoal hover:border-gray-300"
                 }`}
               >
                 {item.label}

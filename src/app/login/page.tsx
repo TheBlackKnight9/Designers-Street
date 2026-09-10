@@ -66,7 +66,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
+              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF6B00] transition-all"
             />
           </label>
           <label className="block">
@@ -79,7 +79,7 @@ function LoginForm() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-gold/40"
+              className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF6B00] transition-all"
             />
           </label>
 
@@ -92,7 +92,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-espresso text-chip py-3 text-sm tracking-wide shadow-[0_6px_16px_rgba(42,31,24,0.28)] disabled:opacity-60"
+            className="w-full rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white py-3.5 text-sm font-bold tracking-wide shadow-lg shadow-orange-500/25 active:scale-[0.99] disabled:opacity-60 transition-all"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>

@@ -1,5 +1,7 @@
 "use client";
 
+import { MessageSquare, ShoppingBag } from "lucide-react";
+
 type ProductStickyActionsProps = {
   isConcept?: boolean;
   conceptLabel?: string;
@@ -9,12 +11,12 @@ type ProductStickyActionsProps = {
   onAddToBag: () => void;
   onBuyNow: () => void;
   onConcept?: () => void;
+  onInquiry?: () => void;
 };
 
 /**
- * Luxury bottom-docked purchase bar — pins to the thumb zone at the bottom
- * of the mobile viewport for easy one-handed commerce. Hides on desktop
- * where the inline CTA is visible in the right column.
+ * Mobile bottom action bar matching reference design:
+ * [ Chat Circle ] [ Add to Cart Pill ] [ Buy Now Pill (Green) ]
  */
 export function ProductStickyActions({
   isConcept,
@@ -25,10 +27,11 @@ export function ProductStickyActions({
   onAddToBag,
   onBuyNow,
   onConcept,
+  onInquiry,
 }: ProductStickyActionsProps) {
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[var(--border-default)] px-4 pt-3 shadow-[0_-2px_16px_rgba(0,0,0,0.06)] md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[var(--border-subtle)] px-4 pt-3 pb-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:hidden"
       style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
     >
       {error && (
@@ -41,23 +44,37 @@ export function ProductStickyActions({
         <button
           type="button"
           onClick={onConcept}
-          className="flex h-12 w-full items-center justify-center rounded-lg bg-[var(--charcoal)] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.1em] active:scale-[0.98] transition-transform"
+          className="flex h-12 w-full items-center justify-center rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white font-sans text-xs font-bold uppercase tracking-wider active:scale-[0.98] transition-all shadow-md shadow-orange-500/25"
         >
           {conceptLabel}
         </button>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Chat / Inquiry circular icon button */}
+          <button
+            type="button"
+            onClick={onInquiry ?? onConcept}
+            className="w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center text-[var(--charcoal)] active:scale-95 transition-transform flex-shrink-0 hover:bg-gray-50 shadow-xs"
+            aria-label="Inquire with atelier"
+          >
+            <MessageSquare className="w-5 h-5 stroke-[1.75]" />
+          </button>
+
+          {/* Add to Cart pill button */}
           <button
             type="button"
             onClick={onAddToBag}
-            className="flex h-12 items-center justify-center rounded-lg border border-[var(--charcoal)] text-[var(--charcoal)] font-sans text-[12px] font-semibold uppercase tracking-[0.08em] active:scale-[0.98] transition-transform hover:bg-[var(--mist)]"
+            className="flex-1 h-12 flex items-center justify-center gap-2 rounded-full border-2 border-[#FF6B00] text-[#FF6B00] bg-white font-sans text-xs font-bold active:scale-[0.98] transition-all hover:bg-[#FF6B00]/5"
           >
-            {inBag ? `In Bag${bagQty > 1 ? ` · ${bagQty}` : ""} ✓` : "Add to Bag"}
+            <ShoppingBag className="w-4 h-4 stroke-[2]" />
+            <span>{inBag ? `In Cart (${bagQty})` : "Add to Cart"}</span>
           </button>
+
+          {/* Buy Now solid luxury orange pill button */}
           <button
             type="button"
             onClick={onBuyNow}
-            className="flex h-12 items-center justify-center rounded-lg bg-[var(--charcoal)] text-white font-sans text-[12px] font-semibold uppercase tracking-[0.08em] active:scale-[0.98] transition-transform"
+            className="flex-1 h-12 flex items-center justify-center rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white font-sans text-xs font-bold active:scale-[0.98] transition-all shadow-md shadow-orange-500/25"
           >
             Buy Now
           </button>

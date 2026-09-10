@@ -69,7 +69,7 @@ export default function DesignersDirectoryPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search designers, techniques..."
-                className="w-full rounded-lg border border-[var(--border-default)] bg-white pl-10 pr-8 py-2.5 text-xs outline-none font-medium focus:border-[var(--charcoal)] transition-colors"
+                className="w-full rounded-full border border-[var(--border-default)] bg-white pl-10 pr-8 py-2.5 text-xs outline-none font-medium focus:border-[#FF6B00] focus:ring-1 focus:ring-orange-500/20 transition-all"
               />
               {searchQuery && (
                 <button
@@ -84,10 +84,10 @@ export default function DesignersDirectoryPage() {
             <button
               type="button"
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border text-xs font-medium transition-all ${
                 showFilters || selectedState
-                  ? "bg-[var(--charcoal)] border-[var(--charcoal)] text-white"
-                  : "bg-white border-[var(--border-default)] text-[var(--charcoal)]"
+                  ? "bg-[#FF6B00] border-[#FF6B00] text-white shadow-sm shadow-orange-500/20"
+                  : "bg-white border-[var(--border-default)] text-[var(--charcoal)] hover:border-gray-300"
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />

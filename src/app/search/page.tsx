@@ -139,12 +139,12 @@ function SearchContent() {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
             placeholder="Search Lehengas, Sarees, Couturiers or Ateliers..."
-            className="w-full rounded-full border border-cloud bg-white px-6 py-4 pr-12 text-sm shadow-xs outline-none focus:ring-2 focus:ring-charcoal/20"
+            className="w-full rounded-full border border-cloud bg-white px-6 py-4 pr-12 text-sm shadow-xs outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#FF6B00] transition-all"
           />
           <button
             type="submit"
             suppressHydrationWarning
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-charcoal text-paper rounded-full text-xs font-bold"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-[#FF6B00] hover:bg-[#EA580C] text-white rounded-full text-xs font-bold flex items-center justify-center shadow-md shadow-orange-500/25 active:scale-95 transition-all"
           >
             🔍
           </button>
@@ -210,9 +210,9 @@ function SearchContent() {
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setListingType(t.key)}
-                className={`px-3.5 py-1.5 text-xs font-bold uppercase rounded-full transition-colors ${
+                className={`px-3.5 py-1.5 text-xs font-bold uppercase rounded-full transition-all ${
                   listingType === t.key
-                    ? "bg-charcoal text-paper"
+                    ? "bg-[#FF6B00] text-white shadow-sm shadow-orange-500/20"
                     : "bg-mist text-stone hover:bg-cloud"
                 }`}
               >
@@ -328,7 +328,7 @@ function SearchContent() {
               step={10000}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full accent-charcoal cursor-pointer"
+              className="w-full accent-[#FF6B00] cursor-pointer"
             />
           </div>
 

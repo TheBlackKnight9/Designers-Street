@@ -477,10 +477,10 @@ export default function CategoryIndexPage() {
                     setActiveTab(dept.id);
                     setSearchQuery("");
                   }}
-                  className={`flex-shrink-0 relative px-4 py-2 rounded-full text-[11px] font-semibold uppercase tracking-[0.12em] transition-all duration-200 ${
+                  className={`flex-shrink-0 relative px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                     active
-                      ? "bg-[var(--charcoal)] text-white shadow-sm"
-                      : "bg-[var(--mist)] text-[var(--stone)] hover:text-[var(--charcoal)] hover:bg-black/5"
+                      ? "bg-[#FF6B00] text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-500/20"
+                      : "bg-white border border-gray-200 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
@@ -489,8 +489,8 @@ export default function CategoryIndexPage() {
                       <span
                         className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${
                           active
-                            ? "bg-white/20 text-white"
-                            : "bg-[var(--charcoal)] text-white"
+                            ? "bg-white/25 text-white"
+                            : "bg-[#FF6B00] text-white"
                         }`}
                       >
                         {dept.badge}
@@ -507,13 +507,13 @@ export default function CategoryIndexPage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-5 space-y-6">
           {/* In-Category Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--stone)] stroke-[1.75]" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 stroke-[2]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Search in ${activeDepartment.label} (lehengas, sarees, sherwanis, jewels...)`}
-              className="w-full rounded-xl border border-[var(--border-default)] bg-white pl-10 pr-9 py-2.5 text-xs font-medium text-[var(--charcoal)] placeholder:text-[var(--stone)]/70 focus:outline-none focus:border-[var(--charcoal)] transition-colors"
+              className="w-full rounded-full border border-gray-200 bg-white pl-10 pr-9 py-2.5 text-xs font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-hidden focus:border-[#FF6B00] shadow-2xs transition-colors"
             />
             {searchQuery && (
               <button

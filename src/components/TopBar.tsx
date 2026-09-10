@@ -38,39 +38,47 @@ export function TopBar() {
 
         <div className="h-[var(--top-bar-height)] flex items-center justify-between px-4 gap-3">
           {/* Brand monogram + wordmark */}
-          <Link href="/" className="flex items-center gap-2 min-w-0 flex-shrink-0">
-            <span className="flex-shrink-0 w-8 h-8 rounded-md bg-[var(--charcoal)] flex items-center justify-center text-white text-[10px] font-semibold tracking-[0.1em]">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0 flex-shrink-0">
+            <span className="flex-shrink-0 w-8 h-8 rounded-xl bg-gray-900 flex items-center justify-center text-white text-[11px] font-extrabold tracking-wider shadow-xs">
               DS
             </span>
-            <span className="font-display text-[15px] font-semibold tracking-wide text-[var(--charcoal)] hidden sm:inline">
+            <span className="font-display text-[15px] font-bold tracking-tight text-gray-900 hidden sm:inline">
               Designer&apos;s Street
             </span>
           </Link>
 
           {/* Action icons — clean, spacious touch targets */}
-          <div className="flex items-center gap-1 flex-shrink-0" suppressHydrationWarning>
+          <div className="flex items-center gap-1.5 flex-shrink-0" suppressHydrationWarning>
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="touch-target flex items-center justify-center p-2.5"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors"
               aria-label="Search"
             >
-              <Search className="w-[20px] h-[20px] text-[var(--charcoal)] stroke-[1.5]" />
+              <Search className="w-5 h-5 stroke-[1.8]" />
             </button>
 
-            <Link href="/wishlist" className="touch-target relative flex items-center justify-center p-2.5" aria-label="Wishlist">
-              <Heart className="w-[20px] h-[20px] text-[var(--charcoal)] stroke-[1.5]" />
+            <Link 
+              href="/wishlist" 
+              className="w-10 h-10 rounded-full relative flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors" 
+              aria-label="Wishlist"
+            >
+              <Heart className="w-5 h-5 stroke-[1.8]" />
               {badgesReady && wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-[var(--charcoal)] text-white text-[9px] font-medium rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-[#FF6B00] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
                   {wishlistCount > 9 ? "9+" : wishlistCount}
                 </span>
               )}
             </Link>
 
-            <Link href="/cart" className="touch-target relative flex items-center justify-center p-2.5" aria-label="Shopping Bag">
-              <ShoppingBag className="w-[20px] h-[20px] text-[var(--charcoal)] stroke-[1.5]" />
+            <Link 
+              href="/cart" 
+              className="w-10 h-10 rounded-full relative flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors" 
+              aria-label="Shopping Bag"
+            >
+              <ShoppingBag className="w-5 h-5 stroke-[1.8]" />
               {badgesReady && itemCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-[var(--charcoal)] text-white text-[9px] font-medium rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-[#FF6B00] text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}

@@ -168,7 +168,7 @@ export default function CheckoutPage() {
           <p className="text-sm text-stone mb-6">Your shopping bag is empty.</p>
           <Link
             href="/store"
-            className="inline-flex px-6 py-3 bg-charcoal text-paper text-xs uppercase tracking-wider font-bold rounded-full"
+            className="inline-flex px-8 py-3.5 bg-[#FF6B00] hover:bg-[#EA580C] text-white text-xs uppercase tracking-wider font-bold rounded-full shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-all"
           >
             Explore Designer Stores
           </Link>
@@ -297,7 +297,7 @@ export default function CheckoutPage() {
         // No method filtering — Razorpay shows all enabled methods from the dashboard
         // (UPI, Cards, Netbanking, Wallet, Pay Later) automatically
         theme: {
-          color: "#101010",
+          color: "#FF6B00",
           hide_topbar: false,
         },
         modal: {
@@ -344,19 +344,19 @@ export default function CheckoutPage() {
         </div>
 
         {/* Prepaid Instant Discount Banner */}
-        <div className="mb-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-900 text-white p-4 rounded-2xl shadow-sm flex items-center justify-between">
+        <div className="mb-6 bg-gradient-to-r from-orange-950 via-orange-900 to-orange-950 text-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-orange-800/40">
           <div className="flex items-center gap-3">
             <span className="text-xl">✨</span>
             <div>
-              <p className="font-sans text-xs font-bold uppercase tracking-wider text-emerald-200">
+              <p className="font-sans text-xs font-bold uppercase tracking-wider text-orange-300">
                 Instant ₹100 Online Payment Discount
               </p>
-              <p className="text-[11px] text-emerald-100 mt-0.5">
+              <p className="text-[11px] text-orange-200/90 mt-0.5">
                 Extra ₹100 deducted automatically for UPI, Card &amp; Net Banking payments!
               </p>
             </div>
           </div>
-          <span className="px-2.5 py-1 bg-white text-emerald-900 text-xs font-extrabold rounded-full font-mono shrink-0">
+          <span className="px-3 py-1 bg-[#FF6B00] text-white text-xs font-extrabold rounded-full font-mono shrink-0 shadow-sm shadow-orange-500/20">
             -₹100 OFF
           </span>
         </div>
@@ -373,8 +373,8 @@ export default function CheckoutPage() {
                     key={a.id}
                     className={`flex gap-3 p-4 rounded-2xl border cursor-pointer transition-colors ${
                       !useNew && addressId === a.id
-                        ? "border-charcoal bg-white shadow-xs"
-                        : "border-cloud bg-mist/30"
+                        ? "border-[#FF6B00] bg-orange-50/20 shadow-xs"
+                        : "border-cloud bg-mist/30 hover:border-gray-300"
                     }`}
                   >
                     <input
@@ -385,7 +385,7 @@ export default function CheckoutPage() {
                         setUseNew(false);
                         setAddressId(a.id);
                       }}
-                      className="mt-1 accent-charcoal"
+                      className="mt-1 accent-[#FF6B00]"
                     />
                     <span className="text-xs text-charcoal">
                       <span className="font-bold block text-sm">{a.fullName}</span>
@@ -398,7 +398,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setUseNew(true)}
-                  className="text-xs uppercase tracking-wider underline text-stone font-bold pt-1 block"
+                  className="text-xs uppercase tracking-wider text-[#FF6B00] hover:text-[#EA580C] font-bold pt-1 block"
                 >
                   + Add New Delivery Address
                 </button>
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
                     required
                     value={form.fullName}
                     onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none"
+                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                   />
                 </label>
 
@@ -428,7 +428,7 @@ export default function CheckoutPage() {
                       required
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none"
+                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                     />
                   </label>
                   <label className="block">
@@ -441,7 +441,7 @@ export default function CheckoutPage() {
                       value={form.postalCode}
                       onChange={(e) => handlePostalCodeChange(e.target.value)}
                       placeholder="110001"
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs font-mono font-bold outline-none"
+                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs font-mono font-bold outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                     />
                   </label>
                 </div>
@@ -452,7 +452,7 @@ export default function CheckoutPage() {
                     required
                     value={form.line1}
                     onChange={(e) => setForm({ ...form, line1: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none"
+                    className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                   />
                 </label>
 
@@ -463,7 +463,7 @@ export default function CheckoutPage() {
                       required
                       value={form.state}
                       onChange={(e) => setForm({ ...form, state: e.target.value, city: "" })}
-                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none font-medium"
+                      className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none font-medium focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                     >
                       <option value="">Select State / UT</option>
                       {indianStates.map((st) => (
@@ -480,7 +480,7 @@ export default function CheckoutPage() {
                         required
                         value={form.city}
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
-                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none font-medium"
+                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none font-medium focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                       >
                         <option value="">Select City / District</option>
                         {cityOptions.map((c) => (
@@ -495,7 +495,7 @@ export default function CheckoutPage() {
                         value={form.city}
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                         placeholder="City"
-                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none"
+                        className="mt-1 w-full rounded-xl border border-cloud bg-mist px-4 py-3 text-xs outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                       />
                     )}
                   </label>
@@ -516,7 +516,7 @@ export default function CheckoutPage() {
                 setError(null);
                 setStep("review");
               }}
-              className="w-full py-3.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full shadow-md hover:bg-black"
+              className="w-full py-4 bg-[#FF6B00] hover:bg-[#EA580C] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
               Continue to Order Summary →
             </button>
@@ -534,7 +534,7 @@ export default function CheckoutPage() {
                 <div key={brand} className="bg-white p-5 rounded-3xl border border-cloud space-y-3 shadow-xs">
                   <div className="flex items-center justify-between border-b border-cloud pb-2">
                     <span className="font-display text-sm font-bold uppercase text-charcoal">{brand}</span>
-                    <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-extrabold text-[9px] uppercase rounded-full tracking-wider">
+                    <span className="px-2.5 py-0.5 bg-orange-100 text-[#EA580C] font-extrabold text-[9px] uppercase rounded-full tracking-wider">
                       ✓ FREE SHIPPING
                     </span>
                   </div>
@@ -542,13 +542,13 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     {brandItems.map((item) => (
                       <div key={`${item.productId}-${item.size}`} className="flex items-center gap-3">
-                        <div className="relative w-14 h-16 rounded-xl overflow-hidden bg-mist border border-cloud shrink-0">
+                        <div className="relative w-14 h-16 rounded-xl overflow-hidden bg-[#F5F6F8] border border-cloud shrink-0">
                           <Image src={item.image} alt={item.name} fill className="object-cover" sizes="64px" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between">
                             <p className="text-xs font-bold text-charcoal truncate">{item.name}</p>
-                            <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-[8px] font-extrabold rounded uppercase">
+                            <span className="px-2 py-0.5 bg-orange-50 border border-orange-200 text-[#EA580C] text-[8px] font-extrabold rounded uppercase">
                               FREE SHIPPING
                             </span>
                           </div>
@@ -569,10 +569,10 @@ export default function CheckoutPage() {
               </span>
 
               {appliedCoupon ? (
-                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-xs">
+                <div className="flex items-center justify-between bg-orange-50 border border-orange-200 p-3 rounded-2xl text-xs">
                   <div>
-                    <span className="font-mono font-bold text-emerald-950">{appliedCoupon.code}</span>
-                    <span className="text-emerald-700 ml-2">(-{formatPrice(appliedCoupon.discountAmountRupees)} OFF)</span>
+                    <span className="font-mono font-bold text-orange-950">{appliedCoupon.code}</span>
+                    <span className="text-[#EA580C] ml-2">(-{formatPrice(appliedCoupon.discountAmountRupees)} OFF)</span>
                   </div>
                   <button
                     type="button"
@@ -588,13 +588,13 @@ export default function CheckoutPage() {
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     placeholder="ENTER CODE (e.g. FESTIVE1000)"
-                    className="flex-1 rounded-full border border-cloud bg-mist px-4 py-2.5 text-xs font-mono font-bold outline-none uppercase"
+                    className="flex-1 rounded-full border border-cloud bg-mist px-4 py-2.5 text-xs font-mono font-bold outline-none uppercase focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] transition-all"
                   />
                   <button
                     type="button"
                     disabled={validatingCoupon}
                     onClick={handleApplyCoupon}
-                    className="px-5 py-2.5 bg-charcoal text-paper text-xs font-bold uppercase rounded-full shadow-xs hover:bg-black disabled:opacity-60"
+                    className="px-6 py-2.5 bg-[#FF6B00] hover:bg-[#EA580C] text-white text-xs font-bold uppercase rounded-full shadow-md shadow-orange-500/20 active:scale-[0.98] disabled:opacity-60 transition-all"
                   >
                     {validatingCoupon ? "Checking..." : "Apply Code"}
                   </button>
@@ -615,27 +615,27 @@ export default function CheckoutPage() {
               </div>
 
               {appliedCoupon && (
-                <div className="flex justify-between text-xs text-emerald-700 font-bold">
+                <div className="flex justify-between text-xs text-[#EA580C] font-bold">
                   <span>🎟️ Promo Coupon ({appliedCoupon.code})</span>
-                  <span className="font-mono font-extrabold text-emerald-700">-{formatPrice(appliedCoupon.discountAmountRupees)}</span>
+                  <span className="font-mono font-extrabold text-[#EA580C]">-{formatPrice(appliedCoupon.discountAmountRupees)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between text-xs text-emerald-700 font-bold">
+              <div className="flex justify-between text-xs text-[#EA580C] font-bold">
                 <span>✨ Instant Online Prepaid Discount</span>
-                <span className="font-mono font-extrabold text-emerald-700">-₹100</span>
+                <span className="font-mono font-extrabold text-[#EA580C]">-₹100</span>
               </div>
 
-              <div className="flex justify-between text-xs text-emerald-700">
+              <div className="flex justify-between text-xs text-[#EA580C]">
                 <span>Direct Designer Shipping</span>
-                <span className="font-bold uppercase text-[11px] bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded">
+                <span className="font-bold uppercase text-[11px] bg-orange-100 text-[#EA580C] px-2 py-0.5 rounded">
                   FREE SHIPPING
                 </span>
               </div>
 
               <div className="pt-2 border-t border-cloud flex justify-between text-sm font-bold text-charcoal">
                 <span>TOTAL PAYABLE NOW</span>
-                <span className="font-mono text-lg font-extrabold text-charcoal">
+                <span className="font-mono text-lg font-extrabold text-[#FF6B00]">
                   {formatPrice(finalPrepaidTotalRupees)}
                 </span>
               </div>
@@ -643,18 +643,18 @@ export default function CheckoutPage() {
 
             {error && <p className="text-xs text-red-700 bg-red-50 rounded-xl p-3 font-medium">{error}</p>}
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setStep("address")}
-                className="flex-1 py-3.5 border border-cloud rounded-full text-xs font-bold uppercase text-stone hover:bg-mist"
+                className="flex-1 py-4 border border-gray-200 bg-white rounded-full text-xs font-bold uppercase text-charcoal hover:bg-gray-50 active:scale-[0.98] transition-all"
               >
-                ← Back to Address
+                ← Back
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-2 py-3.5 bg-charcoal text-paper text-xs font-bold uppercase tracking-wider rounded-full shadow-md disabled:opacity-60 hover:bg-black"
+                className="flex-[2] py-4 bg-[#FF6B00] hover:bg-[#EA580C] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg shadow-orange-500/25 disabled:opacity-60 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 {loading ? "Launching Gateway..." : `Pay ${formatPrice(finalPrepaidTotalRupees)} via Razorpay`}
               </button>

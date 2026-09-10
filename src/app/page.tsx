@@ -157,19 +157,19 @@ export default function HomePage() {
         })}
 
         {/* Invite / referral */}
-        <section className="mx-4 my-8 p-6 rounded-xl bg-[var(--charcoal)] text-white">
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40 mb-2">
+        <section className="mx-4 my-8 p-6 rounded-3xl bg-[#1A1A1A] text-white shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF6B00] mb-2">
             Private Access
           </p>
-          <h3 className="font-display text-lg font-semibold tracking-wide leading-tight">
+          <h3 className="font-sans text-lg font-bold tracking-tight leading-tight">
             Invite friends to the atelier
           </h3>
-          <p className="text-[13px] text-white/60 mt-2 mb-4 leading-relaxed">
+          <p className="text-[13px] text-white/70 mt-2 mb-4 leading-relaxed">
             Share Designer&apos;s Street — exclusive house access for both of you.
           </p>
           <Link
             href="/profile/following"
-            className="inline-block px-5 py-2.5 rounded-full bg-white text-[var(--charcoal)] text-[11px] font-semibold uppercase tracking-[0.1em]"
+            className="inline-block px-5 py-2.5 rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white text-xs font-bold uppercase tracking-wider shadow-md shadow-orange-500/25 active:scale-95 transition-all"
           >
             Invite Friends
           </Link>

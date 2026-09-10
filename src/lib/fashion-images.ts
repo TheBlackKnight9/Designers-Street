@@ -16,54 +16,54 @@ const u = (photoId: string, width: number) =>
 /** Category-keyed modern designer / editorial imagery */
 export const CATEGORY_MEDIA: Record<string, CategoryMedia> = {
   sarees: {
-    primary: u("1583391733956-3750e0ff4e8b", 1200),
-    alt: u("1610030469983-98e550d6193c", 800),
-    hero: u("1583391733956-3750e0ff4e8b", 1600),
+    primary: u("1610030469983-98e550d6193c", 1200), // Banarasi / Kanjivaram silk saree in crimson & gold
+    alt: u("1583391733956-3750e0ff4e8b", 800),
+    hero: u("1610030469983-98e550d6193c", 1600),
   },
   lehengas: {
-    primary: u("1515886657613-9f3515b0c78f", 1200),
-    alt: u("1566174053879-31528523f8ae", 800),
-    hero: u("1515886657613-9f3515b0c78f", 1600),
+    primary: u("1583391733956-3750e0ff4e8b", 1200), // Royal bridal zardozi lehenga
+    alt: u("1594938298603-c8148c4dae35", 800),
+    hero: u("1583391733956-3750e0ff4e8b", 1600),
   },
   kurtas: {
-    primary: u("1558769132-cb1aea458c5e", 1200),
-    alt: u("1602810318383-e386cc2a3ccf", 800),
-    hero: u("1558769132-cb1aea458c5e", 1600),
+    primary: u("1581044777550-4cfa60707c03", 1200), // Heritage silk kurta ensemble
+    alt: u("1558769132-cb1aea458c5e", 800),
+    hero: u("1581044777550-4cfa60707c03", 1600),
   },
   sherwanis: {
-    primary: u("1602810318383-e386cc2a3ccf", 1200),
-    alt: u("1507003211169-0a1dd7228f2d", 800),
-    hero: u("1602810318383-e386cc2a3ccf", 1600),
+    primary: u("1507679799987-c73779587ccf", 1200), // Regal royal menswear / bandhgala
+    alt: u("1602810318383-e386cc2a3ccf", 800),
+    hero: u("1507679799987-c73779587ccf", 1600),
   },
   dresses: {
-    primary: u("1595777457583-95e059d581b8", 1200),
+    primary: u("1595777457583-95e059d581b8", 1200), // Luxury evening dress
     alt: u("1539008835657-9e8e9680c956", 800),
     hero: u("1595777457583-95e059d581b8", 1600),
   },
   gowns: {
-    primary: u("1539008835657-9e8e9680c956", 1200),
+    primary: u("1539008835657-9e8e9680c956", 1200), // Haute couture gown
     alt: u("1496747611176-843222e1e57c", 800),
     hero: u("1539008835657-9e8e9680c956", 1600),
   },
   "indo-western": {
-    primary: u("1483985988355-763728e1935b", 1200),
+    primary: u("1483985988355-763728e1935b", 1200), // Indo-Western fusion couture
     alt: u("1469334031218-e382a71b716b", 800),
     hero: u("1483985988355-763728e1935b", 1600),
   },
   bridal: {
-    primary: u("1515886657613-9f3515b0c78f", 1200),
-    alt: u("1566174053879-31528523f8ae", 800),
-    hero: u("1515886657613-9f3515b0c78f", 1600),
+    primary: u("1583391733956-3750e0ff4e8b", 1200), // Grand bridal couture
+    alt: u("1610030469983-98e550d6193c", 800),
+    hero: u("1583391733956-3750e0ff4e8b", 1600),
   },
   "mens-wear": {
-    primary: u("1602810318383-e386cc2a3ccf", 1200),
-    alt: u("1507003211169-0a1dd7228f2d", 800),
-    hero: u("1602810318383-e386cc2a3ccf", 1600),
+    primary: u("1507679799987-c73779587ccf", 1200), // Royal menswear
+    alt: u("1558769132-cb1aea458c5e", 800),
+    hero: u("1507679799987-c73779587ccf", 1600),
   },
   "womens-wear": {
-    primary: u("1496747611176-843222e1e57c", 1200),
-    alt: u("1515372039744-b8f02a3ae446", 800),
-    hero: u("1496747611176-843222e1e57c", 1600),
+    primary: u("1610030469983-98e550d6193c", 1200), // Designer womenswear
+    alt: u("1583391733956-3750e0ff4e8b", 800),
+    hero: u("1610030469983-98e550d6193c", 1600),
   },
   kids: {
     primary: u("1519238263530-99bdd11df2ea", 1200),
@@ -71,19 +71,19 @@ export const CATEGORY_MEDIA: Record<string, CategoryMedia> = {
     hero: u("1519238263530-99bdd11df2ea", 1600),
   },
   jewellery: {
-    primary: u("1515562141207-7a88fb7ce338", 1200),
-    alt: u("1515562141207-7a88fb7ce338", 800),
+    primary: u("1515562141207-7a88fb7ce338", 1200), // Polki & Kundan fine jewellery
+    alt: u("1599643478518-a784e5dc4c8f", 800),
     hero: u("1515562141207-7a88fb7ce338", 1600),
   },
   bags: {
-    primary: u("1584917865442-de89df76afd3", 1200),
-    alt: u("1584917865442-de89df76afd3", 800),
+    primary: u("1584917865442-de89df76afd3", 1200), // Designer evening clutch / minaudière
+    alt: u("1566150905458-1bf1fc113f0d", 800),
     hero: u("1584917865442-de89df76afd3", 1600),
   },
   footwear: {
-    primary: u("1543163521-1bf539c55dd2", 1200),
-    alt: u("1543163521-1bf539c55dd2", 800),
-    hero: u("1543163521-1bf539c55dd2", 1600),
+    primary: u("1552346154-21d32810aba3", 1200), // Luxury designer sneakers
+    alt: u("1549298916-b41d501d3772", 800),
+    hero: u("1552346154-21d32810aba3", 1600),
   },
   accessories: {
     primary: u("1611652022419-a9419f74343d", 1200),
@@ -91,29 +91,29 @@ export const CATEGORY_MEDIA: Record<string, CategoryMedia> = {
     hero: u("1611652022419-a9419f74343d", 1600),
   },
   sustainable: {
-    primary: u("1558171813-1c088753a7f8", 1200),
+    primary: u("1594938298603-c8148c4dae35", 1200),
     alt: u("1558171813-1c088753a7f8", 800),
-    hero: u("1558171813-1c088753a7f8", 1600),
+    hero: u("1594938298603-c8148c4dae35", 1600),
   },
   "luxury-couture": {
-    primary: u("1490481651871-ab68de25d43d", 1200),
-    alt: u("1469334031218-e382a71b716b", 800),
-    hero: u("1490481651871-ab68de25d43d", 1600),
+    primary: u("1583391733956-3750e0ff4e8b", 1200),
+    alt: u("1610030469983-98e550d6193c", 800),
+    hero: u("1583391733956-3750e0ff4e8b", 1600),
   },
   streetwear: {
-    primary: u("1509631179647-0177331693ae", 1200),
-    alt: u("1509631179647-0177331693ae", 800),
-    hero: u("1509631179647-0177331693ae", 1600),
+    primary: u("1552346154-21d32810aba3", 1200), // Luxury designer sneakers & streetwear
+    alt: u("1549298916-b41d501d3772", 800),
+    hero: u("1552346154-21d32810aba3", 1600),
   },
   "occasion-wear": {
-    primary: u("1566174053879-31528523f8ae", 1200),
+    primary: u("1583391733956-3750e0ff4e8b", 1200),
     alt: u("1595777457583-95e059d581b8", 800),
-    hero: u("1566174053879-31528523f8ae", 1600),
+    hero: u("1583391733956-3750e0ff4e8b", 1600),
   },
   "latest-drops": {
-    primary: u("1509631179647-0177331693ae", 1200),
-    alt: u("1490481651871-ab68de25d43d", 800),
-    hero: u("1509631179647-0177331693ae", 1600),
+    primary: u("1552346154-21d32810aba3", 1200),
+    alt: u("1610030469983-98e550d6193c", 800),
+    hero: u("1552346154-21d32810aba3", 1600),
   },
   "jewellery-accessories": {
     primary: u("1515562141207-7a88fb7ce338", 1200),

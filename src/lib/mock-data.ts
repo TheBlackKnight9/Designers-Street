@@ -159,8 +159,8 @@ export const PRODUCTS: Product[] = [
     subcategory: "bridal",
     gender: "women",
     images: [
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
+      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200&q=85&auto=format&fit=crop",
     ],
     videos: [V.runwayScored, V.bridalGold, V.gardenBloom],
     sizes: ["XS", "S", "M", "L", "XL"],

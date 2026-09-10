@@ -27,7 +27,7 @@ export function NewmeFeaturedRail({ products }: NewmeFeaturedRailProps) {
           <Link
             key={product.id}
             href={`/product/${product.id}`}
-            className="relative flex-shrink-0 w-[42%] min-w-[150px] aspect-[4/5] rounded-lg overflow-hidden bg-[var(--mist)] group"
+            className="relative flex-shrink-0 w-[42%] min-w-[150px] aspect-[4/5] rounded-2xl overflow-hidden bg-[#F5F6F8] border border-gray-100/80 shadow-2xs group active:scale-[0.99] transition-all"
           >
             {product.images[0] ? (
               <Image
@@ -38,17 +38,17 @@ export function NewmeFeaturedRail({ products }: NewmeFeaturedRailProps) {
                 sizes="160px"
               />
             ) : null}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             {index === 0 && (
-              <span className="absolute top-2 left-2 px-2.5 py-0.5 bg-[var(--charcoal)] text-white text-[8px] font-medium uppercase tracking-[0.14em] rounded-sm">
+              <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 bg-[#FF6B00] text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-xs">
                 New Drop
               </span>
             )}
             <div className="absolute bottom-2.5 left-2.5 right-2.5">
-              <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-white/70 truncate">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-white/80 truncate">
                 {product.designerName}
               </p>
-              <p className="text-[11px] font-semibold text-white leading-tight line-clamp-2 mt-0.5">
+              <p className="text-xs font-bold text-white leading-tight line-clamp-2 mt-0.5">
                 {product.name}
               </p>
             </div>
