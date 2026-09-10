@@ -88,8 +88,9 @@
   --color-chip: var(--chip);
   --color-gold: var(--gold-zari);
 
-  --font-sans: var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
-  --font-display: var(--font-playfair), "Playfair Display", "Georgia", "Times New Roman", serif;
+  --font-sans: var(--font-sans), var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), var(--font-playfair), "Cormorant Garamond", "Playfair Display", "Georgia", "Times New Roman", serif;
+  --font-display: var(--font-cormorant), var(--font-playfair), "Cormorant Garamond", "Playfair Display", "Georgia", "Times New Roman", serif;
   --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --tracking-nav: 0.12em;
@@ -226,6 +227,43 @@ body {
   padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
   overscroll-behavior-y: contain;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ──────────────────────────────────────
+   Editorial Typography & Luxury Utilities
+   ────────────────────────────────────── */
+
+.editorial-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #737373;
+}
+
+.editorial-heading {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  color: #0A0A0A;
+}
+
+.craft-pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: #404040;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* ──────────────────────────────────────

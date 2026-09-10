@@ -60,23 +60,23 @@ export function ProductStickyActions({
             <MessageSquare className="w-5 h-5 stroke-[1.75]" />
           </button>
 
-          {/* Add to Cart pill button */}
+          {/* Add to Cart / Bag pill button */}
           <button
             type="button"
             onClick={onAddToBag}
-            className="flex-1 h-12 flex items-center justify-center gap-2 rounded-full border-2 border-[#FF6B00] text-[#FF6B00] bg-white font-sans text-xs font-bold active:scale-[0.98] transition-all hover:bg-[#FF6B00]/5"
+            className="flex-1 h-12 flex items-center justify-center gap-2 rounded-full border-2 border-[#FF6B00] text-[#FF6B00] bg-white font-sans text-xs font-bold uppercase tracking-wider active:scale-[0.98] transition-all hover:bg-[#FF6B00]/5"
           >
             <ShoppingBag className="w-4 h-4 stroke-[2]" />
-            <span>{inBag ? `In Cart (${bagQty})` : "Add to Cart"}</span>
+            <span>{inBag ? `In Bag (${bagQty})` : "Add to Bag"}</span>
           </button>
 
-          {/* Buy Now solid luxury orange pill button */}
+          {/* Acquire Piece solid luxury orange pill button */}
           <button
             type="button"
             onClick={onBuyNow}
-            className="flex-1 h-12 flex items-center justify-center rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white font-sans text-xs font-bold active:scale-[0.98] transition-all shadow-md shadow-orange-500/25"
+            className="flex-1 h-12 flex items-center justify-center rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white font-sans text-xs font-bold uppercase tracking-wider active:scale-[0.98] transition-all shadow-md shadow-orange-500/25"
           >
-            Buy Now
+            Acquire Piece
           </button>
         </div>
       )}

@@ -14,12 +14,15 @@ export function NewmeFeaturedRail({ products }: NewmeFeaturedRailProps) {
 
   return (
     <section className="py-5 bg-white">
-      <div className="flex items-center justify-between px-4 mb-3">
-        <h2 className="font-display text-base font-semibold text-[var(--charcoal)] tracking-wide">
-          Curated This Week
-        </h2>
-        <Link href="/store" className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--stone)] hover:text-[var(--charcoal)] transition-colors">
-          View All
+      <div className="flex items-end justify-between px-4 mb-3.5">
+        <div>
+          <span className="editorial-eyebrow block mb-0.5">Runway Selections</span>
+          <h2 className="font-serif text-xl md:text-2xl font-normal text-stone-950 tracking-tight leading-none">
+            Curated This Week
+          </h2>
+        </div>
+        <Link href="/store" className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-400 hover:text-stone-900 transition-colors pb-0.5">
+          View All →
         </Link>
       </div>
       <div className="flex gap-3 px-4 overflow-x-auto hide-scrollbar pb-1">

@@ -5,14 +5,13 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useEffect, useState } from "react";
 import { SearchOverlay } from "./SearchOverlay";
-import { ShoppingBag, Search, Heart, X } from "lucide-react";
+import { ShoppingBag, Search, Heart } from "lucide-react";
 
 export function TopBar() {
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const [searchOpen, setSearchOpen] = useState(false);
   const [badgesReady, setBadgesReady] = useState(false);
-  const [promoOpen, setPromoOpen] = useState(true);
 
   useEffect(() => {
     setBadgesReady(true);
@@ -24,18 +23,6 @@ export function TopBar() {
         suppressHydrationWarning
         className="fixed left-0 right-0 top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[var(--border-subtle)]"
       >
-        {/* Editorial promo ticker — understated luxury */}
-        {promoOpen && (
-          <div className="bg-[var(--charcoal)] text-white text-[9px] font-medium uppercase tracking-[0.16em] py-1.5 px-4 flex items-center gap-2">
-            <span className="flex-1 truncate text-center">
-              Complimentary White-Glove Delivery · Bespoke Consultations
-            </span>
-            <button type="button" onClick={() => setPromoOpen(false)} aria-label="Close promo" className="opacity-50 hover:opacity-100 transition-opacity">
-              <X className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-
         <div className="h-[var(--top-bar-height)] flex items-center justify-between px-4 gap-3">
           {/* Brand monogram + wordmark */}
           <Link href="/" className="flex items-center gap-2.5 min-w-0 flex-shrink-0">

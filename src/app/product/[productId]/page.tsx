@@ -407,21 +407,28 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* RIGHT COLUMN: Product Info, Badges, Size Selector, Details */}
             <div className="mt-5 md:mt-0 space-y-4">
 
-              {/* Row 1: Title + Wishlist Heart Button */}
+              {/* Row 1: Title + Pedigree + Wishlist Heart Button */}
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h1 className="font-sans text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight leading-snug">
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <Link
+                      href={getDesignerUrl(designer?.handle) ?? "#"}
+                      className="font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-stone-500 hover:text-[#FF6B00] transition-colors"
+                    >
+                      {product.designerName}
+                    </Link>
+                    {(designer?.verified || product.verified) && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-50 text-[#EA580C] text-[9px] font-bold uppercase tracking-wider border border-orange-200">
+                        Verified Atelier ✓
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-normal text-stone-950 tracking-tight leading-tight">
                     {product.name}
                   </h1>
-                  <Link
-                    href={getDesignerUrl(designer?.handle) ?? "#"}
-                    className="mt-1 inline-block font-sans text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors"
-                  >
-                    {product.designerName}
-                  </Link>
                 </div>
 
-                {/* Circular Wishlist Heart button matching reference */}
+                {/* Circular Wishlist Heart button */}
                 <button
                   type="button"
                   onClick={() => toggle(product.id)}
@@ -437,16 +444,16 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
 
               {/* Row 2: Price */}
-              <div className="flex items-baseline gap-3">
-                <span className="font-sans text-2xl md:text-3xl font-extrabold text-gray-900">
+              <div className="flex items-baseline gap-3 pt-1">
+                <span className="font-sans text-2xl md:text-3xl font-bold text-stone-950 tracking-tight">
                   {formatPrice(product.price)}
                 </span>
                 {product.mrp && product.mrp > product.price && (
                   <>
-                    <span className="font-sans text-sm text-gray-400 line-through">
+                    <span className="font-sans text-sm text-stone-400 line-through">
                       {formatPrice(product.mrp)}
                     </span>
-                    <span className="px-2 py-0.5 bg-orange-50 text-[#EA580C] border border-orange-200 rounded-full font-sans text-[10px] font-extrabold">
+                    <span className="px-2 py-0.5 bg-orange-50 text-[#EA580C] border border-orange-200 rounded-full font-sans text-[10px] font-bold uppercase tracking-wider">
                       {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF
                     </span>
                   </>
@@ -531,16 +538,16 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <button
                   type="button"
                   onClick={handleAddToBag}
-                  className="flex-1 h-12 flex items-center justify-center gap-2 rounded-full border-2 border-[#FF6B00] text-[#FF6B00] bg-white font-sans text-xs font-bold active:scale-[0.98] transition-all hover:bg-[#FF6B00]/5 shadow-xs"
+                  className="flex-1 h-12 flex items-center justify-center gap-2 rounded-full border-2 border-[#FF6B00] text-[#FF6B00] bg-white font-sans text-xs font-bold uppercase tracking-wider active:scale-[0.98] transition-all hover:bg-[#FF6B00]/5 shadow-xs"
                 >
-                  <span>{inBag ? `In Cart (${bagQty})` : "Add to Cart"}</span>
+                  <span>{inBag ? `In Bag (${bagQty})` : "Add to Bag"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  className="flex-1 h-12 flex items-center justify-center rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white font-sans text-xs font-bold active:scale-[0.98] transition-all shadow-md shadow-orange-500/20"
+                  className="flex-1 h-12 flex items-center justify-center rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white font-sans text-xs font-bold uppercase tracking-wider active:scale-[0.98] transition-all shadow-md shadow-orange-500/25"
                 >
-                  Buy Now
+                  Acquire Piece
                 </button>
               </div>
 
@@ -650,6 +657,64 @@ export default function ProductDetailPage({ params }: PageProps) {
                 </div>
               </div>
 
+              {/* Private VIP Concierge Consultation */}
+              <div className="p-4.5 rounded-3xl bg-[#FFF7ED] border border-orange-200/70 flex items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#FF6B00] text-white flex items-center justify-center text-base shadow-xs flex-shrink-0">
+                    🪡
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-stone-900 leading-tight">Need Bespoke Fitting or Styling?</p>
+                    <p className="text-[11px] text-stone-500 mt-0.5">Consult with our private haute couture stylist</p>
+                  </div>
+                </div>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Hello Designer's Street Concierge, I am inquiring about: ${product.name} by ${product.designerName} (${formatPrice(product.price)}). Could I get assistance on bespoke sizing and fitting?`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-full bg-[#FF6B00] hover:bg-[#EA580C] text-white text-[10px] font-bold uppercase tracking-wider shadow-sm transition-all flex-shrink-0"
+                >
+                  Chat Stylist
+                </a>
+              </div>
+
+              {/* Atelier Spotlight Card */}
+              {designer && (
+                <div className="p-5 rounded-3xl bg-[#F8F9FA] border border-black/[0.05] space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-stone-900 border border-black/10 relative flex items-center justify-center font-serif text-white font-bold text-base flex-shrink-0">
+                        {designer.logo ? (
+                          <Image src={designer.logo} alt={designer.name} fill className="object-cover" />
+                        ) : (
+                          designer.name.charAt(0)
+                        )}
+                      </div>
+                      <div>
+                        <span className="editorial-eyebrow block mb-0.5">Atelier House</span>
+                        <h4 className="font-serif text-base font-normal text-stone-950 leading-tight">
+                          {designer.name}
+                        </h4>
+                        <p className="text-[10px] text-stone-400 font-sans mt-0.5">
+                          {designer.location || "India"} {designer.founded ? `· Est. ${designer.founded}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={getDesignerUrl(designer.handle) ?? "/designers"}
+                      className="px-3.5 py-1.5 rounded-full border border-stone-300 text-stone-900 hover:border-[#FF6B00] hover:text-[#FF6B00] text-[10px] font-bold uppercase tracking-wider transition-all"
+                    >
+                      Visit House →
+                    </Link>
+                  </div>
+                  {designer.foundingStory && (
+                    <p className="text-xs text-stone-600 font-normal leading-relaxed line-clamp-2">
+                      {designer.foundingStory}
+                    </p>
+                  )}
+                </div>
+              )}
+
             </div>
           </div>
         </div>
@@ -699,10 +764,10 @@ export default function ProductDetailPage({ params }: PageProps) {
             <div className="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto animate-in fade-in zoom-in-95">
               <div className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">
-                    Official Sizing Chart
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#EA580C] block">
+                    Bespoke Sizing &amp; Measurements Guide
                   </span>
-                  <h3 className="font-sans text-base font-bold text-gray-900">{product.name}</h3>
+                  <h3 className="font-serif text-base font-medium text-stone-950">{product.name}</h3>
                 </div>
                 <button
                   type="button"
@@ -768,7 +833,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                             <td className="py-2.5 px-3 font-bold text-gray-900">{row.us}</td>
                             <td className="py-2.5 px-3 text-gray-600">{row.eu}</td>
                             <td className="py-2.5 px-3 text-gray-600">{row.metric}</td>
-                            <td className="py-2.5 px-3 text-emerald-600 font-medium">{row.advice}</td>
+                            <td className="py-2.5 px-3 text-[#EA580C] font-semibold">{row.advice}</td>
                           </tr>
                         ))}
                       </tbody>

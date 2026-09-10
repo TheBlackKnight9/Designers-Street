@@ -19,10 +19,10 @@ export function DesignerHouseCard({ house }: { house: any }) {
   return (
     <Link
       href={`/designer/${handle}`}
-      className="group block rounded-3xl border border-cloud bg-white overflow-hidden shadow-xs hover:shadow-md transition-all duration-300"
+      className="group block rounded-3xl border border-black/[0.06] bg-white overflow-hidden shadow-xs hover:border-[#FF6B00]/30 hover:shadow-md transition-all duration-300"
     >
       {/* Banner */}
-      <div className="relative h-32 w-full bg-mist overflow-hidden">
+      <div className="relative h-32 w-full bg-[#F5F6F8] overflow-hidden">
         {isValidImageUrl(house.banner) ? (
           <Image
             src={house.banner}
@@ -32,32 +32,32 @@ export function DesignerHouseCard({ house }: { house: any }) {
             sizes="(max-width: 768px) 100vw, 50vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-charcoal via-stone to-charcoal/90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900" />
         )}
       </div>
 
       {/* Logo & Info */}
       <div className="relative px-5 pb-5 pt-0">
         <div className="relative -mt-10 mb-3 flex items-end justify-between">
-          <div className="relative h-16 w-16 rounded-2xl border-4 border-white bg-charcoal overflow-hidden shadow-md shrink-0 flex items-center justify-center font-bold text-paper text-lg">
+          <div className="relative h-16 w-16 rounded-2xl border-4 border-white bg-stone-900 overflow-hidden shadow-md shrink-0 flex items-center justify-center font-serif font-bold text-white text-xl">
             {isValidImageUrl(house.logo) ? (
               <Image src={house.logo} alt={name} fill className="object-cover" sizes="64px" />
             ) : (
               name.charAt(0).toUpperCase()
             )}
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-mist text-stone border border-cloud">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#F5F6F8] text-stone-600 border border-black/[0.06]">
             📍 {location}
           </span>
         </div>
 
-        <h3 className="font-display text-lg font-bold text-charcoal group-hover:text-gold transition-colors truncate">
+        <h3 className="font-serif text-lg font-normal text-stone-950 group-hover:text-[#FF6B00] transition-colors truncate">
           {name}
         </h3>
-        <p className="text-xs font-mono font-bold text-stone">@{handle}</p>
+        <p className="text-[11px] font-sans font-medium text-stone-400">@{handle}</p>
 
         {bio && (
-          <p className="text-xs text-stone leading-relaxed line-clamp-2 mt-2 font-medium">
+          <p className="text-xs text-stone-500 leading-relaxed line-clamp-2 mt-2 font-normal">
             {bio}
           </p>
         )}

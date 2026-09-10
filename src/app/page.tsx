@@ -157,11 +157,11 @@ export default function HomePage() {
         })}
 
         {/* Invite / referral */}
-        <section className="mx-4 my-8 p-6 rounded-3xl bg-[#1A1A1A] text-white shadow-md">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF6B00] mb-2">
+        <section className="mx-4 my-8 p-6 rounded-3xl bg-[#141414] text-white shadow-md border border-white/5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#FF6B00] mb-1.5">
             Private Access
           </p>
-          <h3 className="font-sans text-lg font-bold tracking-tight leading-tight">
+          <h3 className="font-serif text-xl md:text-2xl font-normal tracking-tight leading-tight">
             Invite friends to the atelier
           </h3>
           <p className="text-[13px] text-white/70 mt-2 mb-4 leading-relaxed">
@@ -175,18 +175,20 @@ export default function HomePage() {
           </Link>
         </section>
 
-
         {/* Product feed grid */}
-        <section className="px-4 py-4 border-t border-[var(--border-subtle)]">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-base font-semibold text-[var(--charcoal)] tracking-wide">
-              Trending Now
-            </h2>
-            <Link href="/store" className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--stone)] hover:text-[var(--charcoal)]">
-              View All
+        <section className="px-4 py-6 border-t border-[var(--border-subtle)]">
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <span className="editorial-eyebrow block mb-0.5">The Edit</span>
+              <h2 className="font-serif text-xl md:text-2xl font-normal text-stone-950 tracking-tight leading-none">
+                Trending Now
+              </h2>
+            </div>
+            <Link href="/store" className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-400 hover:text-stone-900 transition-colors pb-0.5">
+              View All →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+          <div className="grid grid-cols-2 gap-x-3.5 gap-y-6">
             {filteredProducts.map((p) => (
               <NewmeProductCard key={p.id} product={p} />
             ))}

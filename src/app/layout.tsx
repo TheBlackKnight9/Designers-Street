@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Inter, Geist, Geist_Mono, Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { MediaViewerProvider } from "@/context/MediaViewerContext";
@@ -30,6 +30,14 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   display: "swap",
   weight: ["400", "500", "600", "700"],
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-cormorant",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -65,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full antialiased ${inter.variable} ${geistSans.variable} ${geistMono.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`h-full antialiased ${inter.variable} ${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${cormorant.variable}`} suppressHydrationWarning>
       <body className={`min-h-full flex flex-col font-sans ${geistSans.className}`} suppressHydrationWarning>
         <ToastProvider>
           <CartProvider>

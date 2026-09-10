@@ -44,28 +44,32 @@ export function NewmeHeroCarousel({ slides }: NewmeHeroCarouselProps) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
       {(slide.title || slide.subtitle) && (
-        <div className="absolute bottom-14 left-4 right-4 text-paper">
+        <div className="absolute bottom-14 left-5 right-5 text-white">
           {slide.subtitle && (
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] mb-1 opacity-90">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] mb-1.5 text-[#FF6B00] drop-shadow-sm">
               {slide.subtitle}
             </p>
           )}
           {slide.title && (
-            <h2 className="text-2xl font-black uppercase leading-tight tracking-tight drop-shadow-md">
+            <h2 className="font-serif text-3xl md:text-5xl font-normal leading-tight tracking-tight drop-shadow-lg">
               {slide.title}
             </h2>
           )}
         </div>
       )}
       {count > 1 && (
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
           {slides.map((s, i) => (
             <button
               key={s.id}
               type="button"
-              onClick={() => setActive(i)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActive(i);
+              }}
               className={`h-1.5 rounded-full transition-all ${
-                i === active ? "w-5 bg-paper" : "w-1.5 bg-paper/50"
+                i === active ? "w-6 bg-[#FF6B00] shadow-sm" : "w-1.5 bg-white/60 hover:bg-white"
               }`}
               aria-label={`Slide ${i + 1}`}
             />

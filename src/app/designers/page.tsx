@@ -53,10 +53,14 @@ export default function DesignersDirectoryPage() {
       <TopBar />
       <main className="min-h-screen pb-28 max-w-5xl mx-auto px-4 pt-[96px] space-y-5">
         {/* Header */}
-        <div className="text-center max-w-xl mx-auto">
-          <h1 className="font-display text-xl font-semibold text-[var(--charcoal)] tracking-wide">
+        <div className="text-center max-w-xl mx-auto space-y-1.5 pb-2">
+          <span className="editorial-eyebrow">The Guild of Artisans</span>
+          <h1 className="font-serif text-3xl md:text-4xl font-normal text-stone-950 tracking-tight">
             Designer Houses
           </h1>
+          <p className="text-xs text-stone-500 font-normal max-w-md mx-auto leading-relaxed">
+            Discover celebrated ateliers, master weavers, and independent couture creators across India.
+          </p>
         </div>
 
         {/* Compact search bar + city chips in single row */}

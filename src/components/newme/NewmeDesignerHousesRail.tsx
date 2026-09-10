@@ -20,39 +20,42 @@ export function NewmeDesignerHousesRail({ designers }: NewmeDesignerHousesRailPr
   if (!houses.length) return null;
 
   return (
-    <section className="py-5 border-y border-[var(--border-subtle)]">
-      <div className="flex items-center justify-between px-4 mb-3">
-        <h2 className="font-display text-base font-semibold text-[var(--charcoal)] tracking-wide">
-          Designer Houses
-        </h2>
-        <Link href="/designers" className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--stone)] hover:text-[var(--charcoal)] transition-colors">
-          View All
+    <section className="py-6 border-y border-[var(--border-subtle)] bg-white">
+      <div className="flex items-end justify-between px-4 mb-3.5">
+        <div>
+          <span className="editorial-eyebrow block mb-0.5">The Couturiers</span>
+          <h2 className="font-serif text-xl md:text-2xl font-normal text-stone-950 tracking-tight leading-none">
+            Designer Houses
+          </h2>
+        </div>
+        <Link href="/designers" className="text-[10px] font-bold uppercase tracking-[0.14em] text-stone-400 hover:text-stone-900 transition-colors pb-0.5">
+          View All →
         </Link>
       </div>
 
-      <div className="flex gap-3 px-4 overflow-x-auto hide-scrollbar pb-1">
+      <div className="flex gap-3.5 px-4 overflow-x-auto hide-scrollbar pb-1">
         {houses.map((house) => (
           <Link
             key={house.id}
             href={`/designer/${house.handle}`}
-            className="flex-shrink-0 w-[68px] flex flex-col items-center gap-1.5 group"
+            className="flex-shrink-0 w-[72px] flex flex-col items-center gap-1.5 group"
           >
-            <div className="relative w-14 h-14 rounded-full overflow-hidden border border-[var(--border-default)] bg-white">
+            <div className="relative w-15 h-15 rounded-full overflow-hidden border border-[var(--border-default)] bg-[#F5F6F8] group-hover:border-[#FF6B00] group-hover:ring-2 group-hover:ring-orange-500/20 transition-all shadow-2xs">
               {house.logo ? (
                 <Image
                   src={house.logo}
                   alt={house.name}
                   fill
-                  className="object-cover"
-                  sizes="56px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="60px"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[11px] font-semibold tracking-wider text-[var(--charcoal)] bg-[var(--mist)]">
+                <div className="w-full h-full flex items-center justify-center font-serif text-xs font-semibold tracking-wider text-stone-900 bg-[#F5F6F8]">
                   {monogram(house.name)}
                 </div>
               )}
             </div>
-            <span className="text-[9px] font-medium text-[var(--charcoal)] text-center leading-tight line-clamp-2 w-full group-hover:underline">
+            <span className="font-serif text-[11px] font-medium text-stone-800 text-center leading-tight line-clamp-1 w-full group-hover:text-[#FF6B00] transition-colors">
               {house.name.split(" ")[0]}
             </span>
           </Link>
